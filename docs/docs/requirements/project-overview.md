@@ -4,7 +4,7 @@
 
 ### 1.1 プロジェクト名
 
-**Polister** (Poster + Lister) - 選挙ポスター掲示板位置管理サービス
+**Polister** (Politics + Poster) - 選挙ポスター掲示板位置管理サービス
 
 ### 1.2 プロジェクトの目的
 
