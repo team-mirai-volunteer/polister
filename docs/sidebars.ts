@@ -30,6 +30,7 @@ const sidebars: SidebarsConfig = {
       label: "アーキテクチャ",
       items: [
         "architecture/index",
+        "architecture/diagrams",
         {
           type: "category",
           label: "Architecture Decision Records (ADR)",

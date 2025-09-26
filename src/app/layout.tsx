@@ -27,7 +27,7 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: "Polister",
-  description: "Polister プロジェクト",
+  description: "Polisterプロジェクト",
 };
 
 export default function RootLayout({

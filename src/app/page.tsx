@@ -22,7 +22,7 @@ export default function Home() {
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h2" component="h1" gutterBottom>
-          Polister プロジェクトへようこそ
+          Polisterプロジェクトへようこそ
         </Typography>
 
         <Typography variant="h5" color="text.secondary" paragraph>
