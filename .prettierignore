@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+docs/node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Cache directories
+.cache/
+.docusaurus/
+
+# Package lock files
+package-lock.json
+yarn.lock
+
+# Environment files
+.env*
+
+# Generated files
+coverage/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
