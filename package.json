@@ -7,13 +7,20 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "docs:dev": "cd docs && npm run start",
-    "docs:build": "cd docs && npm run build",
-    "docs:serve": "cd docs && npm run serve"
+    "validate": "yarn typecheck && yarn lint && yarn format:check",
+    "docs:dev": "cd docs && yarn start",
+    "docs:build": "cd docs && yarn build",
+    "docs:serve": "cd docs && yarn serve"
   },
   "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.2",
+    "@mui/material-nextjs": "^7.3.2",
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0"

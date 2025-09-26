@@ -1,96 +1,61 @@
-import Image from "next/image";
-
-import styles from "./page.module.css";
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Paper,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <Box>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Polister
+          </Typography>
+          <Button color="inherit">ログイン</Button>
+        </Toolbar>
+      </AppBar>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h2" component="h1" gutterBottom>
+          Polister プロジェクトへようこそ
+        </Typography>
+
+        <Typography variant="h5" color="text.secondary" paragraph>
+          Next.js 15 + React 19 + TypeScript + Material UI で構築されています
+        </Typography>
+
+        <Box sx={{ mt: 4, display: "flex", gap: 2 }}>
+          <Button variant="contained" size="large">
+            はじめる
+          </Button>
+          <Button variant="outlined" size="large">
+            ドキュメント
+          </Button>
+        </Box>
+
+        <Paper sx={{ p: 3, mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            機能
+          </Typography>
+          <Typography variant="body1">
+            • Next.js 15 with App Router
+            <br />
+            • React 19
+            <br />
+            • TypeScript
+            <br />
+            • Material UI
+            <br />
+            • Prettier with import sorting
+            <br />• Docusaurus ドキュメント
+          </Typography>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

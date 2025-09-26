@@ -2,6 +2,9 @@
 node_modules/
 docs/node_modules/
 
+# Claude settings
+.claude/
+
 # Build outputs
 .next/
 out/
