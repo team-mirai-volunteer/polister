@@ -65,6 +65,38 @@
 - **format**: `yarn format` - Prettierでフォーマット
 - **validate**: `yarn validate` - 全チェック（typecheck + lint + format:check）
 
+### CI/CD自動チェック
+
+Pull Requestを作成すると、以下のチェックが自動実行されます：
+
+- **ESLint**: コードの静的解析
+- **TypeScript Type Check**: 型の整合性チェック
+- **Prettier Format Check**: コードフォーマットチェック
+
+全てのチェックが通過しないとマージできません。
+
+## ブランチ保護ルールの設定
+
+### developブランチの保護設定
+
+GitHubリポジトリの Settings → Branches で以下を設定：
+
+1. **Add branch protection rule**をクリック
+2. **Branch name pattern**: `develop`
+3. 以下をチェック：
+   - ✅ **Require a pull request before merging**
+   - ✅ **Require status checks to pass before merging**
+     - **Required checks**:
+       - `ESLint`
+       - `TypeScript Type Check`
+       - `Prettier Format Check`
+   - ✅ **Do not allow bypassing the above settings**
+4. **Create**をクリック
+
+### mainブランチの保護設定
+
+同様の設定を`main`ブランチにも適用します。
+
 ## プロジェクト概要
 
 これは TypeScript サポートを持つ Next.js 15.5.4 アプリケーションで、React 19.1.0 を使用しています。パッケージ管理には Yarn を使用し、より高速な開発ビルドのために Turbopack を含んでいます。
