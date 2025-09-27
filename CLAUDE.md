@@ -11,6 +11,14 @@
 - 例: `feat: Material UI統合を追加`, `fix: リンクエラーを修正`, `docs: ドキュメントを更新`
 - **重要**: ユーザーから明示的な指示があるまでコミットしないこと
 
+## コード品質チェック
+
+- **実行ディレクトリ**: 必ずプロジェクトルート（`/Users/seiichiro/apps/team-mirai/polister`）で実行
+- **lint**: `yarn lint` - ESLintを実行
+- **typecheck**: `yarn typecheck` - TypeScriptの型チェック
+- **format**: `yarn format` - Prettierでフォーマット
+- **validate**: `yarn validate` - 全チェック（typecheck + lint + format:check）
+
 ## プロジェクト概要
 
 これは TypeScript サポートを持つ Next.js 15.5.4 アプリケーションで、React 19.1.0 を使用しています。パッケージ管理には Yarn を使用し、より高速な開発ビルドのために Turbopack を含んでいます。
@@ -21,8 +29,6 @@
 
 ```bash
 yarn dev
-# または
-npm run dev
 ```
 
 開発サーバーを起動します（Turbopack使用）。http://localhost:3000 でアクセス可能。
@@ -31,8 +37,6 @@ npm run dev
 
 ```bash
 yarn build
-# または
-npm run build
 ```
 
 本番用ビルドを作成します（Turbopack使用）。
@@ -41,8 +45,6 @@ npm run build
 
 ```bash
 yarn start
-# または
-npm run start
 ```
 
 本番用サーバーを起動します。
@@ -51,11 +53,33 @@ npm run start
 
 ```bash
 yarn lint
-# または
-npm run lint
 ```
 
 ESLintを実行してコードをチェックします。
+
+### 型チェック
+
+```bash
+yarn typecheck
+```
+
+TypeScriptの型チェックを実行します。
+
+### フォーマット
+
+```bash
+yarn format
+```
+
+Prettierでコードをフォーマットします。
+
+### 全チェック
+
+```bash
+yarn validate
+```
+
+型チェック、lint、フォーマットチェックを一括実行します。
 
 ## プロジェクト構造
 
