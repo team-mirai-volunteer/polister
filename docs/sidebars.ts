@@ -39,7 +39,10 @@ const sidebars: SidebarsConfig = {
         {
           type: "category",
           label: "実装ガイドライン",
-          items: ["architecture/guidelines/clean-architecture-guide"],
+          items: [
+            "architecture/guidelines/clean-architecture-guide",
+            "architecture/guidelines/testing-guide",
+          ],
         },
       ],
     },
