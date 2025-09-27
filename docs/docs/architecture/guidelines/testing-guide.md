@@ -100,7 +100,7 @@ beforeEach(() => {
 
 ```typescript
 // src/features/verification/domain/services/__tests__/TrustLevelService.test.ts
-import type { Verification } from "@prisma/client";
+import type { Verification } from "@/features/verification/domain/entities/Verification";
 
 import { TrustLevelService } from "../TrustLevelService";
 
@@ -156,12 +156,11 @@ describe("TrustLevelService", () => {
 
 ```typescript
 // src/features/board/application/usecases/__tests__/BoardManagementUseCase.test.ts
-import { mockDeep, mockReset } from "jest-mock-extended";
-import type { DeepMockProxy } from "jest-mock-extended";
+import { type DeepMockProxy, mockDeep, mockReset } from "jest-mock-extended";
 
+import type { IBoardRepository } from "@/features/board/application/repositories/IBoardRepository";
 import type { IGeocodingService } from "@/infrastructure/external/geocoding/IGeocodingService";
 
-import type { IBoardRepository } from "../../infrastructure/repositories/IBoardRepository";
 import { BoardManagementUseCase } from "../BoardManagementUseCase";
 
 describe("BoardManagementUseCase", () => {
@@ -324,9 +323,7 @@ API Routeのテストでは、Next.jsのRequest/Responseをモックします。
 
 ```typescript
 // src/app/api/boards/__tests__/route.test.ts
-import { mockDeep } from "jest-mock-extended";
-
-import { NextRequest, NextResponse } from "next/server";
+import { type DeepMockProxy, mockDeep } from "jest-mock-extended";
 
 import type { BoardManagementUseCase } from "@/features/board/application/usecases/BoardManagementUseCase";
 
@@ -359,8 +356,9 @@ describe("/api/boards POST", () => {
       boardId: "board-123",
     });
 
-    const request = new NextRequest("http://localhost:3000/api/boards", {
+    const request = new Request("http://localhost:3000/api/boards", {
       method: "POST",
+      headers: { "content-type": "application/json" },
       body: JSON.stringify(requestData),
     });
 
@@ -383,8 +381,9 @@ describe("/api/boards POST", () => {
       error: "住所は3文字以上で入力してください",
     });
 
-    const request = new NextRequest("http://localhost:3000/api/boards", {
+    const request = new Request("http://localhost:3000/api/boards", {
       method: "POST",
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
         address: "ab",
         boardNumber: 1,
@@ -445,6 +444,7 @@ const config: Config = {
     "!src/**/*.stories.tsx",
     "!src/**/__tests__/**",
   ],
+  coverageReporters: ["json", "lcov", "text-summary"],
   coverageThreshold: {
     global: {
       branches: 80,
@@ -466,7 +466,8 @@ export default createJestConfig(config);
 
 ```typescript
 // src/features/board/infrastructure/repositories/__tests__/factories/board.factory.ts
-import type { Board, BoardStatus, TrustLevel } from "@prisma/client";
+import type { Board } from "@/features/board/domain/entities/Board";
+import type { BoardStatus, TrustLevel } from "@/features/board/domain/types";
 
 export const createMockBoard = (overrides: Partial<Board> = {}): Board => ({
   id: "board-123",
@@ -499,6 +500,9 @@ export const createMockVerification = (
   createdAt: new Date("2025-01-01"),
   ...overrides,
 });
+
+// 注: Verification型もDomain層のエンティティとして定義
+// import type { Verification } from "@/features/verification/domain/entities/Verification";
 ```
 
 ### テストの命名規則
@@ -783,7 +787,9 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          file: ./coverage/coverage-final.json
+          files: ./coverage/coverage-final.json
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
 ```
 
 ## まとめ
