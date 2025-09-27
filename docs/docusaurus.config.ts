@@ -10,12 +10,12 @@ const config: Config = {
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://docs.polister.example.com",
+  url: "https://team-mirai-volunteer.github.io",
   // Set the /<baseUrl>/ pathname under which your site is served
-  baseUrl: "/",
+  baseUrl: "/polister/",
 
   // GitHub pages deployment config.
-  organizationName: "team-mirai",
+  organizationName: "team-mirai-volunteer",
   projectName: "polister",
 
   onBrokenLinks: "warn",
