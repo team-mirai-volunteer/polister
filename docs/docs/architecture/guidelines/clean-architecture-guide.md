@@ -59,7 +59,7 @@ graph TB
 
 Next.js App Routerの特性を活かした機能別モジュール構成を採用します。
 
-```
+```text
 src/
 ├── app/                              # Next.js App Router
 │   ├── (auth)/                       # 認証が必要なルート
@@ -205,7 +205,7 @@ src/
 #### Repositoryインターフェース例
 
 ```typescript
-// src/infrastructure/repositories/interfaces/IBoardRepository.ts
+// src/features/board/infrastructure/repositories/IBoardRepository.ts
 import type { Board, BoardStatus, TrustLevel } from "@prisma/client";
 
 export interface CreateBoardData {
@@ -254,7 +254,7 @@ export interface IBoardRepository {
 ### 2. Repository実装
 
 ```typescript
-// src/infrastructure/repositories/implementations/BoardRepository.ts
+// src/features/board/infrastructure/repositories/BoardRepository.ts
 import type { PrismaClient, Board } from '@prisma/client';
 import { inject, injectable } from 'tsyringe';
 
@@ -264,7 +264,7 @@ import type {
   IBoardRepository,
   UpdateBoardData,
   BoardSearchFilters,
-} from '@/infrastructure/repositories/interfaces/IBoardRepository';
+} from './IBoardRepository';
 
 @injectable()
 export class BoardRepository implements IBoardRepository {
@@ -329,12 +329,12 @@ export class BoardRepository implements IBoardRepository {
 ### 3. Use Case実装
 
 ```typescript
-// src/core/application/usecases/BoardManagementUseCase.ts
+// src/features/board/application/usecases/BoardManagementUseCase.ts
 import { inject, injectable } from 'tsyringe';
 
 import { TOKENS } from '@/shared/lib/di/tokens';
-import type { IBoardRepository } from '@/infrastructure/repositories/interfaces/IBoardRepository';
-import type { IGeocodingService } from '@/core/application/interfaces/IGeocodingService';
+import type { IBoardRepository } from '../../infrastructure/repositories/IBoardRepository';
+import type { IGeocodingService } from '@/infrastructure/external/geocoding/IGeocodingService';
 import { ValidationError, BoardNotFoundError } from '@/shared/lib/errors/DomainErrors';
 
 export interface BoardCreationResult {
@@ -457,8 +457,8 @@ import { PrismaClient } from "@prisma/client";
 import "reflect-metadata";
 import { container } from "tsyringe";
 
-import { BoardManagementUseCase } from "@/core/application/usecases/BoardManagementUseCase";
-import { BoardRepository } from "@/infrastructure/repositories/implementations/BoardRepository";
+import { BoardManagementUseCase } from "@/features/board/application/usecases/BoardManagementUseCase";
+import { BoardRepository } from "@/features/board/infrastructure/repositories/BoardRepository";
 
 import { TOKENS } from "./tokens";
 
@@ -489,7 +489,7 @@ export function resolve<T>(token: symbol): T {
 // src/app/api/boards/route.ts
 import { NextResponse } from "next/server";
 
-import type { BoardManagementUseCase } from "@/core/application/usecases/BoardManagementUseCase";
+import type { BoardManagementUseCase } from "@/features/board/application/usecases/BoardManagementUseCase";
 import { resolve } from "@/shared/lib/di/container";
 import { TOKENS } from "@/shared/lib/di/tokens";
 
@@ -580,7 +580,7 @@ export interface IBoardRepository extends IBoardReader, IBoardWriter {}
 ### 地域ベース検証システム
 
 ```typescript
-// src/core/application/usecases/RegionalVerificationUseCase.ts
+// src/features/verification/application/usecases/RegionalVerificationUseCase.ts
 @injectable()
 export class RegionalVerificationUseCase {
   constructor(
@@ -650,7 +650,7 @@ export class RegionalVerificationUseCase {
 ### データインポートシステム
 
 ```typescript
-// src/core/application/usecases/DataImportUseCase.ts
+// src/features/import/application/usecases/DataImportUseCase.ts
 @injectable()
 export class DataImportUseCase {
   constructor(

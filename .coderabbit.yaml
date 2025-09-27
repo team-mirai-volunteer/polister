@@ -34,20 +34,33 @@ chat:
 
 # Polisterプロジェクト固有の設定
 path_instructions:
-  - path: "src/core/**"
+  - path: "src/features/**/domain/**"
     instructions: |
-      - ビジネスロジック層のコードレビュー
+      - ドメイン層のコードレビュー
       - 外部依存がないことを確認
-      - インターフェースへの依存のみを許可
+      - 純粋なビジネスロジックのみ
       - any型の使用を禁止
       - テストカバレッジを確認
 
-  - path: "src/infrastructure/**"
+  - path: "src/features/**/application/**"
+    instructions: |
+      - アプリケーション層のコードレビュー
+      - ユースケースの適切な実装
+      - インターフェースへの依存を確認
+      - エラーハンドリングの実装
+
+  - path: "src/features/**/infrastructure/**"
     instructions: |
       - インフラ層のコードレビュー
       - インターフェースを正しく実装しているか確認
       - PostgreSQL/PostGISの適切な使用
       - エラーハンドリングの実装を確認
+
+  - path: "src/infrastructure/**"
+    instructions: |
+      - 共有インフラのコードレビュー
+      - 外部APIクライアントの実装確認
+      - データベース設定の妥当性
 
   - path: "src/app/api/**"
     instructions: |
