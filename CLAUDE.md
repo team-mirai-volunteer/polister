@@ -11,6 +11,48 @@
 - 例: `feat: Material UI統合を追加`, `fix: リンクエラーを修正`, `docs: ドキュメントを更新`
 - **重要**: ユーザーから明示的な指示があるまでコミットしないこと
 
+## ブランチ戦略
+
+### ブランチ構成
+
+- **develop**: メインブランチ（デフォルト）
+- **main**: 本番リリース用ブランチ
+- **feature/#N_xxx**: 機能開発ブランチ（Nはイシュー番号）
+  - 例: `feature/#1_kml-import`
+  - developからブランチを作成
+  - developへマージ
+
+### ブランチ保護
+
+- `main`と`develop`への直接pushは禁止
+- 必ずPull Requestを経由してマージ
+- PRマージ後、featureブランチは自動削除
+
+### 開発フロー
+
+1. **Issueを作成** - GitHub Issuesで課題を登録
+2. **featureブランチ作成** - `git checkout -b feature/#1_xxx`
+3. **開発・コミット** - 変更を実施、コミット
+4. **Push** - `git push -u origin feature/#1_xxx`
+5. **Pull Request作成** - developブランチへのPRを作成
+6. **レビュー・マージ** - レビュー後にマージ
+7. **Issueクローズ** - PR本文に`Closes #1`を記載して自動クローズ
+
+### Pull Request作成
+
+- **タイトル**: `feat: KML形式のインポート機能を追加` (日本語)
+- **本文**:
+  ```markdown
+  ## 概要
+  [変更内容の説明]
+
+  ## 変更内容
+  - [具体的な変更]
+
+  Closes #1
+  ```
+- **ターゲットブランチ**: `develop`
+
 ## コード品質チェック
 
 - **実行ディレクトリ**: 必ずプロジェクトルート（`/Users/seiichiro/apps/team-mirai/polister`）で実行
