@@ -153,46 +153,48 @@ src/
 #### Domain Layer（ドメイン層）
 
 - **責任**: ビジネスルールとドメインロジック
-- **場所**: `src/core/domain/`
+- **場所**: `src/features/<feature>/domain/`
 - **特徴**: 外部依存を持たない純粋なビジネスロジック
 - **Polisterでの例**:
-  - `BoardValidationService`: 掲示板データのバリデーション
-  - `TrustLevelService`: 信頼度レベルの計算
-  - `VerificationService`: 検証ルールの判定
+  - `features/board/domain/services/BoardValidationService`: 掲示板データのバリデーション
+  - `features/verification/domain/services/TrustLevelService`: 信頼度レベルの計算
+  - `features/verification/domain/services/VerificationRuleService`: 検証ルールの判定
 
 #### Application Layer（アプリケーション層）
 
 - **責任**: ユースケースの調整とワークフロー
-- **場所**: `src/core/application/`
+- **場所**: `src/features/<feature>/application/`
 - **特徴**: RepositoryとDomainServiceを組み合わせてビジネスユースケースを実現
 - **Polisterでの例**:
-  - `BoardManagementUseCase`: 掲示板データの登録・編集・削除
-  - `VerificationUseCase`: 地域ベース検証依頼と承認フロー
-  - `DataImportUseCase`: CSV/KML一括インポート
-  - `ActionBoardIntegrationUseCase`: アクションボード連携
+  - `features/board/application/usecases/BoardManagementUseCase`: 掲示板データの登録・編集・削除
+  - `features/verification/application/usecases/VerificationUseCase`: 地域ベース検証依頼と承認フロー
+  - `features/import/application/usecases/DataImportUseCase`: CSV/KML一括インポート
+  - `features/board/application/usecases/ActionBoardIntegrationUseCase`: アクションボード連携
 
 #### Infrastructure Layer（インフラ層）
 
 - **責任**: 外部システムとの統合とデータ永続化
-- **場所**: `src/infrastructure/`
+- **場所**: `src/features/<feature>/infrastructure/` および `src/infrastructure/`（共有インフラ）
 - **特徴**: データベース、外部API、ファイルシステムなどの技術的詳細
 - **Polisterでの例**:
-  - `BoardRepository`: 掲示板データの永続化（PostgreSQL + PostGIS）
-  - `MunicipalityRepository`: 市区町村データ管理
-  - `GeocodingService`: 住所→緯度経度変換（外部API）
-  - `MapboxService`: 地図タイル配信
-  - `ActionBoardApiClient`: アクションボードAPI連携
+  - `features/board/infrastructure/repositories/BoardRepository`: 掲示板データの永続化（PostgreSQL + PostGIS）
+  - `features/municipality/infrastructure/repositories/MunicipalityRepository`: 市区町村データ管理
+  - `infrastructure/external/geocoding/GeocodingService`: 住所→緯度経度変換（外部API）
+  - `infrastructure/external/mapbox/MapboxService`: 地図タイル配信
+  - `infrastructure/external/action-board/ActionBoardApiClient`: アクションボードAPI連携
 
 #### Presentation Layer（プレゼンテーション層）
 
 - **責任**: ユーザーインターフェースとHTTPリクエスト処理
-- **場所**: `src/app/`
+- **場所**: `src/app/` および `src/features/<feature>/ui/`
 - **特徴**: Next.js App Router、React Components
 - **Polisterでの例**:
-  - `/api/boards`: 掲示板CRUD API
-  - `/api/verification`: 検証・承認API
-  - `/api/import`: データインポートAPI
-  - Reactコンポーネント: 地図表示、データ入力フォーム
+  - `app/api/boards/`: 掲示板CRUD API
+  - `app/api/verification/`: 検証・承認API
+  - `app/api/import/`: データインポートAPI
+  - `features/board/ui/`: 掲示板関連UIコンポーネント
+  - `features/verification/ui/`: 検証関連UIコンポーネント
+  - `shared/ui/Map/`: 共通地図コンポーネント
 
 ## 実装手順
 
