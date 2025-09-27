@@ -1,0 +1,106 @@
+# CodeRabbit Configuration for Polister Project
+language: "ja-JP"
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - develop
+      - main
+  tools:
+    ruff:
+      enabled: false
+    markdownlint:
+      enabled: true
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: "default"
+      enabled_rules: []
+      disabled_rules: []
+      enabled_categories: []
+      disabled_categories: []
+
+chat:
+  auto_reply: true
+
+# Polisterプロジェクト固有の設定
+path_instructions:
+  - path: "src/features/**/domain/**"
+    instructions: |
+      - ドメイン層のコードレビュー
+      - 外部依存がないことを確認
+      - 純粋なビジネスロジックのみ
+      - any型の使用を禁止
+      - テストカバレッジを確認
+
+  - path: "src/features/**/application/**"
+    instructions: |
+      - アプリケーション層のコードレビュー
+      - ユースケースの適切な実装
+      - インターフェースへの依存を確認
+      - エラーハンドリングの実装
+
+  - path: "src/features/**/infrastructure/**"
+    instructions: |
+      - インフラ層のコードレビュー
+      - インターフェースを正しく実装しているか確認
+      - PostgreSQL/PostGISの適切な使用
+      - エラーハンドリングの実装を確認
+
+  - path: "src/infrastructure/**"
+    instructions: |
+      - 共有インフラのコードレビュー
+      - 外部APIクライアントの実装確認
+      - データベース設定の妥当性
+
+  - path: "src/app/api/**"
+    instructions: |
+      - API Routeのコードレビュー
+      - Use Caseを通じた実装を確認
+      - エラーレスポンスの適切な処理
+      - バリデーションの実装
+
+  - path: "docs/**"
+    instructions: |
+      - ドキュメントのレビュー
+      - 日本語の文法と表現を確認
+      - Mermaid図の正確性
+      - リンク切れがないか確認
+
+  - path: "**/*.test.ts"
+    instructions: |
+      - テストコードのレビュー
+      - jest-mock-extendedの適切な使用
+      - モックの型安全性を確認
+      - テストケースの網羅性
+
+# レビュー対象外のパス
+path_filters:
+  - "!node_modules/**"
+  - "!.next/**"
+  - "!docs/.docusaurus/**"
+  - "!docs/build/**"
+  - "!*.lock"
+  - "!yarn.lock"
+  - "!package-lock.json"
+
+# レビュー対象ファイル
+enabled_file_types:
+  - ".ts"
+  - ".tsx"
+  - ".js"
+  - ".jsx"
+  - ".md"
+  - ".mdx"
+  - ".yaml"
+  - ".yml"
+  - ".json"
