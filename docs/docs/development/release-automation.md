@@ -99,19 +99,20 @@ jobs:
 ### テンプレート例
 
 ```erb
-# リリース準備
+<% release_time = Time.now.getlocal %>
+リリース準備（<%= release_time.strftime('%Y-%m-%d') %>）
 
 このPRは、developブランチからmainブランチへのリリースを行うためのものです。
 
 ## リリース日時
 
-<%= Time.now.strftime('%Y年%m月%d日 %H:%M:%S') %>
+<%= release_time.strftime('%Y年%m月%d日 %H:%M:%S %Z') %>
 
 ## マージ対象のPull Request一覧
 
 <% pull_requests.each do |pr| %>
 - [ ] #<%= pr.number %> <%= pr.title %> (@<%= pr.user.login %>)
-  - マージ日時: <%= pr.merged_at.strftime('%Y-%m-%d %H:%M') %>
+  - マージ日時: <%= pr.merged_at ? pr.merged_at.strftime('%Y-%m-%d %H:%M') : 'N/A' %>
 <% end %>
 ```
 
