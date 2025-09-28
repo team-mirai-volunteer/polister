@@ -12,9 +12,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "validate": "yarn typecheck && yarn lint && yarn format:check",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "db:generate": "prisma generate",
+    "db:push": "prisma db push --schema=./src/infrastructure/database/schema.prisma",
+    "db:studio": "prisma studio --schema=./src/infrastructure/database/schema.prisma",
+    "db:generate": "prisma generate --schema=./src/infrastructure/database/schema.prisma",
     "docs:dev": "cd docs && yarn start",
     "docs:build": "cd docs && yarn build",
     "docs:serve": "cd docs && yarn serve"

@@ -202,7 +202,7 @@ CREATE INDEX idx_user_locations_municipality ON user_locations(municipality_id);
 
 ## Prismaスキーマ
 
-詳細は`prisma/schema.prisma`を参照。
+詳細は`src/infrastructure/database/schema.prisma`を参照。
 
 ### 主要モデル
 

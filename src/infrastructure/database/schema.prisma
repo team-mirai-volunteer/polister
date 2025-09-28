@@ -27,6 +27,7 @@ model Board {
   images        BoardImage[]
   verifications Verification[]
 
+  @@index([location], type: Gist)
   @@index([municipalityId])
   @@index([trustLevel])
   @@index([status])
@@ -47,6 +48,7 @@ model Municipality {
   boards        Board[]
   userLocations UserLocation[]
 
+  @@index([polygon], type: Gist)
   @@index([code])
   @@map("municipalities")
 }
