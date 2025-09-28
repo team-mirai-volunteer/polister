@@ -42,9 +42,20 @@ export default function Root({ children }: { children: React.ReactNode }) {
         (svg as HTMLElement).style.cursor = "zoom-in";
 
         svg.addEventListener("click", () => {
+          // SVGのサイズを取得
+          const svgElement = svg as SVGSVGElement;
+          const bbox = svgElement.getBBox();
+          const width = Math.max(bbox.width, 1920);
+          const height = Math.max(bbox.height, 1080);
+
+          // SVGに明示的なサイズを設定
+          const clonedSvg = svg.cloneNode(true) as SVGElement;
+          clonedSvg.setAttribute("width", width.toString());
+          clonedSvg.setAttribute("height", height.toString());
+
           // SVGをData URLに変換
           const serializer = new XMLSerializer();
-          const svgString = serializer.serializeToString(svg);
+          const svgString = serializer.serializeToString(clonedSvg);
           const svgBlob = new Blob([svgString], {
             type: "image/svg+xml;charset=utf-8",
           });
@@ -93,11 +104,17 @@ export default function Root({ children }: { children: React.ReactNode }) {
         slides={[{ src: currentSvg }]}
         plugins={[Zoom]}
         zoom={{
-          maxZoomPixelRatio: 3,
+          maxZoomPixelRatio: 5,
           scrollToZoom: true,
+          doubleClickMaxStops: 3,
         }}
-        carousel={{ finite: true }}
-        controller={{ closeOnBackdropClick: true }}
+        controller={{
+          closeOnBackdropClick: true,
+        }}
+        carousel={{
+          finite: true,
+          imageFit: "contain",
+        }}
         render={{
           buttonPrev: () => null,
           buttonNext: () => null,

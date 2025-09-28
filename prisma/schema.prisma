@@ -1,0 +1,192 @@
+// Polister Database Schema
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// 掲示板
+model Board {
+  id             String                                @id @default(uuid())
+  boardNumber    Int                                   @map("board_number")
+  address        String
+  location       Unsupported("geography(POINT, 4326)")
+  municipalityId String                                @map("municipality_id")
+  trustLevel     TrustLevel                            @default(LEVEL_3) @map("trust_level")
+  status         BoardStatus                           @default(PENDING)
+  createdAt      DateTime                              @default(now()) @map("created_at")
+  updatedAt      DateTime                              @updatedAt @map("updated_at")
+  deletedAt      DateTime?                             @map("deleted_at")
+
+  municipality  Municipality   @relation(fields: [municipalityId], references: [id])
+  images        BoardImage[]
+  verifications Verification[]
+
+  @@index([municipalityId])
+  @@index([trustLevel])
+  @@index([status])
+  @@map("boards")
+}
+
+// 市区町村
+model Municipality {
+  id         String                                       @id @default(uuid())
+  name       String
+  code       String                                       @unique
+  prefecture String
+  polygon    Unsupported("geography(MULTIPOLYGON, 4326)")?
+  source     String                                       @default("MLIT")
+  createdAt  DateTime                                     @default(now()) @map("created_at")
+  updatedAt  DateTime                                     @updatedAt @map("updated_at")
+
+  boards        Board[]
+  userLocations UserLocation[]
+
+  @@index([code])
+  @@map("municipalities")
+}
+
+// ユーザー
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  name              String?
+  image             String?
+  role              UserRole  @default(VIEWER)
+  trustScore        Float     @default(0.0) @map("trust_score")
+  verificationCount Int       @default(0) @map("verification_count")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  emailVerified     DateTime? @map("email_verified")
+
+  accounts      Account[]
+  sessions      Session[]
+  verifications Verification[]
+  boardImages   BoardImage[]
+  userLocations UserLocation[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// NextAuth Account
+model Account {
+  id                String  @id @default(uuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refreshToken      String? @map("refresh_token") @db.Text
+  accessToken       String? @map("access_token") @db.Text
+  expiresAt         Int?    @map("expires_at")
+  tokenType         String? @map("token_type")
+  scope             String?
+  idToken           String? @map("id_token") @db.Text
+  sessionState      String? @map("session_state")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// NextAuth Session
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// NextAuth VerificationToken
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// 検証記録
+model Verification {
+  id          String    @id @default(uuid())
+  boardId     String    @map("board_id")
+  userId      String    @map("user_id")
+  result      Boolean
+  hasPhoto    Boolean   @default(false) @map("has_photo")
+  gpsAccuracy Float?    @map("gps_accuracy")
+  comment     String?   @db.Text
+  verifiedAt  DateTime  @default(now()) @map("verified_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@index([userId])
+  @@map("verifications")
+}
+
+// 掲示板画像
+model BoardImage {
+  id        String    @id @default(uuid())
+  boardId   String    @map("board_id")
+  userId    String    @map("user_id")
+  imageUrl  String    @map("image_url")
+  takenAt   DateTime? @map("taken_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([boardId])
+  @@map("board_images")
+}
+
+// ユーザー居住地
+model UserLocation {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  municipalityId String   @map("municipality_id")
+  isPrimary      Boolean  @default(false) @map("is_primary")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  municipality Municipality @relation(fields: [municipalityId], references: [id])
+
+  @@index([userId])
+  @@index([municipalityId])
+  @@map("user_locations")
+}
+
+// Enum定義
+enum TrustLevel {
+  LEVEL_1 // 公式
+  LEVEL_2 // 確認済み
+  LEVEL_3 // 報告
+  LEVEL_4 // 記憶
+}
+
+enum BoardStatus {
+  PENDING  // 未検証
+  VERIFIED // 検証済み
+  REJECTED // 却下
+}
+
+enum UserRole {
+  VIEWER      // 閲覧者
+  EDITOR      // 編集者
+  COORDINATOR // 地域コーディネーター
+  ADMIN       // 管理者
+}

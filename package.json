@@ -12,6 +12,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "validate": "yarn typecheck && yarn lint && yarn format:check",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate",
     "docs:dev": "cd docs && yarn start",
     "docs:build": "cd docs && yarn build",
     "docs:serve": "cd docs && yarn serve"
@@ -22,6 +25,7 @@
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.3.2",
     "@mui/material-nextjs": "^7.3.2",
+    "@prisma/client": "^6.16.2",
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0"
@@ -35,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "prettier": "^3.6.2",
+    "prisma": "^6.16.2",
     "typescript": "^5"
   }
 }
