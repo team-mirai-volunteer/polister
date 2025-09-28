@@ -1,10 +1,11 @@
-リリース準備（<%= Time.now.getlocal.strftime('%Y-%m-%d') %>）
+<% release_time = Time.now.getlocal %>
+リリース準備（<%= release_time.strftime('%Y-%m-%d') %>）
 
 このPRは、developブランチからmainブランチへのリリースを行うためのものです。
 
 ## リリース日時
 
-<%= Time.now.getlocal.strftime('%Y年%m月%d日 %H:%M:%S %Z') %>
+<%= release_time.strftime('%Y年%m月%d日 %H:%M:%S %Z') %>
 
 ## マージ対象のPull Request一覧
 

@@ -26,6 +26,15 @@ jobs:
       - name: Install git-pr-release
         run: gem install git-pr-release
 
+      - name: Ensure release label exists
+        run: |
+          gh label create release \
+            --description "Automated release PR" \
+            --color "0466C8" \
+            --force
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release Pull Request
         env:
           GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
