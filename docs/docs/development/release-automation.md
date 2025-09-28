@@ -157,7 +157,7 @@ jobs:
 
 ### リリースPRでCIが起動しない場合
 
-- 既定の`GITHUB_TOKEN`が起点のイベントは別Workflowを起動しません。必要に応じてPersonal Access Tokenの使用や`pull_request_target`の設計を検討してください（セキュリティに配桞）。
+- 既定の`GITHUB_TOKEN`が起点のイベントは別Workflowを起動しません。必要に応じてPersonal Access Tokenの使用や`pull_request_target`の設計を検討してください（セキュリティに留意してください）。
 
 ### テンプレートエラー
 
