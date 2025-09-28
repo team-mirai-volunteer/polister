@@ -1,0 +1,33 @@
+<% release_time = Time.now.getlocal %>
+リリース準備（<%= release_time.strftime('%Y-%m-%d') %>）
+
+このPRは、developブランチからmainブランチへのリリースを行うためのものです。
+
+## リリース日時
+
+<%= release_time.strftime('%Y年%m月%d日 %H:%M:%S %Z') %>
+
+## マージ対象のPull Request一覧
+
+以下のPRがこのリリースに含まれます：
+
+<% pull_requests.each do |pr| %>
+- [ ] #<%= pr.number %> <%= pr.title %> (@<%= pr.user.login %>)
+  - マージ日時: <%= pr.merged_at ? pr.merged_at.strftime('%Y-%m-%d %H:%M') : 'N/A' %>
+<% end %>
+
+## リリース前チェックリスト
+
+- [ ] すべてのCIチェックが通過していることを確認
+- [ ] 各PRの変更内容を確認
+- [ ] ドキュメントの更新が必要な場合は対応済みであることを確認
+- [ ] 本番環境への影響を考慮し、必要に応じて関係者に通知
+
+## 注意事項
+
+このPRをマージすると、main（本番）ブランチに変更が反映されます。
+慎重にレビューしてからマージしてください。
+
+---
+
+🤖 このPRは自動生成されました。

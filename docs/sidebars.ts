@@ -51,6 +51,7 @@ const sidebars: SidebarsConfig = {
       label: "開発ガイド",
       items: [
         "development/index",
+        "development/release-automation",
         {
           type: "category",
           label: "データベース",
