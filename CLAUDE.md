@@ -97,6 +97,124 @@ GitHubリポジトリの Settings → Branches で以下を設定：
 
 同様の設定を`main`ブランチにも適用します。
 
+## CodeRabbitレビュー対応
+
+### レビュー指摘の確認
+
+```bash
+# PRのレビューコメントを確認
+gh pr view <PR番号> --comments
+
+# APIでコメント詳細を取得
+gh api repos/team-mirai-volunteer/polister/pulls/<PR番号>/comments
+```
+
+### 対応プロセス
+
+1. **レビュー指摘を確認**: 全ての指摘（Major、Minor、Nitpick）を確認
+2. **設計判断が必要な場合**: コメントで説明し`@coderabbitai`メンション
+3. **修正を実施**: コードを修正してコミット
+4. **対応内容を報告**: コメントで修正内容を説明
+
+### 設計判断の文書化
+
+重要な設計判断は以下に記録：
+
+- **コメント**: PRのレビュースレッドで説明
+- **Issue**: 関連Issueを更新して要件を明確化
+- **ドキュメント**: 該当ドキュメントに理由を記載
+
+## Prisma/データベース
+
+### スキーマ配置
+
+- **場所**: `src/infrastructure/database/schema.prisma`（規約で必須）
+- **理由**: Clean Architectureのインフラ層として配置
+
+### 開発フロー
+
+```bash
+# 開発中（スキーマが頻繁に変わる）
+yarn db:push          # スキーマをDBに反映
+yarn db:generate      # Prismaクライアント生成
+yarn db:studio        # データ確認
+
+# 本番デプロイ前（スキーマが安定後）
+npx prisma migrate dev --name description
+npx prisma migrate deploy
+```
+
+### PostGIS空間インデックス
+
+**必須**: location、polygon等の空間カラムには必ずGISTインデックスを設定
+
+```prisma
+model Board {
+  location Unsupported("geography(POINT, 4326)")
+  @@index([location], type: Gist)  // 必須
+}
+```
+
+### 論理削除の設計方針
+
+#### 論理削除を使用するモデル
+
+- **User**: 検証履歴・画像データの保全のため
+- **Board**: 削除履歴の追跡のため
+
+```prisma
+model User {
+  deletedAt DateTime? @map("deleted_at")
+}
+```
+
+#### カスケード削除の判断基準
+
+| データの性質 | カスケード削除 | 例 |
+|------------|--------------|---|
+| 一時的な認証情報 | ✅ 維持 | Account、Session |
+| 現在の設定値 | ✅ 維持 | UserLocation |
+| 永続的な履歴 | ❌ 除去 | Verification、BoardImage |
+
+**理由**: 検証履歴と証拠写真は監査証跡として永続的に保持
+
+## Issue管理
+
+### スコープ管理
+
+- **原則**: 1つのPRは1つのIssueに集中
+- **スコープ外の変更**: 別Issueを作成して分離
+- **例**: データベース設計PRに図のズーム機能を含めない
+
+### Issueの更新
+
+```bash
+# Issueの内容を更新
+gh issue edit <番号> --body "$(cat <<'EOF'
+更新内容...
+EOF
+)"
+```
+
+設計判断や要件変更があった場合は、Issueを更新して記録します。
+
+## ドキュメント作成
+
+### 標準構成
+
+技術ドキュメントには以下を含める：
+
+1. **概要図**: Mermaid ER図、アーキテクチャ図
+2. **詳細説明**: テーブル定義、カラム説明
+3. **使用例**: コードサンプル、クエリ例
+4. **トラブルシューティング**: よくある問題と解決方法
+
+### Mermaid図
+
+- テーブル構造: ER図
+- フロー: flowchart、sequenceDiagram
+- 状態遷移: stateDiagram
+
 ## プロジェクト概要
 
 これは TypeScript サポートを持つ Next.js 15.5.4 アプリケーションで、React 19.1.0 を使用しています。パッケージ管理には Yarn を使用し、より高速な開発ビルドのために Turbopack を含んでいます。
