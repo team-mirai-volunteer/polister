@@ -49,7 +49,19 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "開発ガイド",
-      items: ["development/index", "development/release-automation"],
+      items: [
+        "development/index",
+        "development/release-automation",
+        {
+          type: "category",
+          label: "データベース",
+          items: [
+            "development/database/setup",
+            "development/database/schema",
+            "development/database/spatial",
+          ],
+        },
+      ],
     },
   ],
 
