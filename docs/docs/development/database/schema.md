@@ -172,6 +172,7 @@ erDiagram
 | verification_count | Integer   | 検証実施回数               |
 | created_at         | Timestamp | 作成日時                   |
 | updated_at         | Timestamp | 更新日時                   |
+| deleted_at         | Timestamp | 削除日時（論理削除）       |
 | email_verified     | Timestamp | メール認証日時             |
 
 **インデックス**:
@@ -333,16 +334,26 @@ CREATE INDEX idx_municipalities_polygon ON municipalities USING GIST(polygon);
 関連データの整合性を保つため、適切なカスケード設定：
 
 - **Board削除時**: 関連するBoardImage、Verificationも削除
-- **User削除時**: 関連するVerification、UserLocationも削除
+- **User削除時**:
+  - **物理削除は行わない**（論理削除を使用）
+  - Account、Sessionのみカスケード削除
+  - Verification、BoardImageは保持（検証履歴の保全）
+  - UserLocationはカスケード削除
 - **Municipality削除時**: 参照整合性エラー（先にBoardを削除する必要あり）
 
-### ソフトデリート
+### ソフトデリート（論理削除）
 
-Boardテーブルは論理削除（`deleted_at`）をサポート：
+Board、Userテーブルは論理削除（`deleted_at`）をサポート：
 
 ```typescript
-// 論理削除
+// Boardの論理削除
 await prisma.board.update({
+  where: { id },
+  data: { deletedAt: new Date() },
+});
+
+// Userの論理削除
+await prisma.user.update({
   where: { id },
   data: { deletedAt: new Date() },
 });
@@ -350,6 +361,33 @@ await prisma.board.update({
 // 削除済みを除外
 await prisma.board.findMany({
   where: { deletedAt: null },
+});
+
+await prisma.user.findMany({
+  where: { deletedAt: null },
+});
+```
+
+**Userの論理削除の重要性**:
+
+ユーザーを物理削除すると、以下のデータ整合性の問題が発生します：
+
+1. **検証履歴の喪失**: 過去の検証記録から検証者情報が失われる
+2. **信頼度の低下**: 誰が検証したか不明になり、データの信頼度が判断できない
+3. **監査証跡の欠損**: データ品質管理の履歴が追跡できない
+
+そのため、ユーザーは論理削除し、検証記録・画像データは保持します。GDPR等の削除要求には、個人情報（email、name、image）のみを匿名化して対応します。
+
+```typescript
+// GDPR対応の匿名化
+await prisma.user.update({
+  where: { id },
+  data: {
+    email: `deleted-${id}@deleted.local`,
+    name: "削除されたユーザー",
+    image: null,
+    deletedAt: new Date(),
+  },
 });
 ```
 

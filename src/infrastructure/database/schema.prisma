@@ -64,6 +64,7 @@ model User {
   verificationCount Int       @default(0) @map("verification_count")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
   emailVerified     DateTime? @map("email_verified")
 
   accounts      Account[]
@@ -133,7 +134,7 @@ model Verification {
   createdAt   DateTime  @default(now()) @map("created_at")
 
   board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
 
   @@index([boardId])
   @@index([userId])
