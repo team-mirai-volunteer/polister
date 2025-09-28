@@ -57,6 +57,28 @@
 
 - **ターゲットブランチ**: `develop`
 
+### PRマージ前の最終確認
+
+Pull Requestを作成する前に、以下を必ず確認：
+
+```bash
+# 全チェックを実行
+yarn validate
+
+# 結果確認
+# ✅ lint: エラーなし
+# ✅ typecheck: エラーなし
+# ✅ format:check: フォーマット済み
+```
+
+**マージ前チェックリスト**:
+
+- [ ] `yarn validate`を実行して全て通過
+- [ ] CIチェックが全て通過（ESLint、TypeScript、Prettier）
+- [ ] CodeRabbitのレビュー指摘に対応済み
+- [ ] CLAチェックボックスにチェック済み
+- [ ] スコープ外の変更が含まれていないか確認
+
 ## コード品質チェック
 
 - **実行ディレクトリ**: 必ずプロジェクトルート（`/Users/seiichiro/apps/team-mirai/polister`）で実行
@@ -170,11 +192,11 @@ model User {
 
 #### カスケード削除の判断基準
 
-| データの性質 | カスケード削除 | 例 |
-|------------|--------------|---|
-| 一時的な認証情報 | ✅ 維持 | Account、Session |
-| 現在の設定値 | ✅ 維持 | UserLocation |
-| 永続的な履歴 | ❌ 除去 | Verification、BoardImage |
+| データの性質     | カスケード削除 | 例                       |
+| ---------------- | -------------- | ------------------------ |
+| 一時的な認証情報 | ✅ 維持        | Account、Session         |
+| 現在の設定値     | ✅ 維持        | UserLocation             |
+| 永続的な履歴     | ❌ 除去        | Verification、BoardImage |
 
 **理由**: 検証履歴と証拠写真は監査証跡として永続的に保持
 
