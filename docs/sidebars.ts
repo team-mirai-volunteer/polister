@@ -49,7 +49,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "開発ガイド",
-      items: ["development/index"],
+      items: ["development/index", "development/release-automation"],
     },
   ],
 
