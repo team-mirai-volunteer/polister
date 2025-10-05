@@ -816,6 +816,12 @@ async createBoard(data: BoardData): Promise<OperationResult<Board>> {
 - **インターフェース活用**: 全ての依存関係をインターフェースで定義
 - **strict mode**: TypeScriptのstrictモードを有効化
 
+### 5. Barrelファイルの使用禁止
+
+- `index.ts`や`index.tsx`で再エクスポートのみを行うBarrelファイルは作成しない
+- 直接的なインポートパスを用いて依存関係を明示し、不要な依存やカバレッジ欠落を防ぐ
+- 共通モジュールが必要な場合でも、名前付きファイルを介して明示的にエクスポートを管理する
+
 ## 今後の実装計画
 
 ### Phase 1: MVP
