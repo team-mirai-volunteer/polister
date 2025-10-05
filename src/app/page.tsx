@@ -8,6 +8,21 @@ import {
   Typography,
 } from "@mui/material";
 
+import { Suspense } from "react";
+
+import MapboxMap from "@/components/map/MapboxMap";
+
+const MapFallback = () => (
+  <Box
+    sx={{
+      width: "100%",
+      height: { xs: 320, md: 520 },
+      borderRadius: 2,
+      bgcolor: "grey.100",
+    }}
+  />
+);
+
 export default function Home() {
   return (
     <Box>
@@ -55,6 +70,19 @@ export default function Home() {
             <br />• Docusaurus ドキュメント
           </Typography>
         </Paper>
+
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h4" component="h2" gutterBottom>
+            ポスター掲示板向け地図ビュー
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            Mapbox GL JS
+            を利用し、地図と衛星写真を切り替えながらポスター掲示板の位置確認に適したスタイルを提供します。
+          </Typography>
+          <Suspense fallback={<MapFallback />}>
+            <MapboxMap />
+          </Suspense>
+        </Box>
       </Container>
     </Box>
   );
