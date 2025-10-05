@@ -21,14 +21,17 @@ PR #$1 に対する Polister プロジェクトの CodeRabbit レビューコメ
 **重要**: 必ず `--paginate` オプションを付与して全件取得してください（デフォルトは30件のみ）。
 
 ```bash
+# GitHubログイン名を取得（必要に応じて環境変数へ保存）
+GH_USER=$(gh api user --jq '.login')
+
 # コメント総数の確認
 gh api --paginate repos/team-mirai-volunteer/polister/pulls/$1/comments | jq -s 'add | length'
 
 # 未返信の CodeRabbit コメント一覧
 gh api --paginate repos/team-mirai-volunteer/polister/pulls/$1/comments | \
-  jq -sr 'add |
-    [.[] | select(.user.login == "coderabbitai[bot]" and (.body | startswith("@seiichi3141") | not))] as $all |
-    [.[] | select(.user.login == "seiichi3141" and .in_reply_to_id)] | map(.in_reply_to_id) as $replied |
+  jq --arg user "$GH_USER" -sr 'add |
+    [.[] | select(.user.login == "coderabbitai[bot]" and (.body | startswith("@" + $user) | not))] as $all |
+    [.[] | select(.user.login == $user and .in_reply_to_id)] | map(.in_reply_to_id) as $replied |
     $all | map(select([.id] | inside($replied) | not)) |
     .[] | "ID: \(.id) | File: \(.path // "(no file)"):\(.line // .start_line // "-") | Severity: " + (.body | split("\n")[0])'
 ```
