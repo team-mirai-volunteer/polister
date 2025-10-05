@@ -37,6 +37,7 @@
 
 ### 重要なドキュメント
 
+- [コーディング規約](./guidelines/coding-conventions.md)
 - [DDD導入ガイド](./guidelines/ddd-guide.md)
 - [ADR テンプレート](./decisions/000-adr-template.md)
 
