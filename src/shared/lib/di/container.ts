@@ -45,9 +45,52 @@ class SystemDateProvider implements DateProvider {
 
 const globalForPrisma = globalThis as typeof globalThis & {
   prismaClient?: PrismaClient;
+  prismaDisconnectRegistered?: boolean;
 };
 
 const isPrismaDisabled = process.env.DISABLE_PRISMA === "true";
+
+const registerPrismaShutdownHook = (client: PrismaClient): void => {
+  if (typeof process === "undefined") {
+    return;
+  }
+
+  if (globalForPrisma.prismaDisconnectRegistered) {
+    return;
+  }
+
+  const disconnect = async (): Promise<void> => {
+    try {
+      await client.$disconnect();
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(
+          "Prisma Client の切断に失敗しました。",
+          error.message,
+          error.stack
+        );
+        return;
+      }
+
+      console.error("Prisma Client の切断に失敗しました。", error);
+    }
+  };
+
+  process.once("beforeExit", () => {
+    void disconnect();
+  });
+
+  const terminationSignals: NodeJS.Signals[] = ["SIGINT", "SIGTERM"];
+  terminationSignals.forEach((signal) => {
+    process.once(signal, () => {
+      void disconnect().finally(() => {
+        process.exit(0);
+      });
+    });
+  });
+
+  globalForPrisma.prismaDisconnectRegistered = true;
+};
 
 const getPrismaClient = (): PrismaClient => {
   if (isPrismaDisabled) {
@@ -71,7 +114,14 @@ const getPrismaClient = (): PrismaClient => {
     }
   }
 
-  return globalForPrisma.prismaClient;
+  const prismaClient = globalForPrisma.prismaClient;
+  if (!prismaClient) {
+    throw new Error("Prisma Client の初期化に失敗しました。");
+  }
+
+  registerPrismaShutdownHook(prismaClient);
+
+  return prismaClient;
 };
 
 const registerDefaults = (target: DependencyContainer): void => {

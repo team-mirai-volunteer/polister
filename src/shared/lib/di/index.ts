@@ -1,2 +1,2 @@
-export { getContainer, resolve, setupDI } from "./container";
-export * from "./tokens";
+export { getContainer, resolve, setupDI } from "@/shared/lib/di/container";
+export * from "@/shared/lib/di/tokens";
