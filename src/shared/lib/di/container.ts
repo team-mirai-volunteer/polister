@@ -9,8 +9,8 @@ import type {
   ResolveToken,
   Token,
   TokenMap,
-} from "./tokens";
-import { TOKENS } from "./tokens";
+} from "@/shared/lib/di/tokens";
+import { TOKENS } from "@/shared/lib/di/tokens";
 
 class ConsoleLogger implements AppLogger {
   debug(message: string, ...meta: unknown[]): void {
