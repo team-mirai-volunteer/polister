@@ -86,25 +86,26 @@ yarn format:check
 
 ### 1行返信例
 
+GitHub の review comment への返信は `POST /repos/:owner/:repo/pulls/comments/:id/replies` を JSON で呼び出します。`--input` とヒアドキュメントを使うと日本語や改行を安全に扱えます。
+
 ```bash
-gh api -X POST repos/team-mirai-volunteer/polister/pulls/$1/comments/<コメントID>/replies \
-  -f body="ご指摘ありがとうございます。該当箇所を修正し、yarn format:check を実行しました。対応コミット: abc1234"
+gh api repos/team-mirai-volunteer/polister/pulls/comments/<コメントID>/replies \
+  --method POST --input - <<'EOF'
+{
+  "body": "ご指摘ありがとうございます。該当箇所を修正し、yarn format:check を実行しました。対応コミット: abc1234"
+}
+EOF
 ```
 
 ### 詳細返信例
 
 ```bash
-gh api -X POST repos/team-mirai-volunteer/polister/pulls/$1/comments/<コメントID>/replies \
-  -f body="$(cat <<'EOT'
-ご指摘ありがとうございます。以下の内容で対応しました。
-
-- 掲示板集約の検証ロジックを修正
-- DDD導入ガイドの記述を更新
-
-yarn validate を実行し、lint / typecheck / format:check が通過しています。
-対応コミット: abc1234
-EOT
-)"
+gh api repos/team-mirai-volunteer/polister/pulls/comments/<コメントID>/replies \
+  --method POST --input - <<'EOF'
+{
+  "body": "ご指摘ありがとうございます。以下の内容で対応しました。\n\n- 掲示板集約の検証ロジックを修正\n- DDD導入ガイドの記述を更新\n\nyarn validate を実行し、lint / typecheck / format:check が通過しています。\n対応コミット: abc1234"
+}
+EOF
 ```
 
 ### Issue化する場合
@@ -112,8 +113,12 @@ EOT
 対応を後回しにする場合は Issue を作成し、URL と意図を明記してください。
 
 ```bash
-gh api -X POST repos/team-mirai-volunteer/polister/pulls/$1/comments/<コメントID>/replies \
-  -f body="ご指摘ありがとうございます。対応には追加調査が必要なため Issue #XX を作成しました。https://github.com/team-mirai-volunteer/polister/issues/XX"
+gh api repos/team-mirai-volunteer/polister/pulls/comments/<コメントID>/replies \
+  --method POST --input - <<'EOF'
+{
+  "body": "ご指摘ありがとうございます。対応には追加調査が必要なため Issue #XX を作成しました。https://github.com/team-mirai-volunteer/polister/issues/XX"
+}
+EOF
 ```
 
 ## 対応パターン

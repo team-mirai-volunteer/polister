@@ -43,6 +43,17 @@
 - 各コンテキストには自身のドメインモデルを持たせ、他コンテキストのモデルを直接再利用しない。必要に応じて値オブジェクトを再定義する。
 - コンテキスト間の整合性はアプリケーション層で担保し、コンテキスト固有の不変条件は各集約が内包する。
 
+### 主要ユビキタス言語と責務
+
+`docs/docs/requirements/project-overview.md` の用語集と整合を取り、以下の語彙を中心に設計・レビューで利用する。
+
+| 用語                                | 定義                                                     | 所属コンテキスト / 役割                                    | ワークフローへの影響                                           |
+| ----------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
+| 検証依頼（Verification Request）    | サポーターへ掲示板の現地確認を依頼するドキュメント。     | `features/verification` のユースケースで生成・受付。       | 承認ステータスの遷移条件となり、未対応の場合は公開停止を判断。 |
+| 信頼度レベル（Trust Level）         | データ品質を示す評価指標（公式データ・現地確認済み等）。 | ドメインサービスで算出し、`features/board` の集約に保持。  | 公開可否や通知優先度を決め、検証依頼の再発行条件に利用。       |
+| インポートジョブ（Import Job）      | 外部データを取り込む処理単位（CSV / KML 等）。           | `features/import` の集約として状態遷移とエラーログを管理。 | エラー時のリトライや差分反映フローを開始するトリガー。         |
+| 地域コーディネーター（Coordinator） | 特定地域の承認とサポーター管理を担うロール。             | `features/municipality` と認可サービスで権限を判定。       | 検証依頼の配信、信頼度承認、例外対応の決裁を行う。             |
+
 ### 層構造と責務の整理
 
 - **ドメイン層**: エンティティ、値オブジェクト、ドメインサービス、ドメインイベント。
@@ -89,8 +100,16 @@
 - データと不変条件を1つの型として表現し、イミュータブルに保つ。
 - `equals` / `toString` 相当の振る舞いを実装し、テストしやすくする。
 - 値検証をコンストラクタ（または `create` ファクトリ）で行い、無効な値の生成を防ぐ。
+- ドメイン固有の例外クラスを併せて定義し、ガード条件で意図を明確にする。
 
 ```typescript title="例: BoardLocation値オブジェクト"
+export class BoardDomainError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BoardDomainError";
+  }
+}
+
 export class BoardLocation {
   private constructor(
     public readonly latitude: number,
@@ -101,6 +120,7 @@ export class BoardLocation {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
       throw new BoardDomainError("座標が数値ではありません");
     }
+    // 日本国内の座標範囲（概算値）を超えていないか検証する
     if (lat < 20 || lat > 46 || lng < 122 || lng > 154) {
       throw new BoardDomainError("日本国内の座標範囲を超えています");
     }
@@ -115,6 +135,35 @@ export class BoardLocation {
 - ステートレスに保ち、副作用は返却値に含めるか、ドメインイベントを発行して扱う。
 - インターフェースをドメイン層に置き、実装をインフラ層／アプリケーション層で切り替えられるようにする（例: 地理座標計算、外部API連携が必要なバリデーションなど）。
 
+ドメインサービスは集約の境界では扱いにくい補助的なロジックを切り出す。地理的な距離計算のように外部依存を伴う場合でも、インターフェースを定義しておけばドメイン層は契約にのみ依存できる。
+
+```typescript title="例: 掲示板距離判定のドメインサービス"
+export interface IBoardProximityService {
+  calculateDistance(origin: BoardLocation, target: BoardLocation): number;
+  findNearbyBoards(center: BoardLocation, radiusKm: number): Promise<Board[]>;
+}
+
+// 実装はアプリケーション/インフラ層で提供し、副作用を隔離する
+export class BoardProximityService implements IBoardProximityService {
+  // GeoDistanceCalculator / BoardQueryService はインフラ層のインターフェース
+  constructor(
+    private readonly distanceCalculator: GeoDistanceCalculator,
+    private readonly boardQuery: BoardQueryService
+  ) {}
+
+  calculateDistance(origin: BoardLocation, target: BoardLocation): number {
+    return this.distanceCalculator.calculateKm(origin, target);
+  }
+
+  async findNearbyBoards(
+    center: BoardLocation,
+    radiusKm: number
+  ): Promise<Board[]> {
+    return this.boardQuery.findWithinRadius(center, radiusKm);
+  }
+}
+```
+
 ## アプリケーション層との協調
 
 - ユースケースは「集約ロード → ドメイン操作 → 集約保存 → ドメインイベント発行 → 2次的処理」の順に整理する。
@@ -126,6 +175,41 @@ export class BoardLocation {
 - ドメインイベントは `features/<feature>/domain/events` に配置し、イベントごとのペイロードを定義する。
 - イベントハンドラはアプリケーション層またはインフラ層に実装し、副作用（メール送信、ワークフロー起動等）を処理する。
 - イベント発火は集約ルートのメソッド内で行い、アプリケーション層にイベントが渡る仕組み（例: `DomainEventPublisher`）を用意する。
+
+```typescript title="例: Boardドメインのイベント定義と発火"
+// features/board/domain/events/BoardVerifiedEvent.ts
+export class BoardVerifiedEvent {
+  constructor(
+    public readonly boardId: string,
+    public readonly verifiedBy: string,
+    public readonly verifiedAt: Date,
+    public readonly trustLevel: TrustLevel
+  ) {}
+}
+
+export class Board {
+  private readonly domainEvents: DomainEvent[] = [];
+
+  verify(verifierId: string, trustLevel: TrustLevel): void {
+    // 状態更新ロジック（承認日時や信頼度の更新など）
+    this.domainEvents.push(
+      new BoardVerifiedEvent(this.id, verifierId, new Date(), trustLevel)
+    );
+  }
+
+  pullDomainEvents(): DomainEvent[] {
+    const events = [...this.domainEvents];
+    this.domainEvents.length = 0;
+    return events;
+  }
+}
+
+// アプリケーション層でイベントを購読し、副作用を担当する
+DomainEventPublisher.subscribe(BoardVerifiedEvent, async (event) => {
+  await verificationMailer.sendCompletedNotice(event.boardId, event.verifiedBy);
+  await auditLogger.recordTrustLevel(event.boardId, event.trustLevel);
+});
+```
 
 ## テスト戦略
 
