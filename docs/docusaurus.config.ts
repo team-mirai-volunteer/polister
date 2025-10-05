@@ -51,6 +51,8 @@ const config: Config = {
 
   themes: ["@docusaurus/theme-mermaid"],
 
+  clientModules: [require.resolve("./src/client/index.ts")],
+
   themeConfig: {
     // Replace with your project's social card
     image: "img/docusaurus-social-card.jpg",

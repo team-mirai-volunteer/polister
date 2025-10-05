@@ -1,0 +1,164 @@
+# CodeRabbit Configuration for Polister Project
+language: "ja-JP"
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "wip"
+      - "WIP"
+      - "draft"
+      - "Draft"
+    base_branches:
+      - develop
+      - main
+  tools:
+    eslint:
+      enabled: true
+    ruff:
+      enabled: false
+    gitleaks:
+      enabled: true
+    markdownlint:
+      enabled: true
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: "default"
+      enabled_rules: []
+      disabled_rules: []
+      enabled_categories: []
+      disabled_categories: []
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "**/CLAUDE.md"
+      - "**/docs/architecture/guidelines/**"
+      - "**/CLA.md"
+
+# Polisterプロジェクト固有の設定
+path_instructions:
+  - path: "src/features/**/domain/**"
+    instructions: |
+      - ドメイン層のコードレビュー
+      - 外部依存がないことを確認（PrismaClient、外部API等への直接依存を禁止）
+      - 純粋なビジネスロジックのみ
+      - any型、as any、@ts-ignoreの使用を禁止
+      - テストカバレッジを確認
+      - ビジネスルールの明確性と正確性
+
+  - path: "src/features/**/application/**"
+    instructions: |
+      - アプリケーション層のコードレビュー
+      - ユースケースの適切な実装
+      - インターフェースへの依存を確認（実装クラスへの直接依存を禁止）
+      - エラーハンドリングの実装（try-catch、OperationResultパターン）
+      - トランザクション管理の適切性
+      - any型の使用を禁止
+
+  - path: "src/features/**/infrastructure/**"
+    instructions: |
+      - インフラ層のコードレビュー
+      - インターフェースを正しく実装しているか確認
+      - PostgreSQL/PostGISの適切な使用（空間クエリ、インデックス）
+      - エラーハンドリングの実装を確認
+      - SQLインジェクション対策
+      - N+1問題の回避
+
+  - path: "src/infrastructure/**"
+    instructions: |
+      - 共有インフラのコードレビュー
+      - 外部APIクライアントの実装確認
+      - データベース設定の妥当性
+      - 接続プールの適切な管理
+      - リトライロジックの実装
+
+  - path: "src/app/api/**"
+    instructions: |
+      - API Routeのコードレビュー
+      - Use Caseを通じた実装を確認（直接Repository呼び出しを禁止）
+      - エラーレスポンスの適切な処理（HTTPステータスコード）
+      - バリデーションの実装（入力検証、認証・認可）
+      - レート制限の考慮
+      - セキュリティヘッダーの設定
+
+  - path: "src/app/**/*.tsx"
+    instructions: |
+      - Reactコンポーネントのレビュー
+      - アクセシビリティの確認（ARIA属性、セマンティックHTML）
+      - パフォーマンス最適化（useMemo、useCallback、React.memo）
+      - Server ComponentsとClient Componentsの適切な使い分け
+      - Material UIのベストプラクティス
+
+  - path: "src/shared/**"
+    instructions: |
+      - 共有コードのレビュー
+      - 汎用性と再利用性の確認
+      - 型安全性の確保
+      - 適切なドキュメントコメント
+
+  - path: "docs/**"
+    instructions: |
+      - ドキュメントのレビュー
+      - 日本語の文法と表現を確認
+      - Mermaid図の正確性と可読性
+      - リンク切れがないか確認
+      - コード例の正確性
+
+  - path: "**/*.test.ts"
+    instructions: |
+      - テストコードのレビュー
+      - jest-mock-extendedの適切な使用
+      - モックの型安全性を確認（DeepMockProxy使用）
+      - テストケースの網羅性（正常系、異常系、境界値）
+      - テスト名の明確性（日本語での記述）
+      - アサーションの適切性
+
+  - path: ".github/workflows/**"
+    instructions: |
+      - GitHub Actionsワークフローのレビュー
+      - セキュリティ（secrets管理、権限設定）
+      - パフォーマンス（キャッシュ活用、並列実行）
+      - エラーハンドリング
+
+  - path: "**/*.prisma"
+    instructions: |
+      - Prismaスキーマのレビュー
+      - インデックスの適切性
+      - リレーションの正確性
+      - マイグレーションの安全性
+
+# レビュー対象外のパス
+path_filters:
+  - "!node_modules/**"
+  - "!.next/**"
+  - "!docs/.docusaurus/**"
+  - "!docs/build/**"
+  - "!*.lock"
+  - "!yarn.lock"
+  - "!package-lock.json"
+
+# レビュー対象ファイル
+enabled_file_types:
+  - ".ts"
+  - ".tsx"
+  - ".js"
+  - ".jsx"
+  - ".md"
+  - ".mdx"
+  - ".yaml"
+  - ".yml"
+  - ".json"

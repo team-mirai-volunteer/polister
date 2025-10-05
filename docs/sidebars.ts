@@ -36,12 +36,34 @@ const sidebars: SidebarsConfig = {
           label: "Architecture Decision Records (ADR)",
           items: ["architecture/decisions/adr-template"],
         },
+        {
+          type: "category",
+          label: "実装ガイドライン",
+          items: [
+            "architecture/guidelines/clean-architecture-guide",
+            "architecture/guidelines/coding-conventions",
+            "architecture/guidelines/ddd-guide",
+            "architecture/guidelines/testing-guide",
+          ],
+        },
       ],
     },
     {
       type: "category",
       label: "開発ガイド",
-      items: ["development/index"],
+      items: [
+        "development/index",
+        "development/release-automation",
+        {
+          type: "category",
+          label: "データベース",
+          items: [
+            "development/database/setup",
+            "development/database/schema",
+            "development/database/spatial",
+          ],
+        },
+      ],
     },
   ],
 

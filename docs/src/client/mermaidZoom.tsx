@@ -1,16 +1,16 @@
+import { createRoot } from "react-dom/client";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function Root({ children }: { children: React.ReactNode }) {
+function MermaidLightbox() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentSvg, setCurrentSvg] = useState<string>("");
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // ダークモードの検出
     const checkDarkMode = () => {
       const isDark =
         document.documentElement.getAttribute("data-theme") === "dark";
@@ -19,7 +19,6 @@ export default function Root({ children }: { children: React.ReactNode }) {
 
     checkDarkMode();
 
-    // data-theme属性の変更を監視
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -42,9 +41,17 @@ export default function Root({ children }: { children: React.ReactNode }) {
         (svg as HTMLElement).style.cursor = "zoom-in";
 
         svg.addEventListener("click", () => {
-          // SVGをData URLに変換
+          const svgElement = svg as SVGSVGElement;
+          const bbox = svgElement.getBBox();
+          const width = Math.max(bbox.width, 1920);
+          const height = Math.max(bbox.height, 1080);
+
+          const clonedSvg = svg.cloneNode(true) as SVGElement;
+          clonedSvg.setAttribute("width", width.toString());
+          clonedSvg.setAttribute("height", height.toString());
+
           const serializer = new XMLSerializer();
-          const svgString = serializer.serializeToString(svg);
+          const svgString = serializer.serializeToString(clonedSvg);
           const svgBlob = new Blob([svgString], {
             type: "image/svg+xml;charset=utf-8",
           });
@@ -85,31 +92,50 @@ export default function Root({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <>
-      {children}
-      <Lightbox
-        open={lightboxOpen}
-        close={() => setLightboxOpen(false)}
-        slides={[{ src: currentSvg }]}
-        plugins={[Zoom]}
-        zoom={{
-          maxZoomPixelRatio: 3,
-          scrollToZoom: true,
-        }}
-        carousel={{ finite: true }}
-        controller={{ closeOnBackdropClick: true }}
-        render={{
-          buttonPrev: () => null,
-          buttonNext: () => null,
-        }}
-        styles={{
-          root: {
-            "--yarl__color_backdrop": isDarkMode
-              ? "rgba(0, 0, 0, 0.9)"
-              : "rgba(255, 255, 255, 0.95)",
-          } as Record<string, string>,
-        }}
-      />
-    </>
+    <Lightbox
+      open={lightboxOpen}
+      close={() => setLightboxOpen(false)}
+      slides={[{ src: currentSvg }]}
+      plugins={[Zoom]}
+      zoom={{
+        maxZoomPixelRatio: 5,
+        scrollToZoom: true,
+        doubleClickMaxStops: 3,
+      }}
+      carousel={{
+        finite: true,
+        imageFit: "contain",
+      }}
+      controller={{ closeOnBackdropClick: true }}
+      render={{
+        buttonPrev: () => null,
+        buttonNext: () => null,
+      }}
+      styles={{
+        root: {
+          "--yarl__color_backdrop": isDarkMode
+            ? "rgba(0, 0, 0, 0.9)"
+            : "rgba(255, 255, 255, 0.95)",
+        } as Record<string, string>,
+      }}
+    />
   );
+}
+
+export default function initMermaidZoom(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const containerId = "mermaid-lightbox-container";
+  let container = document.getElementById(containerId);
+
+  if (!container) {
+    container = document.createElement("div");
+    container.id = containerId;
+    document.body.appendChild(container);
+
+    const root = createRoot(container);
+    root.render(<MermaidLightbox />);
+  }
 }

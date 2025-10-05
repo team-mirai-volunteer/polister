@@ -1,36 +1,189 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Polister
 
-## Getting Started
+**Politics + Poster = Polister**
 
-First, run the development server:
+選挙ポスター掲示板の位置情報をデジタル化し、オープンデータとして提供するWebサービス
+
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![CI](https://github.com/team-mirai-volunteer/polister/actions/workflows/ci.yml/badge.svg)](https://github.com/team-mirai-volunteer/polister/actions/workflows/ci.yml)
+
+## 📖 概要
+
+Polisterは、全国の選挙ポスター掲示板の位置情報を管理・公開するプラットフォームです。
+
+### 主な機能
+
+- 🗺️ **地図表示**: Mapbox GL JSによるインタラクティブな地図
+- 📍 **位置管理**: 掲示板の位置情報の登録・編集・検索
+- ✅ **検証システム**: 地域ベースの検証依頼と自動承認
+- 📊 **データ品質**: 信頼度レベルによるデータ管理
+- 🔄 **データインポート**: CSV、Excel、KML形式の一括登録
+- 🌐 **オープンデータ**: API経由でのデータアクセス
+
+### 運営
+
+新党「チームみらい」のサポーター主導プロジェクト
+
+## 🚀 クイックスタート
+
+### 前提条件
+
+- Node.js 20.x以上
+- Yarn
+
+### インストール
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# リポジトリをクローン
+git clone https://github.com/team-mirai-volunteer/polister.git
+cd polister
+
+# 依存関係をインストール
+yarn install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 開発サーバーの起動
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Next.jsアプリケーション
+yarn dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# ドキュメントサイト
+yarn docs:dev
+```
 
-## Learn More
+- アプリケーション: http://localhost:3000
+- ドキュメント: http://localhost:3000（docsディレクトリ内で起動）
 
-To learn more about Next.js, take a look at the following resources:
+## 📚 ドキュメント
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+詳細なドキュメントは以下で公開しています：
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **オンライン**: https://team-mirai-volunteer.github.io/polister/
+- **ローカル**: `yarn docs:dev`で起動
 
-## Deploy on Vercel
+### 主要ドキュメント
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [要件定義書](https://team-mirai-volunteer.github.io/polister/requirements/project-overview)
+- [アーキテクチャガイド](https://team-mirai-volunteer.github.io/polister/architecture/)
+- [クリーンアーキテクチャ実装ガイド](https://team-mirai-volunteer.github.io/polister/architecture/guidelines/clean-architecture-guide)
+- [開発ガイド](https://team-mirai-volunteer.github.io/polister/development/)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠️ 技術スタック
+
+### フロントエンド
+
+- **Framework**: Next.js 15 (App Router)
+- **UI Library**: React 19, Material UI
+- **Language**: TypeScript
+- **Styling**: Emotion
+- **Map**: Mapbox GL JS
+
+### バックエンド
+
+- **API**: Next.js API Routes
+- **Database**: PostgreSQL + PostGIS
+- **Cache**: Redis
+
+### 開発ツール
+
+- **Linter**: ESLint
+- **Formatter**: Prettier (import自動整理)
+- **Testing**: Jest, React Testing Library
+- **CI/CD**: GitHub Actions
+- **Code Review**: CodeRabbit
+
+### ドキュメント
+
+- **Framework**: Docusaurus 3
+- **Diagrams**: Mermaid
+
+## 🏗️ アーキテクチャ
+
+Clean Architectureに基づいた設計を採用：
+
+```
+src/
+├── app/              # Next.js App Router
+├── features/         # 機能別モジュール（垂直分割）
+│   ├── board/
+│   ├── verification/
+│   └── import/
+├── shared/           # 共有リソース
+└── infrastructure/   # 共有インフラ
+```
+
+詳細は[クリーンアーキテクチャ実装ガイド](https://team-mirai-volunteer.github.io/polister/architecture/guidelines/clean-architecture-guide)を参照。
+
+## 🧪 テスト
+
+```bash
+# 全チェック（lint + typecheck + format）
+yarn validate
+
+# 個別実行
+yarn lint        # ESLint
+yarn typecheck   # TypeScript型チェック
+yarn format      # コードフォーマット
+```
+
+## 🤝 コントリビューション
+
+### 貢献の流れ
+
+1. Issueを作成（または既存のIssueを選択）
+2. featureブランチを作成: `git checkout -b feature/#N_description`
+3. 変更を実施、コミット
+4. Pull Requestを作成（develop向け）
+5. CIチェックとコードレビューを通過
+6. マージ
+
+### Pull Request作成前のチェック
+
+```bash
+yarn validate  # 全チェックを実行
+```
+
+### CLA（貢献者ライセンス契約）
+
+初回のPull Request作成時に、[CLA](CLA.md)への同意が必要です。PRテンプレートのチェックボックスで同意を示してください。
+
+### ブランチ保護ルール
+
+`develop`と`main`ブランチは保護されており、以下が必須です：
+
+- Pull Requestの作成
+- CIチェックの通過（ESLint、TypeScript、Prettier）
+- コードレビューの承認
+
+## 📋 開発コマンド
+
+### アプリケーション
+
+```bash
+yarn dev          # 開発サーバー起動
+yarn build        # 本番ビルド
+yarn start        # 本番サーバー起動
+yarn lint         # ESLint実行
+yarn typecheck    # 型チェック
+yarn format       # フォーマット実行
+yarn validate     # 全チェック実行
+```
+
+### ドキュメント
+
+```bash
+yarn docs:dev     # ドキュメントサーバー起動
+yarn docs:build   # ドキュメントビルド
+yarn docs:serve   # ビルド済みドキュメント配信
+```
+
+## 📄 ライセンス
+
+このプロジェクトは[AGPL-3.0ライセンス](LICENSE)の下で公開されています。
+
+## 🔗 リンク
+
+- **ドキュメント**: https://team-mirai-volunteer.github.io/polister/
+- **Issues**: https://github.com/team-mirai-volunteer/polister/issues
+- **Pull Requests**: https://github.com/team-mirai-volunteer/polister/pulls
