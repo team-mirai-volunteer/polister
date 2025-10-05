@@ -64,10 +64,10 @@ collect_checklist() {
   merged_at=$(echo "$pr_json" | jq -r '.mergedAt // empty')
   local merged_text
   if [[ -n "$merged_at" ]]; then
-    merged_text=$(python3 - <<'PY'
+    merged_text=$(python3 - "$merged_at" <<'PY'
 import sys
 from datetime import datetime
-value = sys.stdin.read().strip()
+value = sys.argv[1].strip() if len(sys.argv) > 1 else ""
 if not value:
     print("N/A")
     sys.exit(0)
@@ -76,7 +76,7 @@ dt = datetime.fromisoformat(value)
 local_dt = dt.astimezone()
 print(local_dt.strftime('%Y-%m-%d %H:%M'))
 PY
- <<<"$merged_at")
+)
   else
     merged_text="N/A"
   fi
