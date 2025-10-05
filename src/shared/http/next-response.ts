@@ -11,14 +11,14 @@ export const createJsonResponse = <T>(data: T, init?: ResponseInit) =>
   NextResponse.json(createSuccessResult(data), init);
 
 export const createErrorResponse = (error: unknown) => {
+  logError(error);
+
   if (error instanceof ApplicationError) {
-    logError(error);
     return NextResponse.json(createErrorResponseBody(error), {
       status: error.statusCode,
     });
   }
 
-  logError(error);
   return NextResponse.json(createErrorResponseBody(error), {
     status: 500,
   });
