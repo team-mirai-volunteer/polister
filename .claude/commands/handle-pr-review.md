@@ -13,8 +13,9 @@ PR #$1 に対する Polister プロジェクトの CodeRabbit レビューコメ
 1. CodeRabbitコメントの全件取得
 2. 優先度順にToDo整理・修正対応
 3. 必要なチェックとテストの実行
-4. コミット・プッシュ
-5. コメントへの日本語返信
+4. コミット
+5. プッシュ
+6. コメントへの日本語返信
 
 ## 手順1: レビューコメントの全件取得
 
@@ -53,8 +54,9 @@ CodeRabbitの重要度に基づき、以下の順序で対応します。
 2. **原因調査・修正方針決定**: コメント内容から修正方針を整理
 3. **実装**: 対応コードの修正
 4. **テスト・チェック**: 下記「手順3」を実行
-5. **コミット・プッシュ**: 日本語のコミットメッセージで記録
-6. **返信投稿**: コメントへ日本語で返答
+5. **コミット**: 日本語のコミットメッセージで記録
+6. **プッシュ**: 変更をリモートへ送信し、レビュー対象の最新状態を共有
+7. **返信投稿**: コメントへ日本語で返答
 
 ## 手順3: 必須チェック・テスト
 
@@ -74,24 +76,29 @@ yarn format:check
 
 テストを省略した場合は、理由をコメント返信に明記してください。
 
-## 手順4: コミット・プッシュ
+## 手順4: コミット
 
 - コミットメッセージは日本語で `タイプ: 説明` 形式
 - 例: `fix: 検証ロジックの境界値を修正`
-- 必要なコミットをまとめたら `git push`
 
-## 手順5: コメントへの返信
+## 手順5: プッシュ
+
+- 最新のコミットを `git push` で `origin` の対象ブランチへ送信
+- 返信投稿の前に必ずプッシュを完了させ、指摘に対する修正がリモートから確認できる状態にする
+
+## 手順6: コメントへの返信
 
 修正が完了したら、各コメントへ日本語で返信します。返信には修正内容とテスト結果（または未実施理由）を記載してください。
 
 ### 1行返信例
 
-GitHub の review comment への返信は `POST /repos/:owner/:repo/pulls/comments/:id/replies` を JSON で呼び出します。`--input` とヒアドキュメントを使うと日本語や改行を安全に扱えます。
+GitHub の review comment への返信は `POST /repos/:owner/:repo/pulls/:pull_number/comments` に `in_reply_to` を指定します。`--input` とヒアドキュメントを使うと日本語や改行を安全に扱えます。
 
 ```bash
-gh api repos/team-mirai-volunteer/polister/pulls/comments/<コメントID>/replies \
+gh api repos/team-mirai-volunteer/polister/pulls/$1/comments \
   --method POST --input - <<'EOF'
 {
+  "in_reply_to": <コメントID>,
   "body": "ご指摘ありがとうございます。該当箇所を修正し、yarn format:check を実行しました。対応コミット: abc1234"
 }
 EOF
@@ -100,9 +107,10 @@ EOF
 ### 詳細返信例
 
 ```bash
-gh api repos/team-mirai-volunteer/polister/pulls/comments/<コメントID>/replies \
+gh api repos/team-mirai-volunteer/polister/pulls/$1/comments \
   --method POST --input - <<'EOF'
 {
+  "in_reply_to": <コメントID>,
   "body": "ご指摘ありがとうございます。以下の内容で対応しました。\n\n- 掲示板集約の検証ロジックを修正\n- DDD導入ガイドの記述を更新\n\nyarn validate を実行し、lint / typecheck / format:check が通過しています。\n対応コミット: abc1234"
 }
 EOF
@@ -113,9 +121,10 @@ EOF
 対応を後回しにする場合は Issue を作成し、URL と意図を明記してください。
 
 ```bash
-gh api repos/team-mirai-volunteer/polister/pulls/comments/<コメントID>/replies \
+gh api repos/team-mirai-volunteer/polister/pulls/$1/comments \
   --method POST --input - <<'EOF'
 {
+  "in_reply_to": <コメントID>,
   "body": "ご指摘ありがとうございます。対応には追加調査が必要なため Issue #XX を作成しました。https://github.com/team-mirai-volunteer/polister/issues/XX"
 }
 EOF

@@ -102,9 +102,9 @@ WHERE m.id = 'municipality-id';
 
 ```typescript
 // src/features/board/infrastructure/repositories/BoardRepository.ts
-import { injectable, inject } from 'tsyringe';
-import type { PrismaClient } from '@prisma/client';
-import { TOKENS } from '@/shared/lib/di/tokens';
+import { injectable, inject } from "tsyringe";
+import type { PrismaClient } from "@prisma/client";
+import { TOKENS } from "@/shared/lib/di/tokens";
 
 @injectable()
 export class BoardRepository {

@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
@@ -5,8 +7,12 @@ import { ThemeProvider } from "@mui/material/styles";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
 
+import { setupDI } from "@/shared/lib/di";
+
 import theme from "../theme";
 import "./globals.css";
+
+setupDI();
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
