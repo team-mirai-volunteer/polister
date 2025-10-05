@@ -33,12 +33,12 @@
 
 ### featuresディレクトリとの対応
 
-| ディレクトリ | バウンデッドコンテキストの例 | 主な責務 |
-| --- | --- | --- |
-| `features/board` | 掲示板管理コンテキスト | 掲示板番号、位置、掲示状態の管理 |
-| `features/verification` | 検証コンテキスト | 掲示板データの検証依頼、承認フロー |
-| `features/import` | インポートコンテキスト | CSV / KML 等の外部データ取り込み |
-| `features/municipality` | 地方自治体コンテキスト | 市区町村情報・行政境界の参照 |
+| ディレクトリ            | バウンデッドコンテキストの例 | 主な責務                           |
+| ----------------------- | ---------------------------- | ---------------------------------- |
+| `features/board`        | 掲示板管理コンテキスト       | 掲示板番号、位置、掲示状態の管理   |
+| `features/verification` | 検証コンテキスト             | 掲示板データの検証依頼、承認フロー |
+| `features/import`       | インポートコンテキスト       | CSV / KML 等の外部データ取り込み   |
+| `features/municipality` | 地方自治体コンテキスト       | 市区町村情報・行政境界の参照       |
 
 - 各コンテキストには自身のドメインモデルを持たせ、他コンテキストのモデルを直接再利用しない。必要に応じて値オブジェクトを再定義する。
 - コンテキスト間の整合性はアプリケーション層で担保し、コンテキスト固有の不変条件は各集約が内包する。
@@ -94,7 +94,7 @@
 export class BoardLocation {
   private constructor(
     public readonly latitude: number,
-    public readonly longitude: number,
+    public readonly longitude: number
   ) {}
 
   public static create(lat: number, lng: number): BoardLocation {
