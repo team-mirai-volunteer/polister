@@ -3,7 +3,7 @@ import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/styles.css";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function MermaidLightbox() {
   const [lightboxOpen, setLightboxOpen] = useState(false);

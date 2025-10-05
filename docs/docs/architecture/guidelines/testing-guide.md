@@ -702,7 +702,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: [["html", { open: "never" }]],
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
@@ -717,9 +717,14 @@ export default defineConfig({
     command: "yarn dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
+    env: {
+      DISABLE_PRISMA: "true",
+    },
   },
 });
 ```
+
+> **メモ**: Playwright を初めて実行する前に `yarn playwright install --with-deps` を実行してブラウザをセットアップしてください。CI と同じランタイムが整い、ローカルでも安定して E2E テストを実行できます。
 
 ### E2Eテスト例
 

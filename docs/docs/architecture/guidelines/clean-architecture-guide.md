@@ -255,16 +255,16 @@ export interface IBoardRepository {
 
 ```typescript
 // src/features/board/infrastructure/repositories/BoardRepository.ts
-import type { PrismaClient, Board } from '@prisma/client';
-import { inject, injectable } from 'tsyringe';
+import type { PrismaClient, Board } from "@prisma/client";
+import { inject, injectable } from "tsyringe";
 
-import { TOKENS } from '@/shared/lib/di/tokens';
+import { TOKENS } from "@/shared/lib/di/tokens";
 import type {
   CreateBoardData,
   IBoardRepository,
   UpdateBoardData,
   BoardSearchFilters,
-} from './IBoardRepository';
+} from "./IBoardRepository";
 
 @injectable()
 export class BoardRepository implements IBoardRepository {
@@ -276,12 +276,12 @@ export class BoardRepository implements IBoardRepository {
         boardNumber: data.boardNumber,
         address: data.address,
         location: {
-          type: 'Point',
+          type: "Point",
           coordinates: [data.longitude, data.latitude],
         },
         municipalityId: data.municipalityId,
-        trustLevel: data.trustLevel || 'LEVEL_3',
-        status: data.status || 'PENDING',
+        trustLevel: data.trustLevel || "LEVEL_3",
+        status: data.status || "PENDING",
       },
     });
   }
@@ -330,12 +330,15 @@ export class BoardRepository implements IBoardRepository {
 
 ```typescript
 // src/features/board/application/usecases/BoardManagementUseCase.ts
-import { inject, injectable } from 'tsyringe';
+import { inject, injectable } from "tsyringe";
 
-import { TOKENS } from '@/shared/lib/di/tokens';
-import type { IBoardRepository } from '../../infrastructure/repositories/IBoardRepository';
-import type { IGeocodingService } from '@/infrastructure/external/geocoding/IGeocodingService';
-import { ValidationError, BoardNotFoundError } from '@/shared/lib/errors/DomainErrors';
+import { TOKENS } from "@/shared/lib/di/tokens";
+import type { IBoardRepository } from "../../infrastructure/repositories/IBoardRepository";
+import type { IGeocodingService } from "@/infrastructure/external/geocoding/IGeocodingService";
+import {
+  ValidationError,
+  BoardNotFoundError,
+} from "@/shared/lib/errors/DomainErrors";
 
 export interface BoardCreationResult {
   success: boolean;
@@ -361,7 +364,9 @@ export class BoardManagementUseCase {
     try {
       // バリデーション
       if (!address || address.length < 3) {
-        throw new ValidationError('address', ['住所は3文字以上で入力してください']);
+        throw new ValidationError("address", [
+          "住所は3文字以上で入力してください",
+        ]);
       }
 
       // ジオコーディング
@@ -369,7 +374,7 @@ export class BoardManagementUseCase {
       if (!coords) {
         return {
           success: false,
-          error: '住所から位置情報を取得できませんでした',
+          error: "住所から位置情報を取得できませんでした",
         };
       }
 
@@ -380,8 +385,8 @@ export class BoardManagementUseCase {
         latitude: coords.lat,
         longitude: coords.lng,
         municipalityId,
-        trustLevel: 'LEVEL_3',
-        status: 'PENDING',
+        trustLevel: "LEVEL_3",
+        status: "PENDING",
       });
 
       return {
@@ -389,10 +394,11 @@ export class BoardManagementUseCase {
         boardId: board.id,
       };
     } catch (error) {
-      console.error('Error creating board:', error);
+      console.error("Error creating board:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : '掲示板の作成に失敗しました',
+        error:
+          error instanceof Error ? error.message : "掲示板の作成に失敗しました",
       };
     }
   }
@@ -419,99 +425,139 @@ export class BoardManagementUseCase {
 
 ### 4. DI設定
 
-```typescript
-// src/shared/lib/di/tokens.ts
+`src/shared/lib/di` に依存性注入の共通実装をまとめる。トークンは文字列定数で管理し、型安全性を保つためにマッピング型を定義する。
+
+```typescript title="src/shared/lib/di/tokens.ts"
+import type { PrismaClient } from "@prisma/client";
+
+export interface AppLogger {
+  debug(message: string, ...meta: unknown[]): void;
+  info(message: string, ...meta: unknown[]): void;
+  warn(message: string, ...meta: unknown[]): void;
+  error(message: string | Error, ...meta: unknown[]): void;
+}
+
+export interface DateProvider {
+  now(): Date;
+}
+
 export const TOKENS = {
-  // Core Services
-  PrismaClient: Symbol("PrismaClient"),
-
-  // Repository層
-  BoardRepository: Symbol("BoardRepository"),
-  MunicipalityRepository: Symbol("MunicipalityRepository"),
-  UserRepository: Symbol("UserRepository"),
-  VerificationRepository: Symbol("VerificationRepository"),
-  BoardImageRepository: Symbol("BoardImageRepository"),
-
-  // Application Services
-  GeocodingService: Symbol("GeocodingService"),
-  MapboxService: Symbol("MapboxService"),
-  ActionBoardApiClient: Symbol("ActionBoardApiClient"),
-  NotificationService: Symbol("NotificationService"),
-  TrustLevelCalculationService: Symbol("TrustLevelCalculationService"),
-
-  // Domain Services
-  BoardValidationService: Symbol("BoardValidationService"),
-  VerificationRuleService: Symbol("VerificationRuleService"),
-
-  // Use Cases
-  BoardManagementUseCase: Symbol("BoardManagementUseCase"),
-  VerificationUseCase: Symbol("VerificationUseCase"),
-  DataImportUseCase: Symbol("DataImportUseCase"),
-  RegionalVerificationUseCase: Symbol("RegionalVerificationUseCase"),
+  prismaClient: "di.prismaClient",
+  logger: "di.logger",
+  dateProvider: "di.dateProvider",
 } as const;
+
+export type Token = (typeof TOKENS)[keyof typeof TOKENS];
+
+export type TokenMap = {
+  [TOKENS.prismaClient]: PrismaClient;
+  [TOKENS.logger]: AppLogger;
+  [TOKENS.dateProvider]: DateProvider;
+};
+
+export type ResolveToken<T extends Token> = TokenMap[T];
 ```
 
-```typescript
-// src/shared/lib/di/container.ts
+```typescript title="src/shared/lib/di/container.ts"
 import { PrismaClient } from "@prisma/client";
 import "reflect-metadata";
-import { container } from "tsyringe";
-
-import { BoardManagementUseCase } from "@/features/board/application/usecases/BoardManagementUseCase";
-import { BoardRepository } from "@/features/board/infrastructure/repositories/BoardRepository";
+import { DependencyContainer, container } from "tsyringe";
 
 import { TOKENS } from "./tokens";
+import type {
+  AppLogger,
+  DateProvider,
+  ResolveToken,
+  Token,
+  TokenMap,
+} from "./tokens";
 
-export function setupDI(): void {
-  // Prisma Client
-  container.register(TOKENS.PrismaClient, {
-    useValue: new PrismaClient(),
-  });
-
-  // Repository層の登録
-  container.registerSingleton(TOKENS.BoardRepository, BoardRepository);
-
-  // Use Cases の登録
-  container.registerSingleton(
-    TOKENS.BoardManagementUseCase,
-    BoardManagementUseCase
-  );
+class ConsoleLogger implements AppLogger {
+  // ...
 }
 
-export function resolve<T>(token: symbol): T {
-  return container.resolve<T>(token);
+class SystemDateProvider implements DateProvider {
+  // ...
 }
+
+const globalForPrisma = globalThis as typeof globalThis & {
+  prismaClient?: PrismaClient;
+};
+
+const getPrismaClient = (): PrismaClient => {
+  if (!globalForPrisma.prismaClient) {
+    globalForPrisma.prismaClient = new PrismaClient();
+  }
+
+  return globalForPrisma.prismaClient;
+};
+
+const registerDefaults = (target: DependencyContainer): void => {
+  if (!target.isRegistered(TOKENS.prismaClient)) {
+    target.register<PrismaClient>(TOKENS.prismaClient, {
+      useFactory: () => getPrismaClient(),
+    });
+  }
+
+  if (!target.isRegistered(TOKENS.logger)) {
+    target.registerSingleton<AppLogger>(TOKENS.logger, ConsoleLogger);
+  }
+
+  if (!target.isRegistered(TOKENS.dateProvider)) {
+    target.registerSingleton<DateProvider>(
+      TOKENS.dateProvider,
+      SystemDateProvider
+    );
+  }
+};
+
+export const setupDI = (
+  targetContainer: DependencyContainer = container
+): DependencyContainer => {
+  registerDefaults(targetContainer);
+
+  return targetContainer;
+};
+
+export const resolve = <T extends Token>(token: T): ResolveToken<T> => {
+  if (!container.isRegistered(token)) {
+    setupDI(container);
+  }
+
+  return container.resolve<ResolveToken<T>>(token);
+};
 ```
 
+`reflect-metadata` は常に最上部で読み込み、1 行の空行で他の import と区切る。プロジェクトでは `prettier-plugin-organize-imports` を利用しており、この空行がないと自動整形時に順序が入れ替わるので注意する。
+
+> **メモ**: E2E テストなどデータベース接続が不要な場合は環境変数 `DISABLE_PRISMA=true` を設定することで PrismaClient の初期化を抑止できる。Playwright の設定では自動で有効化される。
+
 ### 5. API Routeでの使用
+
+各バウンデッドコンテキストは `features/<context>/di/tokens.ts` のようにローカルなトークンを定義し、必要に応じて共有コンテナへ登録する。例では掲示板コンテキストのトークン (`BOARD_TOKENS`) を解決している。
 
 ```typescript
 // src/app/api/boards/route.ts
 import { NextResponse } from "next/server";
 
 import type { BoardManagementUseCase } from "@/features/board/application/usecases/BoardManagementUseCase";
-import { resolve } from "@/shared/lib/di/container";
-import { TOKENS } from "@/shared/lib/di/tokens";
+import { TOKENS as BOARD_TOKENS } from "@/features/board/di/tokens";
+import { resolve } from "@/shared/lib/di";
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
     const useCase = resolve<BoardManagementUseCase>(
-      TOKENS.BoardManagementUseCase
+      BOARD_TOKENS.boardManagementUseCase
     );
 
-    const result = await useCase.createBoard(
-      data.address,
-      data.boardNumber,
-      data.municipalityId,
-      data.userId
-    );
+    const result = await useCase.execute(data);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    return NextResponse.json({ boardId: result.boardId }, { status: 201 });
+    return NextResponse.json(result.value, { status: 201 });
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json(
@@ -628,14 +674,13 @@ export class RegionalVerificationUseCase {
     });
 
     // 自動承認判定
-    const verifications = await this.verificationRepository.findByBoardId(
-      boardId
-    );
+    const verifications =
+      await this.verificationRepository.findByBoardId(boardId);
 
     if (this.shouldAutoApprove(verifications)) {
       await this.boardRepository.update(boardId, {
-        trustLevel: 'LEVEL_2',
-        status: 'VERIFIED',
+        trustLevel: "LEVEL_2",
+        status: "VERIFIED",
       });
     }
   }
@@ -680,7 +725,7 @@ export class DataImportUseCase {
             latitude: coords.lat,
             longitude: coords.lng,
             municipalityId,
-            trustLevel: 'LEVEL_1', // 公式データ
+            trustLevel: "LEVEL_1", // 公式データ
           });
 
           results.push({ success: true, row: row.boardNumber });
@@ -688,14 +733,14 @@ export class DataImportUseCase {
           results.push({
             success: false,
             row: row.boardNumber,
-            error: 'ジオコーディング失敗',
+            error: "ジオコーディング失敗",
           });
         }
       } catch (error) {
         results.push({
           success: false,
           row: row.boardNumber,
-          error: error instanceof Error ? error.message : '不明なエラー',
+          error: error instanceof Error ? error.message : "不明なエラー",
         });
       }
     }
