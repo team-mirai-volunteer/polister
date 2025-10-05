@@ -41,6 +41,7 @@ const sidebars: SidebarsConfig = {
           label: "実装ガイドライン",
           items: [
             "architecture/guidelines/clean-architecture-guide",
+            "architecture/guidelines/coding-conventions",
             "architecture/guidelines/ddd-guide",
             "architecture/guidelines/testing-guide",
           ],
