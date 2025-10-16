@@ -4,7 +4,27 @@
 
 ## 概要
 
-Clean Architectureは、依存関係逆転の原則に基づいて、ビジネスロジックを外部の技術的詳細から独立させる設計パターンです。本プロジェクトでは、Repository Pattern、Service抽象化、Dependency Injectionを組み合わせて実装します。
+Clean Architectureは、依存関係逆転の原則に基づいて、ビジネスロジックを外部の技術的詳細から独立させる設計パターンです。本プロジェクトでは、**Domain-Driven Design (DDD)**の戦術的パターンと組み合わせ、Repository Pattern、Service抽象化、Dependency Injectionを実装します。
+
+### Clean Architecture + DDDの統合方針
+
+Polisterでは、Clean Architectureの層構造にDDDの要素を配置することで、以下を実現します：
+
+| Clean Architectureの層   | DDD要素                                                                              | 実装場所                     |
+| ------------------------ | ------------------------------------------------------------------------------------ | ---------------------------- |
+| **Domain Layer**         | 集約、エンティティ、値オブジェクト、ドメインサービス、ドメインイベント、リポジトリIF | `features/*/domain/`         |
+| **Application Layer**    | ユースケース、アプリケーションサービス、DTO                                          | `features/*/application/`    |
+| **Infrastructure Layer** | リポジトリ実装、マッパー、外部API連携                                                | `features/*/infrastructure/` |
+| **Presentation Layer**   | React Components、API Routes                                                         | `app/`, `features/*/ui/`     |
+
+**重要な設計原則**:
+
+- **ドメイン層の独立性**: 外部ライブラリ（ORMやUIフレームワーク）への依存を排除
+- **ユビキタス言語の徹底**: コード、ドキュメント、会話で同じ語彙を使用
+- **バウンデッドコンテキストの明確化**: 各`features/<context>`は独立したドメインモデルを持つ
+- **依存性の逆転**: インフラ層がドメイン層のインターフェースを実装
+
+詳細なDDDの実装方針は[DDD導入ガイド](./ddd-guide.md)を参照してください。
 
 ## アーキテクチャ構造
 
@@ -57,11 +77,11 @@ graph TB
 
 ### ディレクトリ構成
 
-Next.js App Routerの特性を活かした機能別モジュール構成を採用します。
+Next.js App Routerの特性を活かした機能別モジュール構成（バウンデッドコンテキスト単位）を採用します。
 
 ```text
 src/
-├── app/                              # Next.js App Router
+├── app/                              # Next.js App Router（Presentation層）
 │   ├── (auth)/                       # 認証が必要なルート
 │   │   ├── dashboard/
 │   │   └── settings/
@@ -75,78 +95,156 @@ src/
 │   ├── _components/                  # ページ固有コンポーネント
 │   ├── layout.tsx
 │   └── page.tsx
-├── features/                         # 機能別モジュール
-│   ├── board/                        # 掲示板管理機能
-│   │   ├── domain/                   # ドメインロジック
+│
+├── features/                         # 機能別モジュール（バウンデッドコンテキスト）
+│   ├── board/                        # 掲示板管理コンテキスト
+│   │   ├── domain/                   # ドメイン層（DDD Core）
+│   │   │   ├── aggregates/          # 集約ルート（Board集約）
+│   │   │   ├── entities/            # エンティティ
+│   │   │   ├── value-objects/       # 値オブジェクト（BoardLocation、BoardNumber等）
+│   │   │   ├── services/            # ドメインサービス（BoardValidationService等）
+│   │   │   ├── events/              # ドメインイベント（BoardCreatedEvent等）
+│   │   │   └── repositories/        # リポジトリIF（IBoardRepository）
+│   │   ├── application/              # アプリケーション層
+│   │   │   ├── usecases/            # ユースケース（BoardManagementUseCase）
+│   │   │   ├── services/            # アプリケーションサービス
+│   │   │   └── dtos/                # DTO（データ転送オブジェクト）
+│   │   ├── infrastructure/           # インフラ層
+│   │   │   ├── repositories/        # リポジトリ実装（BoardRepository）
+│   │   │   └── mappers/             # マッパー（集約 ↔ Prismaモデル変換）
+│   │   ├── ui/                       # UIコンポーネント（Presentation層）
+│   │   └── di/                       # DIトークン定義
+│   │
+│   ├── verification/                 # 検証管理コンテキスト
+│   │   ├── domain/
+│   │   │   ├── aggregates/          # Verification集約
 │   │   │   ├── entities/
 │   │   │   ├── value-objects/
-│   │   │   └── services/
-│   │   ├── application/              # ユースケース
-│   │   │   ├── usecases/
-│   │   │   └── services/
-│   │   ├── infrastructure/           # Repository実装
-│   │   │   ├── repositories/
-│   │   │   └── mappers/
-│   │   └── ui/                       # UIコンポーネント
-│   ├── verification/                 # 検証機能
-│   │   ├── domain/
+│   │   │   ├── services/            # TrustLevelService、VerificationRuleService
+│   │   │   ├── events/
+│   │   │   └── repositories/
 │   │   ├── application/
 │   │   ├── infrastructure/
-│   │   └── ui/
-│   ├── import/                       # データインポート機能
+│   │   ├── ui/
+│   │   └── di/
+│   │
+│   ├── import/                       # データインポートコンテキスト
 │   │   ├── domain/
+│   │   │   ├── aggregates/          # ImportJob集約
+│   │   │   ├── entities/
+│   │   │   ├── value-objects/
+│   │   │   ├── services/
+│   │   │   ├── events/
+│   │   │   └── repositories/
 │   │   ├── application/
 │   │   ├── infrastructure/
-│   │   └── ui/
-│   └── municipality/                 # 市区町村管理
+│   │   ├── ui/
+│   │   └── di/
+│   │
+│   └── municipality/                 # 市区町村管理コンテキスト
 │       ├── domain/
+│       │   ├── aggregates/          # Municipality集約
+│       │   ├── entities/
+│       │   ├── value-objects/
+│       │   ├── services/
+│       │   ├── events/
+│       │   └── repositories/
 │       ├── application/
-│       └── infrastructure/
-├── shared/                           # 共有
+│       ├── infrastructure/
+│       └── di/
+│
+├── shared/                           # 共有リソース
 │   ├── ui/                           # 共通UIコンポーネント
 │   │   ├── Map/
 │   │   ├── DataTable/
 │   │   └── Form/
 │   ├── lib/                          # ユーティリティ
-│   │   ├── di/                       # Dependency Injection
+│   │   ├── di/                       # Dependency Injection（共通）
 │   │   ├── errors/                   # エラーハンドリング
 │   │   └── utils/                    # ユーティリティ関数
 │   └── types/                        # 共通型定義
-└── infrastructure/                   # 共有インフラ
+│
+└── infrastructure/                   # 共有インフラ層
     ├── database/                     # Prisma設定
-    │   ├── schema.prisma
-    │   └── migrations/
+    │   ├── schema.prisma             # データベーススキーマ
+    │   └── migrations/               # マイグレーション
     ├── external/                     # 外部APIクライアント
-    │   ├── mapbox/
-    │   ├── geocoding/
-    │   └── action-board/
+    │   ├── mapbox/                   # Mapboxサービス
+    │   ├── geocoding/                # ジオコーディングサービス
+    │   └── action-board/             # アクションボードAPI連携
     └── repositories/                 # Repository基底クラス
         └── base/
 ```
 
 ### ディレクトリ構成の特徴
 
-#### 1. **機能別モジュール（features/）**
+#### 1. **バウンデッドコンテキスト単位の機能モジュール（features/）**
 
-各機能が独立したモジュールとして、ドメイン・アプリケーション・インフラ・UIを含みます。
+各`features/<context>`ディレクトリは、DDDにおける**バウンデッドコンテキスト**を表現します。
+
+**構造**:
+
+- `domain/`: ドメイン層（DDDの戦術的パターンを配置）
+  - `aggregates/`: 集約ルート（不変条件を守る責任境界）
+  - `entities/`: エンティティ（識別子を持つドメインオブジェクト）
+  - `value-objects/`: 値オブジェクト（イミュータブルな値型）
+  - `services/`: ドメインサービス（複数集約にまたがるロジック）
+  - `events/`: ドメインイベント（副作用の分離）
+  - `repositories/`: リポジトリインターフェース（永続化の抽象）
+- `application/`: アプリケーション層（ユースケース調整）
+- `infrastructure/`: インフラ層（技術的詳細の実装）
+- `ui/`: UIコンポーネント（Presentation層）
+- `di/`: DIコンテナのトークン定義
 
 **メリット**:
 
+- ドメインロジックが外部技術から独立
+- バウンデッドコンテキストごとに独立したモデル
 - 機能の追加・削除が容易
 - チーム分担がしやすい
 - 影響範囲が明確
 
-#### 2. **Next.js App Routerの活用**
+**重要**: 各コンテキストは他のコンテキストのドメインモデルを直接参照しません。コンテキスト間の連携はアプリケーション層で調停します。
+
+#### 2. **ドメイン層のDDD要素配置**
+
+**集約（Aggregates）**:
+
+- 不変条件を守る責任境界
+- 外部からの変更は集約ルートのメソッド経由のみ
+- 例: `Board`集約、`Verification`集約、`ImportJob`集約
+
+**値オブジェクト（Value Objects）**:
+
+- イミュータブルな値型
+- バリデーションをコンストラクタで実施
+- 例: `BoardLocation`（緯度経度）、`BoardNumber`（掲示板番号）
+
+**ドメインサービス（Domain Services）**:
+
+- 集約だけでは表現しにくいロジック
+- ステートレスな計算処理
+- 例: `BoardValidationService`、`TrustLevelService`
+
+**ドメインイベント（Domain Events）**:
+
+- ドメインで発生した重要な出来事
+- 副作用処理の分離
+- 例: `BoardCreatedEvent`、`BoardVerifiedEvent`
+
+#### 3. **Next.js App Routerの活用**
 
 - `(auth)`: 認証が必要なページグループ
 - `(public)`: 公開ページグループ
 - Route Groupsでレイアウトを分離
 
-#### 3. **共有リソースの分離**
+#### 4. **共有リソースの分離**
 
 - `shared/ui/`: 全機能で使う共通コンポーネント
 - `shared/lib/`: DI、エラーハンドリング等
 - `infrastructure/`: データベース、外部API等の共有インフラ
+
+**注意**: `shared/`は技術的な共通機能のみを配置し、ドメインロジックは含めません。
 
 ### 層の責任
 

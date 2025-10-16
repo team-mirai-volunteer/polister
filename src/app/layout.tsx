@@ -5,7 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Roboto } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
 
 import { setupDI } from "@/shared/lib/di";
 
@@ -24,11 +24,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const roboto = Roboto({
+const notoSansJP = Noto_Sans_JP({
   weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   display: "swap",
-  variable: "--font-roboto",
+  variable: "--font-noto-sans-jp",
 });
 
 export const metadata: Metadata = {
@@ -42,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={roboto.variable}>
+    <html lang="ja" className={notoSansJP.variable}>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
