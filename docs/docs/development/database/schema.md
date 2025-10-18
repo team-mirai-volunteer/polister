@@ -749,7 +749,8 @@ CREATE INDEX idx_municipalities_polygon ON municipalities USING GIST(polygon);
 関連データの整合性を保つため、適切なカスケード設定：
 
 - **Board削除時**:
-  - BoardImage、Verification、BoardHistory、ErrorReportも削除（CASCADE）
+  - BoardImage、Verificationは削除（CASCADE）
+  - BoardHistory、ErrorReportは削除を制限（RESTRICT）- 監査証跡として保持
 - **User削除時**:
   - **物理削除は行わない**（論理削除を使用）
   - Account、Sessionのみカスケード削除

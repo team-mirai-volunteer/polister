@@ -121,8 +121,10 @@ export async function getMunicipalitiesAction(params: {
 ## データアクセスと DI
 
 - Repository や外部 API クライアントは `src/infrastructure/` で実装し、`src/shared/lib/di` のトークン経由で依存解決
-- Prisma 利用時は `src/infrastructure/database/schema.prisma` にスキーマを集約し、必ず GIST インデックスなど [データベーススキーマガイド](../../development/database/schema.md) の要件を満たす
-- `TOKENS` に新しい依存を追加する際は命名を `camelCase` + `Token` で統一し、`container.ts` に登録処理を追加
+- **Prismaスキーマの場所**: `prisma/schema.prisma`（Prisma Clientの制約により`src/`配下では正常動作しないため）
+  - 参考: `src/infrastructure/database/schema.prisma`は後方互換性のため一時的に残置しているが、**正式な場所は`prisma/schema.prisma`**
+  - 必ず GIST インデックスなど [データベーススキーマガイド](../../development/database/schema.md) の要件を満たす
+- `TOKENS` に新しい依存を追加する際は命名を `PascalCase` で統一し、`container.ts` に登録処理を追加
 
 ## テスト・バリデーション
 
