@@ -596,7 +596,7 @@ erDiagram
 
 **カスケード削除**:
 
-- Board削除時: BoardHistoryも削除（CASCADE）
+- Board削除時: BoardHistoryは削除を制限（RESTRICT）- 監査証跡として保持
 - User削除時: BoardHistoryのuser_idをNULLに設定（SET NULL）
 - DataSource、NormalizedCsv、ErrorReport削除時: BoardHistoryの該当IDをNULLに設定（SET NULL）
 

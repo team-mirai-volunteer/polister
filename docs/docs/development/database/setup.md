@@ -328,143 +328,23 @@ yarn add -D @types/wellknown
 
 ### インポート手順
 
-#### 1. 国土数値情報のダウンロード
+**推奨方法**: Yarnコマンドで公式同期スクリプトを使用
 
 ```bash
-# scriptsディレクトリを作成
-mkdir -p scripts/data
-
-cd scripts/data
-
-# 全国版（2025年度）をダウンロード
-curl -O https://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-2025/N03-20250101_GML.zip
-
-# 解凍
-unzip N03-20250101_GML.zip
+# 国土数値情報をダウンロード・インポート（一括処理）
+yarn municipalities:sync
 ```
 
-#### 2. GeoJSONに変換
+このコマンドは以下を自動実行します：
 
-```bash
-# ShapefileをGeoJSONに変換（SRID 4326に変換）
-ogr2ogr -f GeoJSON \
-  -t_srs EPSG:4326 \
-  municipalities.geojson \
-  N03-20250101.shp
+1. 国土数値情報（N03-2025）をダウンロード
+2. ZIPファイルを解凍
+3. Shapefileを読み込み
+4. PostgreSQLにインポート（1905市区町村）
 
-# ファイルサイズ確認（約100-200MB）
-ls -lh municipalities.geojson
-```
+**詳細**: スクリプトの実装は `src/scripts/sync-municipalities.ts` を参照してください。
 
-#### 3. TypeScriptスクリプトでインポート
-
-**スクリプトファイルを作成**: `src/scripts/import-municipalities.ts`
-
-```typescript
-import { PrismaClient } from "@prisma/client";
-import * as fs from "fs";
-import * as wellknown from "wellknown";
-
-interface GeoJSONFeature {
-  type: "Feature";
-  properties: {
-    N03_001: string; // 都道府県名
-    N03_004: string; // 市区町村名
-    N03_007: string; // 行政区域コード
-  };
-  geometry: {
-    type: "MultiPolygon" | "Polygon";
-    coordinates: number[][][][];
-  };
-}
-
-interface GeoJSON {
-  type: "FeatureCollection";
-  features: GeoJSONFeature[];
-}
-
-async function importMunicipalities() {
-  const prisma = new PrismaClient();
-
-  // GeoJSONファイルを読み込み
-  const geojsonPath = "./scripts/data/municipalities.geojson";
-  const geojson: GeoJSON = JSON.parse(fs.readFileSync(geojsonPath, "utf-8"));
-
-  console.log(`Processing ${geojson.features.length} features...`);
-
-  let imported = 0;
-  let skipped = 0;
-  let errors = 0;
-
-  for (const feature of geojson.features) {
-    const { N03_001, N03_004, N03_007 } = feature.properties;
-
-    // 市区町村名がない場合はスキップ（都道府県レベルのデータ）
-    if (!N03_004 || !N03_007) {
-      skipped++;
-      continue;
-    }
-
-    // GeoJSON geometryをWKT形式に変換
-    const wkt = wellknown.stringify(feature.geometry);
-
-    try {
-      await prisma.$executeRaw`
-        INSERT INTO municipalities (id, name, code, prefecture, polygon, source)
-        VALUES (
-          gen_random_uuid(),
-          ${N03_004},
-          ${N03_007},
-          ${N03_001},
-          ST_GeomFromText(${wkt}, 4326)::geography,
-          'MLIT'
-        )
-        ON CONFLICT (code) DO UPDATE SET
-          name = EXCLUDED.name,
-          prefecture = EXCLUDED.prefecture,
-          polygon = EXCLUDED.polygon,
-          updated_at = CURRENT_TIMESTAMP
-      `;
-
-      imported++;
-      if (imported % 100 === 0) {
-        console.log(`Progress: ${imported} municipalities imported...`);
-      }
-    } catch (error) {
-      console.error(`✗ Error importing ${N03_001} ${N03_004}:`, error);
-      errors++;
-    }
-  }
-
-  console.log("\n=== Import Summary ===");
-  console.log(`✓ Imported: ${imported}`);
-  console.log(`- Skipped: ${skipped}`);
-  console.log(`✗ Errors: ${errors}`);
-
-  await prisma.$disconnect();
-}
-
-importMunicipalities().catch(console.error);
-```
-
-#### 4. スクリプト実行
-
-```bash
-# TypeScriptスクリプトを実行
-npx tsx src/scripts/import-municipalities.ts
-
-# 出力例:
-# Processing 1924 features...
-# Progress: 100 municipalities imported...
-# Progress: 200 municipalities imported...
-# ...
-# === Import Summary ===
-# ✓ Imported: 1897
-# - Skipped: 27
-# ✗ Errors: 0
-```
-
-#### 5. データ検証
+#### データ検証
 
 ```sql
 -- 件数確認（約1,900件）
