@@ -337,6 +337,19 @@ yarn municipalities:sync
 
 このコマンドは以下を自動実行します：
 
+#### インポート処理フロー
+
+```mermaid
+flowchart TD
+  A["国土数値情報をダウンロード<br/>MLIT N03-2025"] --> B["ZIPファイルを解凍"]
+  B --> C["Shapefileを読み込み"]
+  C --> D["PostgreSQLにインポート<br/>1905市区町村"]
+  D --> E["データ検証"]
+  E --> F{検証結果}
+  F -->|OK| G["✓ インポート完了"]
+  F -->|NG| H["✗ エラー通知"]
+```
+
 1. 国土数値情報（N03-2025）をダウンロード
 2. ZIPファイルを解凍
 3. Shapefileを読み込み
@@ -442,6 +455,22 @@ chmod +x scripts/import-municipalities.sh
 ### 年次更新
 
 国土数値情報は年1回更新されます。更新時の手順：
+
+#### 年次更新ワークフロー
+
+```mermaid
+flowchart TD
+  A["新年度版をダウンロード<br/>N03-2026"] --> B["インポートスクリプト実行<br/>yarn municipalities:sync"]
+  B --> C["ON CONFLICT DO UPDATE"]
+  C --> D["新規追加レコード"]
+  C --> E["更新レコード"]
+  D --> F["孤立Boardレコードの検出"]
+  E --> F
+  F --> G{孤立レコード<br/>あり?}
+  G -->|あり| H["位置情報から<br/>市区町村を自動割り当て"]
+  G -->|なし| I["✓ 更新完了"]
+  H --> I
+```
 
 1. **新年度版のダウンロード**
 

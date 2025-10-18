@@ -117,7 +117,7 @@ export function MunicipalityDataGrid({
 
   const handlePaginationModelChange = (model: GridPaginationModel) => {
     // 既存のクエリパラメータを保持
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
 
     // ページ番号を更新（0-basedから1-basedに変換）
     const newPage = model.page + 1;

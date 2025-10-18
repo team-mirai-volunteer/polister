@@ -388,7 +388,6 @@ async function syncMunicipalities() {
     console.log("");
 
     let totalInserted = 0;
-    let totalUpdated = 0;
     let totalErrors = 0;
     let totalProcessed = 0;
 
@@ -403,7 +402,6 @@ async function syncMunicipalities() {
       if (batch.length >= CONFIG.batchSize) {
         const result = await insertBatch(prisma, batch);
         totalInserted += result.inserted;
-        totalUpdated += result.updated;
         totalErrors += result.errors;
         totalProcessed += batch.length;
 
@@ -419,7 +417,6 @@ async function syncMunicipalities() {
     if (batch.length > 0) {
       const result = await insertBatch(prisma, batch);
       totalInserted += result.inserted;
-      totalUpdated += result.updated;
       totalErrors += result.errors;
       totalProcessed += batch.length;
     }
@@ -433,7 +430,6 @@ async function syncMunicipalities() {
     console.log(`${colors.cyan}結果サマリー:${colors.reset}`);
     console.log(`  処理件数: ${totalProcessed} 件`);
     console.log(`  新規追加: ${totalInserted} 件`);
-    console.log(`  更新: ${totalUpdated} 件`);
     console.log(`  エラー: ${totalErrors} 件`);
     console.log("");
 
