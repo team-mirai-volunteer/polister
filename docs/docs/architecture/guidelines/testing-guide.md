@@ -1,11 +1,27 @@
 # Polister テスト戦略ガイド
 
-**更新日**: 2025年9月27日
+**更新日**: 2025年10月17日
 **目標カバレッジ**: 80%以上
 
 ## 概要
 
 このガイドは、PolisterプロジェクトのClean Architecture実装に基づいたテスト戦略をまとめています。型安全性とテスタビリティを重視し、各層に応じた適切なテスト手法を提供します。
+
+## 実績
+
+**Municipality機能の実装で達成したカバレッジ**:
+
+- ドメイン層（エンティティ・値オブジェクト）: **96.72% - 100%**
+- アプリケーション層（UseCase）: **98.29%**
+- インフラ層（Mapper）: **100%**
+- インフラ層（Repository）: **89.62%**
+- 合計: **52テスト**、すべて合格
+
+**重要な知見**:
+
+- `mockDeep<PrismaClient>()`を使用することで`as any`キャスト完全排除
+- `as const`と適切な型定義で型安全性を確保
+- Server Actionsはユニットテストではなく、E2Eテストでカバーするのが適切
 
 ## テストアーキテクチャ
 
@@ -38,19 +54,85 @@ graph TB
 
 ## 基本原則
 
-### 1. jest-mock-extendedによる完全型安全化
+### 1. jest-mock-extendedによる完全型安全化（必須）
+
+**重要**: Polisterでは`jest-mock-extended`の`mockDeep`を必須とします。
 
 ```typescript
-import type { DeepMockProxy } from "jest-mock-extended";
 import { mockDeep, mockReset } from "jest-mock-extended";
+import type { PrismaClient } from "@prisma/client";
 
-// 完全型安全なモック
-const prismaMock = mockDeep<PrismaClient>();
-const boardRepositoryMock = mockDeep<IBoardRepository>();
-const geocodingServiceMock = mockDeep<IGeocodingService>();
+// ✅ 完全型安全なモック（as anyキャスト不要）
+const mockPrisma = mockDeep<PrismaClient>();
+
+// ネストしたプロパティも型安全にアクセス可能
+mockPrisma.municipality.findUnique.mockResolvedValue(mockData);
+mockPrisma.$queryRaw.mockResolvedValue([]);
+
+// ❌ 従来の方法（使用禁止）
+const badMockPrisma = {
+  municipality: {
+    findUnique: jest.fn() as any, // as anyが必要になる
+  },
+} as PrismaClient;
 ```
 
-### 2. 型安全なファクトリ関数パターン
+### 2. as anyを避ける型定義パターン（必須）
+
+**Prisma Enumの使用**:
+
+```typescript
+import type { MunicipalityStatus, ContactStatus } from "@prisma/client";
+
+// ✅ 良い例
+const createMunicipality = (
+  status: MunicipalityStatus = "NOT_STARTED",
+  contactStatus: ContactStatus | null = null
+): Municipality => {
+  return new Municipality(
+    "test-id",
+    "千代田区",
+    MunicipalityCode.create("13101"),
+    "東京都",
+    null,
+    "MLIT",
+    null,
+    null,
+    null,
+    status,  // as anyなし
+    contactStatus,  // as anyなし
+    null,
+    null,
+    new Date(),
+    new Date()
+  );
+};
+
+// ❌ 悪い例
+const badMunicipality = new Municipality(
+  ...,
+  "NOT_STARTED" as any,  // 使用禁止
+  "RECEIVED" as any,  // 使用禁止
+  ...
+);
+```
+
+**as constの活用**:
+
+```typescript
+// ✅ モックデータにas constを使用
+const createMockPrismaData = () =>
+  ({
+    id: "test-id",
+    name: "千代田区",
+    code: "13101",
+    status: "COMPLETED",
+    contactStatus: "RECEIVED",
+    // ... その他
+  }) as const;
+```
+
+### 3. 型安全なファクトリ関数パターン
 
 ```typescript
 // [OK] 推奨：完全な型定義ファクトリ関数
@@ -810,4 +892,10 @@ jobs:
 
 ---
 
-最終更新: 2025年9月27日
+最終更新: 2025年10月17日
+
+**参考実装**: Municipality機能のテストコード
+
+- `src/features/municipality/domain/**/__tests__/`
+- `src/features/municipality/application/**/__tests__/`
+- `src/features/municipality/infrastructure/**/__tests__/`

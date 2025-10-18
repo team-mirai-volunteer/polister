@@ -122,16 +122,25 @@ async function readAttributes(dbfPath: string) {
   const records = await dbf.readRecords();
 
   return records.map((record) => {
+    const prefecture = (record.N03_001 as string) || "";
+    const city = (record.N03_004 as string) || "";
+    const ward = (record.N03_005 as string) || "";
+    const code = (record.N03_007 as string) || "";
+
+    // 市区町村名を構築
+    // N03_005（区名）がある場合は「市名 + 区名」、ない場合は「市名」のみ
+    const name = ward ? `${city}${ward}` : city;
+
     return {
-      N03_001: (record.N03_001 as string) || "",
-      N03_004: (record.N03_004 as string) || "",
-      N03_007: (record.N03_007 as string) || "",
+      N03_001: prefecture,
+      N03_004: name,
+      N03_007: code,
     };
   });
 }
 
 /**
- * Shapefileをストリーミング読み込み（ジオメトリのみ）
+ * Shapefileを読み込み、同じコードのポリゴンをMULTIPOLYGONとして統合
  */
 async function* readShapefile(
   shpPath: string,
@@ -143,6 +152,17 @@ async function* readShapefile(
 
   console.log(`  ${colors.yellow}ジオメトリを読み込み中...${colors.reset}`);
   const source = await shapefile.open(shpPath);
+
+  // 市区町村コードごとにポリゴンをグループ化
+  const municipalityMap = new Map<
+    string,
+    {
+      name: string;
+      code: string;
+      prefecture: string;
+      wkts: string[];
+    }
+  >();
 
   let index = 0;
 
@@ -165,15 +185,75 @@ async function* readShapefile(
     const wkt = wellknown.stringify(feature.geometry as any);
 
     if (!wkt) {
-      console.warn(`  警告: WKT変換失敗 - ${attr.N03_001} ${attr.N03_004}`);
       continue;
     }
 
+    // 市区町村コードでグループ化
+    const existing = municipalityMap.get(attr.N03_007);
+    if (existing) {
+      existing.wkts.push(wkt);
+    } else {
+      municipalityMap.set(attr.N03_007, {
+        name: attr.N03_004,
+        code: attr.N03_007,
+        prefecture: attr.N03_001,
+        wkts: [wkt],
+      });
+    }
+
+    // 進捗表示（10000件ごと）
+    if (index % 10000 === 0) {
+      process.stdout.write(
+        `  読み込み中: ${index} 件 (市区町村数: ${municipalityMap.size})\r`
+      );
+    }
+  }
+
+  console.log(""); // 改行
+  console.log(`  ✓ ${municipalityMap.size} 市区町村のデータを統合`);
+
+  // 市区町村単位でポリゴンを結合してyield
+  for (const data of municipalityMap.values()) {
+    // 複数のポリゴンをMULTIPOLYGONに結合
+    let combinedWkt: string;
+
+    if (data.wkts.length === 1) {
+      // 単一ポリゴンの場合はそのまま
+      combinedWkt = data.wkts[0];
+    } else {
+      // 複数ポリゴンをMULTIPOLYGONに統合
+      const polygonParts = data.wkts
+        .map((wkt) => {
+          // POLYGONまたはMULTIPOLYGONからカッコ内の座標部分を抽出
+          if (wkt.startsWith("POLYGON")) {
+            const match = wkt.match(/POLYGON\s*\((.+)\)$/);
+            return match ? [match[1]] : [];
+          } else if (wkt.startsWith("MULTIPOLYGON")) {
+            const match = wkt.match(/MULTIPOLYGON\s*\((.+)\)$/);
+            if (match) {
+              // MULTIPOLYGONの各パーツを抽出
+              return match[1].split(/\),\s*\(/).map((part) => {
+                return part.replace(/^\(/, "").replace(/\)$/, "");
+              });
+            }
+          }
+          return [];
+        })
+        .flat()
+        .filter((p) => p);
+
+      if (polygonParts.length > 0) {
+        combinedWkt = `MULTIPOLYGON(${polygonParts.map((p) => `(${p})`).join(",")})`;
+      } else {
+        continue;
+      }
+    }
+
     yield {
-      name: attr.N03_004,
-      code: attr.N03_007,
-      prefecture: attr.N03_001,
-      wkt,
+      name: data.name,
+      code: data.code,
+      prefecture: data.prefecture,
+      wkt: combinedWkt,
     };
   }
 }
@@ -213,7 +293,9 @@ async function insertBatch(
     } catch (error) {
       // エラーの詳細を表示（最初の3件のみ）
       if (errors < 3) {
-        console.error(`  ✗ エラー: ${data.prefecture} ${data.name} (${data.code})`);
+        console.error(
+          `  ✗ エラー: ${data.prefecture} ${data.name} (${data.code})`
+        );
         console.error(
           `    メッセージ: ${error instanceof Error ? error.message : String(error)}`
         );
@@ -252,9 +334,7 @@ async function syncMunicipalities() {
     process.exit(1);
   }
 
-  console.log(
-    `DATABASE_URL: ${process.env.DATABASE_URL.substring(0, 50)}...`
-  );
+  console.log(`DATABASE_URL: ${process.env.DATABASE_URL.substring(0, 50)}...`);
   console.log("");
 
   // PrismaClientは環境変数から自動的にDATABASE_URLを読み込む

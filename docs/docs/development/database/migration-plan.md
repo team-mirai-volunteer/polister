@@ -224,6 +224,7 @@ ALTER TABLE "users"
 ### Phase 1マイグレーション実行手順
 
 1. **事前準備**
+
    ```bash
    # データベースのバックアップ
    pg_dump -U postgres -d polister > backup_before_phase1.sql
@@ -234,11 +235,13 @@ ALTER TABLE "users"
    ```
 
 2. **マイグレーションファイル作成**
+
    ```bash
    npx prisma migrate dev --name phase1_municipality_board_user_extensions
    ```
 
 3. **本番適用**
+
    ```bash
    # ステージング環境でテスト
    npx prisma migrate deploy
@@ -394,6 +397,7 @@ DROP TYPE IF EXISTS "ChangeReason";
 ### Phase 1補足マイグレーション実行手順
 
 1. **事前準備**
+
    ```bash
    # データベースのバックアップ
    pg_dump -U postgres -d polister > backup_before_board_history.sql
@@ -404,11 +408,13 @@ DROP TYPE IF EXISTS "ChangeReason";
    ```
 
 2. **マイグレーションファイル作成**
+
    ```bash
    npx prisma migrate dev --name phase1_supplement_board_history
    ```
 
 3. **本番適用**
+
    ```bash
    # ステージング環境でテスト
    npx prisma migrate deploy
@@ -425,6 +431,7 @@ DROP TYPE IF EXISTS "ChangeReason";
 ### データ例
 
 **beforeData（変更前）**:
+
 ```json
 {
   "boardNumber": 44,
@@ -441,14 +448,15 @@ DROP TYPE IF EXISTS "ChangeReason";
 ```
 
 **afterData（変更後）**:
+
 ```json
 {
   "boardNumber": 45,
   "name": "県道給父西枇杷島線富塚信号西",
   "address": "あま市冨塚郷1",
   "location": {
-    "lat": 35.199850,
-    "lng": 136.805600
+    "lat": 35.19985,
+    "lng": 136.8056
   },
   "trustLevel": "LEVEL_2",
   "status": "VERIFIED",
@@ -459,6 +467,7 @@ DROP TYPE IF EXISTS "ChangeReason";
 ### リレーション追加
 
 **Boardモデル**:
+
 ```prisma
 model Board {
   // 既存フィールド
@@ -469,6 +478,7 @@ model Board {
 ```
 
 **Userモデル**:
+
 ```prisma
 model User {
   // 既存フィールド
@@ -479,6 +489,7 @@ model User {
 ```
 
 **Phase 2以降で追加予定のリレーション**:
+
 - DataSource → BoardHistory[]
 - NormalizedCsv → BoardHistory[]
 - ErrorReport → BoardHistory[]
@@ -632,6 +643,7 @@ model Board {
 ### Phase 2マイグレーション実行手順
 
 1. **Municipalityモデルへのリレーション追加**
+
    ```prisma
    model Municipality {
      // 既存フィールド
@@ -642,6 +654,7 @@ model Board {
    ```
 
 2. **Userモデルへのリレーション追加**
+
    ```prisma
    model User {
      // 既存フィールド
@@ -652,6 +665,7 @@ model Board {
    ```
 
 3. **マイグレーション実行**
+
    ```bash
    npx prisma migrate dev --name phase2_data_import_functionality
    ```
@@ -769,6 +783,7 @@ enum FixStatus {
 ### Phase 3マイグレーション実行手順
 
 1. **Boardモデルへのリレーション追加**
+
    ```prisma
    model Board {
      // 既存フィールド
@@ -779,6 +794,7 @@ enum FixStatus {
    ```
 
 2. **Userモデルへのリレーション追加**
+
    ```prisma
    model User {
      // 既存フィールド
@@ -829,6 +845,7 @@ enum WorkTaskStatus {
 ### Phase 4マイグレーション実行手順
 
 1. **Municipalityモデルへのリレーション追加**
+
    ```prisma
    model Municipality {
      // 既存フィールド
@@ -839,6 +856,7 @@ enum WorkTaskStatus {
    ```
 
 2. **Userモデルへのリレーション追加**
+
    ```prisma
    model User {
      // 既存フィールド
@@ -862,6 +880,7 @@ enum WorkTaskStatus {
 **原因**: Prismaのリレーションフィールドはnullableにできない
 
 **解決策**:
+
 ```prisma
 // ❌ 間違い
 normalizedCsv NormalizedCsv? @relation(...)
@@ -876,6 +895,7 @@ normalizedCsv   NormalizedCsv? @relation(..., fields: [normalizedCsvId], referen
 **原因**: Enumが既に存在している
 
 **解決策**:
+
 ```sql
 -- 既存のEnumを確認
 SELECT typname FROM pg_type WHERE typtype = 'e';
@@ -889,6 +909,7 @@ DROP TYPE IF EXISTS "MunicipalityStatus";
 **原因**: 外部キー制約の違反
 
 **解決策**:
+
 1. 参照先のレコードが存在することを確認
 2. カスケード設定を確認
 3. 必要に応じてON DELETE CASCADEまたはON DELETE SET NULLを設定

@@ -364,21 +364,21 @@ erDiagram
 
 掲示板の位置情報と基本データを管理します。
 
-| カラム名            | 型               | 説明                          |
-| ------------------- | ---------------- | ----------------------------- |
-| id                  | UUID             | 主キー                        |
-| board_number        | Integer          | 掲示板番号                    |
-| name                | String           | 掲示場名称（例: "第1投票区第1号"）|
-| address             | String           | 住所                          |
-| location            | Geography(POINT) | 位置情報（緯度経度）          |
-| municipality_id     | UUID             | 市区町村ID（外部キー）        |
-| normalized_csv_id   | UUID             | 正規化CSVID（外部キー、Phase 2+）|
-| trust_level         | TrustLevel       | 信頼度レベル                  |
-| status              | BoardStatus      | ステータス                    |
-| note                | Text             | 備考（例: "緯度経度は怪しい"）|
-| created_at          | Timestamp        | 作成日時                      |
-| updated_at          | Timestamp        | 更新日時                      |
-| deleted_at          | Timestamp        | 削除日時（論理削除）          |
+| カラム名          | 型               | 説明                               |
+| ----------------- | ---------------- | ---------------------------------- |
+| id                | UUID             | 主キー                             |
+| board_number      | Integer          | 掲示板番号                         |
+| name              | String           | 掲示場名称（例: "第1投票区第1号"） |
+| address           | String           | 住所                               |
+| location          | Geography(POINT) | 位置情報（緯度経度）               |
+| municipality_id   | UUID             | 市区町村ID（外部キー）             |
+| normalized_csv_id | UUID             | 正規化CSVID（外部キー、Phase 2+）  |
+| trust_level       | TrustLevel       | 信頼度レベル                       |
+| status            | BoardStatus      | ステータス                         |
+| note              | Text             | 備考（例: "緯度経度は怪しい"）     |
+| created_at        | Timestamp        | 作成日時                           |
+| updated_at        | Timestamp        | 更新日時                           |
+| deleted_at        | Timestamp        | 削除日時（論理削除）               |
 
 **インデックス**:
 
@@ -412,15 +412,15 @@ erDiagram
 
 **データ収集管理属性（Phase 1で追加）**:
 
-| カラム名        | 型                    | 説明                                      |
-| --------------- | --------------------- | ----------------------------------------- |
-| url             | String                | 選挙管理委員会URL                         |
-| board_count     | Integer               | 掲示場数                                  |
-| data_version    | String                | データ版（例: "2025参院選版"）            |
-| status          | MunicipalityStatus    | 作業ステータス（11種類）                  |
-| contact_status  | ContactStatus         | 選管対応ステータス                        |
-| notes           | Text                  | 備考                                      |
-| folder_id       | String                | Google DriveフォルダID                    |
+| カラム名       | 型                 | 説明                           |
+| -------------- | ------------------ | ------------------------------ |
+| url            | String             | 選挙管理委員会URL              |
+| board_count    | Integer            | 掲示場数                       |
+| data_version   | String             | データ版（例: "2025参院選版"） |
+| status         | MunicipalityStatus | 作業ステータス（11種類）       |
+| contact_status | ContactStatus      | 選管対応ステータス             |
+| notes          | Text               | 備考                           |
+| folder_id      | String             | Google DriveフォルダID         |
 
 **インデックス**:
 
@@ -515,19 +515,19 @@ erDiagram
 
 掲示板情報の変更履歴を記録し、監査証跡を提供します。
 
-| カラム名            | 型           | 説明                                   |
-| ------------------- | ------------ | -------------------------------------- |
-| id                  | UUID         | 主キー                                 |
-| board_id            | UUID         | 掲示板ID（外部キー）                   |
-| before_data         | JSONB        | 変更前の値（JSON形式）                 |
-| after_data          | JSONB        | 変更後の値（JSON形式）                 |
-| change_reason       | ChangeReason | 変更理由                               |
-| data_source_id      | UUID         | データソースID（外部キー、Phase 2+）  |
-| normalized_csv_id   | UUID         | 正規化CSVID（外部キー、Phase 2+）     |
-| error_report_id     | UUID         | エラー報告ID（外部キー、Phase 3+）    |
-| user_id             | UUID         | 変更者ID（外部キー）                   |
-| comment             | Text         | コメント                               |
-| changed_at          | Timestamp    | 変更日時                               |
+| カラム名          | 型           | 説明                                 |
+| ----------------- | ------------ | ------------------------------------ |
+| id                | UUID         | 主キー                               |
+| board_id          | UUID         | 掲示板ID（外部キー）                 |
+| before_data       | JSONB        | 変更前の値（JSON形式）               |
+| after_data        | JSONB        | 変更後の値（JSON形式）               |
+| change_reason     | ChangeReason | 変更理由                             |
+| data_source_id    | UUID         | データソースID（外部キー、Phase 2+） |
+| normalized_csv_id | UUID         | 正規化CSVID（外部キー、Phase 2+）    |
+| error_report_id   | UUID         | エラー報告ID（外部キー、Phase 3+）   |
+| user_id           | UUID         | 変更者ID（外部キー）                 |
+| comment           | Text         | コメント                             |
+| changed_at        | Timestamp    | 変更日時                             |
 
 **インデックス**:
 
@@ -556,17 +556,17 @@ erDiagram
 
 **ChangeReason（変更理由）**:
 
-| 値                    | 名称                   | 説明                                         |
-| --------------------- | ---------------------- | -------------------------------------------- |
-| MANUAL_INPUT          | 手動入力               | ユーザーが直接入力                           |
-| DATA_SOURCE_IMPORT    | 自治体データインポート | 自治体から提供されたデータの取り込み         |
-| FIELD_VERIFICATION    | 現地確認による修正     | 実地確認に基づく修正                         |
-| ERROR_CORRECTION      | エラー修正             | エラー報告に基づく修正                       |
-| DATA_NORMALIZATION    | データ正規化           | 正規化処理による自動修正                     |
-| GEOCODING_UPDATE      | ジオコーディング更新   | 座標変換APIの更新                            |
-| MIGRATION             | データマイグレーション | システム移行時の一括変更                     |
-| SYSTEM_UPDATE         | システムによる自動更新 | 自動処理による更新                           |
-| OTHER                 | その他                 | 上記以外の理由                               |
+| 値                 | 名称                   | 説明                                 |
+| ------------------ | ---------------------- | ------------------------------------ |
+| MANUAL_INPUT       | 手動入力               | ユーザーが直接入力                   |
+| DATA_SOURCE_IMPORT | 自治体データインポート | 自治体から提供されたデータの取り込み |
+| FIELD_VERIFICATION | 現地確認による修正     | 実地確認に基づく修正                 |
+| ERROR_CORRECTION   | エラー修正             | エラー報告に基づく修正               |
+| DATA_NORMALIZATION | データ正規化           | 正規化処理による自動修正             |
+| GEOCODING_UPDATE   | ジオコーディング更新   | 座標変換APIの更新                    |
+| MIGRATION          | データマイグレーション | システム移行時の一括変更             |
+| SYSTEM_UPDATE      | システムによる自動更新 | 自動処理による更新                   |
+| OTHER              | その他                 | 上記以外の理由                       |
 
 **beforeDataとafterDataのJSON形式例**:
 
@@ -657,31 +657,31 @@ erDiagram
 
 **Phase 1で追加予定**
 
-| 値            | 名称                           | 説明                                   |
-| ------------- | ------------------------------ | -------------------------------------- |
-| NOT_STARTED   | 未着手                         | まだ手がついていない自治体             |
-| IN_PROGRESS   | 作業中                         | 現在作業中                             |
-| CONTACTING    | 自治体へ問い合わせ中           | 選管へ問い合わせ中                     |
-| DIGITIZING    | 紙で入手したのでデジタル化中   | スキャン作業中                         |
-| PDF_COMPLETED | PDFを作ったので後はお願い      | PDF化完了、CSV化待ち                   |
-| CSV_COMPLETED | CSVを作ったので後はお願い      | CSV化完了、正規化待ち                  |
-| COMPLETED     | 完了(CSV正規化済み)            | 全作業完了                             |
-| QUALITY_CHECK | データの不備を確認・調整中     | データ品質チェック中                   |
-| URL_FOUND     | URL見つけたので後はお願い      | URL発見、ダウンロード待ち              |
-| OTHER         | その他                         | 特殊なケース（備考欄に補足）           |
-| OUT_OF_SCOPE  | 対象外地域                     | 立候補者が出ていない地域など           |
+| 値            | 名称                         | 説明                         |
+| ------------- | ---------------------------- | ---------------------------- |
+| NOT_STARTED   | 未着手                       | まだ手がついていない自治体   |
+| IN_PROGRESS   | 作業中                       | 現在作業中                   |
+| CONTACTING    | 自治体へ問い合わせ中         | 選管へ問い合わせ中           |
+| DIGITIZING    | 紙で入手したのでデジタル化中 | スキャン作業中               |
+| PDF_COMPLETED | PDFを作ったので後はお願い    | PDF化完了、CSV化待ち         |
+| CSV_COMPLETED | CSVを作ったので後はお願い    | CSV化完了、正規化待ち        |
+| COMPLETED     | 完了(CSV正規化済み)          | 全作業完了                   |
+| QUALITY_CHECK | データの不備を確認・調整中   | データ品質チェック中         |
+| URL_FOUND     | URL見つけたので後はお願い    | URL発見、ダウンロード待ち    |
+| OTHER         | その他                       | 特殊なケース（備考欄に補足） |
+| OUT_OF_SCOPE  | 対象外地域                   | 立候補者が出ていない地域など |
 
 ### ContactStatus（選管対応ステータス）
 
 **Phase 1で追加予定**
 
-| 値                  | 名称                 | 説明                                   |
-| ------------------- | -------------------- | -------------------------------------- |
-| NOT_CONTACTED       | 未問い合わせ         | まだ問い合わせていない                 |
-| WAITING_RESPONSE    | 回答待ち             | 問い合わせ済み、回答待ち               |
-| RECEIVED            | データ受領           | データを受領済み                       |
-| DIRECT_TO_CANDIDATE | 候補者へ直接提供     | 候補者へ直接提供される（運営対応）     |
-| STOPPED             | 問い合わせ停止       | 問い合わせ停止（北海道、福岡県等）     |
+| 値                  | 名称             | 説明                               |
+| ------------------- | ---------------- | ---------------------------------- |
+| NOT_CONTACTED       | 未問い合わせ     | まだ問い合わせていない             |
+| WAITING_RESPONSE    | 回答待ち         | 問い合わせ済み、回答待ち           |
+| RECEIVED            | データ受領       | データを受領済み                   |
+| DIRECT_TO_CANDIDATE | 候補者へ直接提供 | 候補者へ直接提供される（運営対応） |
+| STOPPED             | 問い合わせ停止   | 問い合わせ停止（北海道、福岡県等） |
 
 ### ChangeReason（変更理由）
 
@@ -689,17 +689,17 @@ erDiagram
 
 掲示板情報の変更理由を示します。
 
-| 値                 | 名称                   | 説明                                   |
-| ------------------ | ---------------------- | -------------------------------------- |
-| MANUAL_INPUT       | 手動入力               | ユーザーが直接入力                     |
-| DATA_SOURCE_IMPORT | 自治体データインポート | 自治体から提供されたデータの取り込み   |
-| FIELD_VERIFICATION | 現地確認による修正     | 実地確認に基づく修正                   |
-| ERROR_CORRECTION   | エラー修正             | エラー報告に基づく修正                 |
-| DATA_NORMALIZATION | データ正規化           | 正規化処理による自動修正               |
-| GEOCODING_UPDATE   | ジオコーディング更新   | 座標変換APIの更新                      |
-| MIGRATION          | データマイグレーション | システム移行時の一括変更               |
-| SYSTEM_UPDATE      | システムによる自動更新 | 自動処理による更新                     |
-| OTHER              | その他                 | 上記以外の理由                         |
+| 値                 | 名称                   | 説明                                 |
+| ------------------ | ---------------------- | ------------------------------------ |
+| MANUAL_INPUT       | 手動入力               | ユーザーが直接入力                   |
+| DATA_SOURCE_IMPORT | 自治体データインポート | 自治体から提供されたデータの取り込み |
+| FIELD_VERIFICATION | 現地確認による修正     | 実地確認に基づく修正                 |
+| ERROR_CORRECTION   | エラー修正             | エラー報告に基づく修正               |
+| DATA_NORMALIZATION | データ正規化           | 正規化処理による自動修正             |
+| GEOCODING_UPDATE   | ジオコーディング更新   | 座標変換APIの更新                    |
+| MIGRATION          | データマイグレーション | システム移行時の一括変更             |
+| SYSTEM_UPDATE      | システムによる自動更新 | 自動処理による更新                   |
+| OTHER              | その他                 | 上記以外の理由                       |
 
 ## PostGIS空間データ
 

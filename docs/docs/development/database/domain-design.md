@@ -96,6 +96,7 @@ graph TB
 **責務**: 選挙ポスター掲示板の位置情報と基本データを管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `boardNumber`: 掲示場番号
 - `name`: 掲示場名称（例: "第1投票区第1号"）
@@ -108,12 +109,14 @@ graph TB
 - `note`: 備考（例: "緯度経度は怪しい"）
 
 **TrustLevel（信頼度レベル）**:
+
 - `LEVEL_1` - 公式: 自治体から提供された公式データ
 - `LEVEL_2` - 確認済み: 現地確認・写真付きで検証されたデータ
 - `LEVEL_3` - 報告: 協力者からの報告（未検証）
 - `LEVEL_4` - 記憶: 過去の記憶や伝聞（要検証）
 
 **信頼度の遷移**:
+
 ```mermaid
 stateDiagram-v2
     [*] --> LEVEL_4: 記憶情報登録
@@ -132,6 +135,7 @@ stateDiagram-v2
 **責務**: 国土数値情報から取得した市区町村データと、データ収集の進捗管理
 
 **基本属性（国土数値情報から取得）**:
+
 - `id`: 一意識別子
 - `name`: 市区町村名（国土数値情報のN03_004）
 - `code`: 市区町村コード（国土数値情報のN03_007、5桁、ユニーク）
@@ -141,15 +145,16 @@ stateDiagram-v2
 
 **国土数値情報との対応**:
 
-| Municipalityフィールド | 国土数値情報フィールド | 説明                           |
-| ---------------------- | ---------------------- | ------------------------------ |
-| prefecture             | N03_001                | 都道府県名                     |
-| name                   | N03_004                | 市区町村名（政令市の区含む）   |
-| code                   | N03_007                | 全国地方公共団体コード（5桁）  |
-| polygon                | geometry               | 行政区域境界（MULTIPOLYGON）   |
-| source                 | -                      | 固定値 "MLIT"                  |
+| Municipalityフィールド | 国土数値情報フィールド | 説明                          |
+| ---------------------- | ---------------------- | ----------------------------- |
+| prefecture             | N03_001                | 都道府県名                    |
+| name                   | N03_004                | 市区町村名（政令市の区含む）  |
+| code                   | N03_007                | 全国地方公共団体コード（5桁） |
+| polygon                | geometry               | 行政区域境界（MULTIPOLYGON）  |
+| source                 | -                      | 固定値 "MLIT"                 |
 
 **行政区域コードの構造**:
+
 ```
 01101
 ├─ 01: 都道府県コード（北海道）
@@ -162,6 +167,7 @@ stateDiagram-v2
 ```
 
 **データ収集管理属性（Polister独自）**:
+
 - `url`: 選挙管理委員会URL
 - `boardCount`: 掲示場数
 - `dataVersion`: データ版（例: "2025参院選版"）
@@ -182,6 +188,7 @@ flowchart LR
 ```
 
 **MunicipalityStatus（作業ステータス）**:
+
 ```mermaid
 stateDiagram-v2
     [*] --> NOT_STARTED: 未着手
@@ -200,6 +207,7 @@ stateDiagram-v2
 ```
 
 **ContactStatus（選管対応ステータス）**:
+
 - `NOT_CONTACTED` - 未問い合わせ
 - `WAITING_RESPONSE` - 回答待ち
 - `RECEIVED` - データ受領
@@ -213,6 +221,7 @@ stateDiagram-v2
 **責務**: 自治体から提供されたデータの情報を管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `municipalityId`: 自治体ID
 - `sourceType`: ソース種別（Excel/PDF/CSV/Web/KML/紙/メール等）
@@ -220,6 +229,7 @@ stateDiagram-v2
 - `receivedAt`: 受領日時
 
 **SourceType（ソース種別）**:
+
 - `EXCEL` - Excelファイル
 - `PDF` - PDFファイル
 - `CSV` - CSVファイル
@@ -236,6 +246,7 @@ stateDiagram-v2
 **責務**: 実際のファイル情報を管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `dataSourceId`: データソースID
 - `fileType`: ファイル形式（PDF/CSV/KML/Excel/Image）
@@ -247,21 +258,22 @@ stateDiagram-v2
 
 **データ形式の処理難易度**:
 
-| 形式 | 難易度 | データ品質期待値 | 所要時間 |
-|------|-------|----------------|----------|
-| KML/KMZ | ★★☆☆☆ | 98% | 20分 |
-| CSV | ★☆☆☆☆ | 95% | 5分 |
-| Excel | ★☆☆☆☆ | 95% | 10分 |
-| PDF表形式 | ★★☆☆☆ | 80% | 30分 |
-| PDFテキスト | ★★★☆☆ | 70% | 1時間 |
-| PDF画像 | ★★★★☆ | 60% | 2時間 |
-| 紙 | ★★★★★ | 50% | 3時間 |
+| 形式        | 難易度 | データ品質期待値 | 所要時間 |
+| ----------- | ------ | ---------------- | -------- |
+| KML/KMZ     | ★★☆☆☆  | 98%              | 20分     |
+| CSV         | ★☆☆☆☆  | 95%              | 5分      |
+| Excel       | ★☆☆☆☆  | 95%              | 10分     |
+| PDF表形式   | ★★☆☆☆  | 80%              | 30分     |
+| PDFテキスト | ★★★☆☆  | 70%              | 1時間    |
+| PDF画像     | ★★★★☆  | 60%              | 2時間    |
+| 紙          | ★★★★★  | 50%              | 3時間    |
 
 #### NormalizationTask（正規化タスク）
 
 **責務**: データファイルの正規化処理を管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `dataFileId`: データファイルID
 - `userId`: 処理ユーザーID
@@ -274,6 +286,7 @@ stateDiagram-v2
 - `completedAt`: 完了日時
 
 **正規化処理フロー**:
+
 ```mermaid
 flowchart TD
     A[データファイル] --> B[ファイル読み込み]
@@ -295,6 +308,7 @@ flowchart TD
 **責務**: 正規化されたCSVファイルの情報を管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `normalizationTaskId`: 正規化タスクID
 - `filePath`: ファイルパス
@@ -303,6 +317,7 @@ flowchart TD
 - `qualityStatus`: 品質ステータス（未検証/S/A/B/C/Dランク）
 
 **QualityStatus（品質ランク）**:
+
 ```
 品質スコア = 完全性(40点) + 正確性(40点) + 一貫性(15点) + 適時性(5点)
 
@@ -320,6 +335,7 @@ flowchart TD
 **責務**: データ品質の自動チェック結果を記録
 
 **属性**:
+
 - `id`: 一意識別子
 - `normalizationTaskId`: 正規化タスクID
 - `checkType`: チェック種別
@@ -328,6 +344,7 @@ flowchart TD
 - `checkedAt`: チェック日時
 
 **CheckType（チェック種別）**:
+
 - `REQUIRED_COLUMNS` - 必須カラム存在
 - `MISSING_VALUES` - 必須項目欠損
 - `COORDINATE_RANGE` - 座標範囲（緯度33-46度、経度128-146度）
@@ -341,6 +358,7 @@ flowchart TD
 **責務**: 実地作業中に発見されたエラーを管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `boardId`: 掲示場ID
 - `errorType`: エラー種別
@@ -350,6 +368,7 @@ flowchart TD
 - `reportedAt`: 報告日時
 
 **ErrorType（エラー種別）**:
+
 - `LOCATION_MISMATCH` - 位置ずれ（発生率45%）
 - `NUMBER_MISMATCH` - 番号違い（発生率25%）
 - `ADDRESS_MISMATCH` - 住所違い（発生率15%）
@@ -359,18 +378,19 @@ flowchart TD
 
 **エラー修正の優先度**:
 
-| 優先度 | エラー種別 | 対応期限 | 理由 |
-|--------|-----------|---------|------|
-| 最高 | 必須項目欠損、座標が海上・国外 | 即時 | ポスター貼り作業に致命的影響 |
-| 高 | 位置ずれ50m以上、掲示場不在 | 24時間以内 | 現地で掲示場を見つけられない |
-| 中 | 位置ずれ10-50m、番号違い、住所違い | 1週間以内 | 現地で探せば見つかるが手間 |
-| 低 | 位置ずれ10m未満、重複 | 随時 | 実害は少ない |
+| 優先度 | エラー種別                         | 対応期限   | 理由                         |
+| ------ | ---------------------------------- | ---------- | ---------------------------- |
+| 最高   | 必須項目欠損、座標が海上・国外     | 即時       | ポスター貼り作業に致命的影響 |
+| 高     | 位置ずれ50m以上、掲示場不在        | 24時間以内 | 現地で掲示場を見つけられない |
+| 中     | 位置ずれ10-50m、番号違い、住所違い | 1週間以内  | 現地で探せば見つかるが手間   |
+| 低     | 位置ずれ10m未満、重複              | 随時       | 実害は少ない                 |
 
 #### FixTask（修正タスク）
 
 **責務**: エラー修正作業を管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `errorReportId`: エラー報告ID
 - `userId`: 修正ユーザーID
@@ -385,6 +405,7 @@ flowchart TD
 **責務**: ユーザー情報と信頼度スコアを管理
 
 **基本属性**:
+
 - `id`: 一意識別子
 - `email`: メールアドレス（ユニーク）
 - `name`: 表示名
@@ -393,6 +414,7 @@ flowchart TD
 - `role`: 役割（閲覧者/編集者/地域コーディネーター/管理者）
 
 **信頼度管理属性**:
+
 - `trustScore`: 信頼度スコア（0.0-1.0）
 - `verificationCount`: 検証実施回数
 
@@ -411,6 +433,7 @@ flowchart TD
 **責務**: 掲示板の検証履歴を記録
 
 **属性**:
+
 - `id`: 一意識別子
 - `boardId`: 掲示場ID
 - `userId`: ユーザーID
@@ -421,6 +444,7 @@ flowchart TD
 - `verifiedAt`: 検証日時
 
 **地域ベース検証フロー**:
+
 ```mermaid
 flowchart TD
     Start[データ登録] --> CheckTrust{信頼度レベル}
@@ -461,12 +485,14 @@ flowchart TD
 **責務**: ユーザーの活動地域を管理し、地域ベース検証依頼に使用
 
 **属性**:
+
 - `id`: 一意識別子
 - `userId`: ユーザーID
 - `municipalityId`: 市区町村ID
 - `isPrimary`: 主要居住地フラグ
 
 **用途**:
+
 - 地域ベース検証依頼の送信先決定
 - 居住地周辺の未検証データを優先的に通知
 - ユーザーの活動エリア管理
@@ -478,6 +504,7 @@ flowchart TD
 **責務**: サポーターへの作業割り当てを管理
 
 **属性**:
+
 - `id`: 一意識別子
 - `municipalityId`: 自治体ID
 - `userId`: ユーザーID
@@ -486,6 +513,7 @@ flowchart TD
 - `completedAt`: 完了日時
 
 **用途**:
+
 - サポーターへの作業割り当て
 - 作業負荷の可視化
 - 進捗管理の効率化
@@ -504,6 +532,7 @@ flowchart TD
 - **トラブルシューティング**: 問題発生時に変更履歴から原因を特定
 
 **属性**:
+
 - `id`: 一意識別子
 - `boardId`: 掲示場ID
 - `beforeData`: 変更前の値（JSON形式）
@@ -517,6 +546,7 @@ flowchart TD
 - `changedAt`: 変更日時
 
 **ChangeReason（変更理由）**:
+
 - `MANUAL_INPUT` - 手動入力: ユーザーが直接入力
 - `DATA_SOURCE_IMPORT` - 自治体データインポート: 自治体から提供されたデータの取り込み
 - `FIELD_VERIFICATION` - 現地確認による修正: 実地確認に基づく修正
@@ -600,25 +630,27 @@ flowchart TD
 **ユースケース例**:
 
 1. **自治体データインポート時**:
+
    ```typescript
-   changeReason: ChangeReason.DATA_SOURCE_IMPORT
-   normalizedCsvId: "csv-uuid-xxx"
-   comment: "2025参院選版データより更新"
+   changeReason: ChangeReason.DATA_SOURCE_IMPORT;
+   normalizedCsvId: "csv-uuid-xxx";
+   comment: "2025参院選版データより更新";
    ```
 
 2. **現地確認による修正**:
+
    ```typescript
-   changeReason: ChangeReason.FIELD_VERIFICATION
-   userId: "user-uuid-xxx"
-   comment: "実地確認により位置が50mずれていることを確認"
+   changeReason: ChangeReason.FIELD_VERIFICATION;
+   userId: "user-uuid-xxx";
+   comment: "実地確認により位置が50mずれていることを確認";
    ```
 
 3. **エラー報告に基づく修正**:
    ```typescript
-   changeReason: ChangeReason.ERROR_CORRECTION
-   errorReportId: "error-uuid-xxx"
-   userId: "user-uuid-xxx"
-   comment: "エラー報告ID: #123に基づき番号を修正"
+   changeReason: ChangeReason.ERROR_CORRECTION;
+   errorReportId: "error-uuid-xxx";
+   userId: "user-uuid-xxx";
+   comment: "エラー報告ID: #123に基づき番号を修正";
    ```
 
 **変更履歴の活用**:
@@ -689,26 +721,26 @@ const boardsInMunicipality = await prisma.$queryRaw`
 
 ### カスケード削除の方針
 
-| 親テーブル | 子テーブル | カスケード動作 | 理由 |
-|-----------|-----------|--------------|------|
-| Board | BoardImage | CASCADE | 掲示板が削除されたら画像も不要 |
-| Board | Verification | CASCADE | 掲示板が削除されたら検証記録も不要 |
-| Board | ErrorReport | CASCADE | 掲示板が削除されたらエラー報告も不要 |
-| User | Account | CASCADE | ユーザー削除時に認証情報も削除 |
-| User | Session | CASCADE | ユーザー削除時にセッションも削除 |
-| User | Verification | **保持** | 検証履歴は監査証跡として保持 |
-| User | BoardImage | **保持** | 証拠写真は監査証跡として保持 |
-| User | UserLocation | CASCADE | ユーザー削除時に居住地情報も削除 |
-| Municipality | Board | **制約** | 掲示板が存在する自治体は削除不可 |
+| 親テーブル   | 子テーブル   | カスケード動作 | 理由                                 |
+| ------------ | ------------ | -------------- | ------------------------------------ |
+| Board        | BoardImage   | CASCADE        | 掲示板が削除されたら画像も不要       |
+| Board        | Verification | CASCADE        | 掲示板が削除されたら検証記録も不要   |
+| Board        | ErrorReport  | CASCADE        | 掲示板が削除されたらエラー報告も不要 |
+| User         | Account      | CASCADE        | ユーザー削除時に認証情報も削除       |
+| User         | Session      | CASCADE        | ユーザー削除時にセッションも削除     |
+| User         | Verification | **保持**       | 検証履歴は監査証跡として保持         |
+| User         | BoardImage   | **保持**       | 証拠写真は監査証跡として保持         |
+| User         | UserLocation | CASCADE        | ユーザー削除時に居住地情報も削除     |
+| Municipality | Board        | **制約**       | 掲示板が存在する自治体は削除不可     |
 
 ### 論理削除の適用
 
-| モデル | 論理削除 | 理由 |
-|-------|---------|------|
-| User | ✅ | 検証履歴・画像データの保全のため |
-| Board | ✅ | 削除履歴の追跡のため |
-| Municipality | ❌ | マスターデータのため削除しない |
-| DataFile | ❌ | ファイルは物理削除 |
+| モデル       | 論理削除 | 理由                             |
+| ------------ | -------- | -------------------------------- |
+| User         | ✅       | 検証履歴・画像データの保全のため |
+| Board        | ✅       | 削除履歴の追跡のため             |
+| Municipality | ❌       | マスターデータのため削除しない   |
+| DataFile     | ❌       | ファイルは物理削除               |
 
 ## 段階的な実装ロードマップ
 
@@ -717,6 +749,7 @@ const boardsInMunicipality = await prisma.$queryRaw`
 **目標**: 自治体からのデータ収集状況を追跡できるようにする
 
 **実装項目**:
+
 - ✅ Municipalityモデルの拡張
   - status、contactStatus、url、boardCount等のフィールド追加
   - MunicipalityStatus、ContactStatusのEnum追加
@@ -724,6 +757,7 @@ const boardsInMunicipality = await prisma.$queryRaw`
 - ✅ UserモデルへのslackNameフィールド追加
 
 **マイグレーション**:
+
 - 既存のMunicipalityレコードに対してデフォルト値を設定
 - 既存のBoardレコードに対してnameをnullableで追加
 
@@ -732,6 +766,7 @@ const boardsInMunicipality = await prisma.$queryRaw`
 **目標**: CSV/KML/PDFからのデータ取り込みフローを管理
 
 **実装項目**:
+
 - ✅ DataSourceモデルの追加
 - ✅ DataFileモデルの追加
 - ✅ NormalizationTaskモデルの追加（基本機能）
@@ -739,6 +774,7 @@ const boardsInMunicipality = await prisma.$queryRaw`
 - ✅ BoardモデルへのnormalizedCsvIdリレーション追加
 
 **機能実装**:
+
 - CSVインポート機能
 - KMLインポート機能
 - 住所正規化（ジオコーディング）
@@ -749,12 +785,14 @@ const boardsInMunicipality = await prisma.$queryRaw`
 **目標**: データ品質の自動チェックとエラー管理
 
 **実装項目**:
+
 - ✅ QualityCheckモデルの追加
 - ✅ ErrorReportモデルの追加
 - ✅ FixTaskモデルの追加
 - ✅ NormalizationTaskの品質チェック機能拡張
 
 **機能実装**:
+
 - 自動品質チェック（必須項目、座標範囲、重複等）
 - エラー報告フォーム
 - エラー修正ワークフロー
@@ -765,9 +803,11 @@ const boardsInMunicipality = await prisma.$queryRaw`
 **目標**: サポーターへの作業割り当てと進捗管理
 
 **実装項目**:
+
 - ✅ WorkTaskモデルの追加
 
 **機能実装**:
+
 - タスク割り当て機能
 - 進捗ダッシュボード
 - サポーター別作業量の可視化

@@ -553,6 +553,7 @@ echo "✓ Import completed!"
 ```
 
 実行：
+
 ```bash
 chmod +x scripts/import-municipalities.sh
 ./scripts/import-municipalities.sh
@@ -563,6 +564,7 @@ chmod +x scripts/import-municipalities.sh
 国土数値情報は年1回更新されます。更新時の手順：
 
 1. **新年度版のダウンロード**
+
    ```bash
    curl -O https://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-2026/N03-20260101_GML.zip
    ```
@@ -573,6 +575,7 @@ chmod +x scripts/import-municipalities.sh
    - 合併・廃止された市区町村は削除されない（孤立レコードとして残る）
 
 3. **孤立したBoardレコードの確認と修正**
+
    ```sql
    -- 市区町村が合併・廃止されたBoardを検出
    SELECT b.id, b.board_number, b.address, old_m.name as old_municipality
