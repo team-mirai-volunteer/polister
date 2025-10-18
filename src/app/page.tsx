@@ -1,13 +1,15 @@
 import {
-  AppBar,
   Box,
   Button,
+  Card,
+  CardContent,
   Container,
+  Grid,
   Paper,
-  Toolbar,
   Typography,
 } from "@mui/material";
 
+import Link from "next/link";
 import { Suspense } from "react";
 
 import MapboxMap from "@/components/map/MapboxMap";
@@ -26,32 +28,69 @@ const MapFallback = () => (
 export default function Home() {
   return (
     <Box>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Polister
-          </Typography>
-          <Button color="inherit">ログイン</Button>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h2" component="h1" gutterBottom>
           Polisterプロジェクトへようこそ
         </Typography>
 
         <Typography variant="h5" color="text.secondary" paragraph>
-          Next.js 15 + React 19 + TypeScript + Material UI で構築されています
+          選挙ポスター掲示板位置管理サービス
         </Typography>
 
-        <Box sx={{ mt: 4, display: "flex", gap: 2 }}>
-          <Button variant="contained" size="large">
-            はじめる
-          </Button>
-          <Button variant="outlined" size="large">
-            ドキュメント
-          </Button>
-        </Box>
+        <Grid container spacing={3} sx={{ mt: 2, mb: 4 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" sx={{ mb: 2 }}>
+                  自治体一覧
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  全国1905件の市区町村データを閲覧できます。
+                  各自治体の行政区域境界を地図上で確認できます。
+                </Typography>
+                <Button
+                  variant="contained"
+                  component={Link}
+                  href="/municipalities"
+                  fullWidth
+                >
+                  自治体一覧を見る
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" sx={{ mb: 2 }}>
+                  ドキュメント
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  プロジェクトのアーキテクチャ、開発ガイド、要件定義などのドキュメントを参照できます。
+                </Typography>
+                <Button
+                  variant="outlined"
+                  component="a"
+                  href="https://team-mirai-volunteer.github.io/polister/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  fullWidth
+                >
+                  ドキュメントを見る
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         <Paper sx={{ p: 3, mt: 4 }}>
           <Typography variant="h6" gutterBottom>

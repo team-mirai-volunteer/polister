@@ -3,6 +3,8 @@ import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import { container, DependencyContainer } from "tsyringe";
 
+import type { IMunicipalityRepository } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
+import { MunicipalityRepository } from "@/features/municipality/infrastructure/repositories/MunicipalityRepository";
 import type {
   AppLogger,
   DateProvider,
@@ -125,20 +127,28 @@ const getPrismaClient = (): PrismaClient => {
 };
 
 const registerDefaults = (target: DependencyContainer): void => {
-  if (!target.isRegistered(TOKENS.prismaClient)) {
-    target.register<PrismaClient>(TOKENS.prismaClient, {
+  if (!target.isRegistered(TOKENS.PrismaClient)) {
+    target.register<PrismaClient>(TOKENS.PrismaClient, {
       useFactory: getPrismaClient,
     });
   }
 
-  if (!target.isRegistered(TOKENS.logger)) {
-    target.registerSingleton<AppLogger>(TOKENS.logger, ConsoleLogger);
+  if (!target.isRegistered(TOKENS.Logger)) {
+    target.registerSingleton<AppLogger>(TOKENS.Logger, ConsoleLogger);
   }
 
-  if (!target.isRegistered(TOKENS.dateProvider)) {
+  if (!target.isRegistered(TOKENS.DateProvider)) {
     target.registerSingleton<DateProvider>(
-      TOKENS.dateProvider,
+      TOKENS.DateProvider,
       SystemDateProvider
+    );
+  }
+
+  // Repositories
+  if (!target.isRegistered(TOKENS.MunicipalityRepository)) {
+    target.registerSingleton<IMunicipalityRepository>(
+      TOKENS.MunicipalityRepository,
+      MunicipalityRepository
     );
   }
 };

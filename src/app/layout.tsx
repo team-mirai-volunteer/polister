@@ -1,5 +1,6 @@
 import "reflect-metadata";
 
+import { Box } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
@@ -8,6 +9,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
 
 import { setupDI } from "@/shared/lib/di";
+import { AppBar } from "@/shared/ui/components/layout/AppBar";
 
 import theme from "../theme";
 import "./globals.css";
@@ -47,7 +49,18 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            {children}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "100vh",
+              }}
+            >
+              <AppBar />
+              <Box component="main" sx={{ flexGrow: 1 }}>
+                {children}
+              </Box>
+            </Box>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

@@ -306,6 +306,205 @@ async findByLocation(
 }
 ```
 
+## 国土数値情報のインポート
+
+### 概要
+
+Polisterでは、国土交通省の[国土数値情報 行政区域データ](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html)を使用して、全国約1,900の市区町村データ（名称、コード、境界ポリゴン）を取得します。
+
+### 前提条件
+
+以下のツールをインストールしてください：
+
+```bash
+# GDAL/OGR（地理空間データ変換ツール）
+brew install gdal  # macOS
+sudo apt-get install gdal-bin  # Ubuntu
+
+# wellknownライブラリ（GeoJSON→WKT変換）
+yarn add wellknown
+yarn add -D @types/wellknown
+```
+
+### インポート手順
+
+**推奨方法**: Yarnコマンドで公式同期スクリプトを使用
+
+```bash
+# 国土数値情報をダウンロード・インポート（一括処理）
+yarn municipalities:sync
+```
+
+このコマンドは以下を自動実行します：
+
+#### インポート処理フロー
+
+```mermaid
+flowchart TD
+  A["国土数値情報をダウンロード<br/>MLIT N03-2025"] --> B["ZIPファイルを解凍"]
+  B --> C["Shapefileを読み込み"]
+  C --> D["PostgreSQLにインポート<br/>1905市区町村"]
+  D --> E["データ検証"]
+  E --> F{検証結果}
+  F -->|OK| G["✓ インポート完了"]
+  F -->|NG| H["✗ エラー通知"]
+```
+
+1. 国土数値情報（N03-2025）をダウンロード
+2. ZIPファイルを解凍
+3. Shapefileを読み込み
+4. PostgreSQLにインポート（1905市区町村）
+
+**詳細**: スクリプトの実装は `src/scripts/sync-municipalities.ts` を参照してください。
+
+#### データ検証
+
+```sql
+-- 件数確認（約1,900件）
+SELECT COUNT(*) FROM municipalities;
+
+-- 都道府県別の件数確認
+SELECT prefecture, COUNT(*) as count
+FROM municipalities
+GROUP BY prefecture
+ORDER BY prefecture;
+
+-- ポリゴンの有無確認
+SELECT
+  COUNT(*) as total,
+  COUNT(polygon) as with_polygon,
+  COUNT(*) - COUNT(polygon) as without_polygon
+FROM municipalities;
+
+-- サンプルデータの確認
+SELECT name, code, prefecture
+FROM municipalities
+ORDER BY code
+LIMIT 10;
+
+-- 空間クエリのテスト（国会議事堂の位置で確認）
+SELECT name, code, prefecture
+FROM municipalities
+WHERE ST_Within(
+  ST_SetSRID(ST_MakePoint(139.7453, 35.6762), 4326),
+  polygon::geometry
+);
+-- 期待される結果: 千代田区
+```
+
+### 簡略版: ogr2ogrで直接インポート
+
+TypeScriptスクリプトを使わず、ogr2ogrとpsqlで直接インポートする方法：
+
+```bash
+#!/bin/bash
+# scripts/import-municipalities.sh
+
+set -e
+
+echo "=== Municipalities Import Script ==="
+
+# 1. GeoJSONをPostGISに直接インポート
+echo "Step 1: Importing GeoJSON to PostgreSQL..."
+ogr2ogr -f PostgreSQL \
+  PG:"host=localhost port=5432 dbname=polister_development user=postgres password=postgres" \
+  -nln municipalities_temp \
+  -t_srs EPSG:4326 \
+  scripts/data/municipalities.geojson
+
+# 2. 一時テーブルからMunicipalitiesテーブルにマージ
+echo "Step 2: Merging to municipalities table..."
+psql -h localhost -U postgres -d polister_development <<EOF
+INSERT INTO municipalities (id, name, code, prefecture, polygon, source, created_at, updated_at)
+SELECT
+  gen_random_uuid(),
+  n03_004 as name,
+  n03_007 as code,
+  n03_001 as prefecture,
+  ST_Transform(wkb_geometry, 4326)::geography as polygon,
+  'MLIT' as source,
+  CURRENT_TIMESTAMP as created_at,
+  CURRENT_TIMESTAMP as updated_at
+FROM municipalities_temp
+WHERE n03_004 IS NOT NULL
+  AND n03_007 IS NOT NULL
+ON CONFLICT (code) DO UPDATE SET
+  name = EXCLUDED.name,
+  prefecture = EXCLUDED.prefecture,
+  polygon = EXCLUDED.polygon,
+  updated_at = CURRENT_TIMESTAMP;
+
+-- 一時テーブルを削除
+DROP TABLE municipalities_temp;
+
+-- 件数確認
+SELECT COUNT(*) as total FROM municipalities;
+SELECT prefecture, COUNT(*) as count FROM municipalities GROUP BY prefecture ORDER BY prefecture;
+EOF
+
+echo "✓ Import completed!"
+```
+
+実行：
+
+```bash
+chmod +x scripts/import-municipalities.sh
+./scripts/import-municipalities.sh
+```
+
+### 年次更新
+
+国土数値情報は年1回更新されます。更新時の手順：
+
+#### 年次更新ワークフロー
+
+```mermaid
+flowchart TD
+  A["新年度版をダウンロード<br/>N03-2026"] --> B["インポートスクリプト実行<br/>yarn municipalities:sync"]
+  B --> C["ON CONFLICT DO UPDATE"]
+  C --> D["新規追加レコード"]
+  C --> E["更新レコード"]
+  D --> F["孤立Boardレコードの検出"]
+  E --> F
+  F --> G{孤立レコード<br/>あり?}
+  G -->|あり| H["位置情報から<br/>市区町村を自動割り当て"]
+  G -->|なし| I["✓ 更新完了"]
+  H --> I
+```
+
+1. **新年度版のダウンロード**
+
+   ```bash
+   curl -O https://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-2026/N03-20260101_GML.zip
+   ```
+
+2. **インポートスクリプト実行**
+   - `ON CONFLICT (code) DO UPDATE`により既存データを更新
+   - 新しい市区町村が追加される
+   - 合併・廃止された市区町村は削除されない（孤立レコードとして残る）
+
+3. **孤立したBoardレコードの確認と修正**
+
+   ```sql
+   -- 市区町村が合併・廃止されたBoardを検出
+   SELECT b.id, b.board_number, b.address, old_m.name as old_municipality
+   FROM boards b
+   LEFT JOIN municipalities old_m ON b.municipality_id = old_m.id
+   WHERE NOT EXISTS (
+     SELECT 1 FROM municipalities m
+     WHERE m.id = b.municipality_id
+   );
+
+   -- 位置情報から適切な市区町村を自動割り当て
+   UPDATE boards b
+   SET municipality_id = m.id
+   FROM municipalities m
+   WHERE ST_Within(b.location::geometry, m.polygon::geometry)
+     AND NOT EXISTS (
+       SELECT 1 FROM municipalities m2 WHERE m2.id = b.municipality_id
+     );
+   ```
+
 ## データベースメンテナンス
 
 ### バックアップ
@@ -316,6 +515,9 @@ pg_dump polister_development > backup.sql
 
 # 特定テーブルのバックアップ
 pg_dump -t boards polister_development > boards_backup.sql
+
+# 圧縮してバックアップ
+pg_dump polister_development | gzip > backup_$(date +%Y%m%d).sql.gz
 ```
 
 ### リストア
@@ -323,6 +525,9 @@ pg_dump -t boards polister_development > boards_backup.sql
 ```bash
 # バックアップからリストア
 psql polister_development < backup.sql
+
+# 圧縮ファイルからリストア
+gunzip -c backup_20251017.sql.gz | psql polister_development
 ```
 
 ### 空間インデックスの再構築
@@ -330,9 +535,11 @@ psql polister_development < backup.sql
 ```sql
 -- インデックス再構築
 REINDEX INDEX idx_boards_location;
+REINDEX INDEX idx_municipalities_polygon;
 
 -- VACUUMとANALYZE
 VACUUM ANALYZE boards;
+VACUUM ANALYZE municipalities;
 ```
 
 ## トラブルシューティング
@@ -368,6 +575,13 @@ pg_isready
 psql -h localhost -U postgres -d polister_development
 ```
 
+## 参考リンク
+
+- [国土数値情報 行政区域データ](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html)
+- [GDAL/OGR](https://gdal.org/) - 地理空間データ変換ツール
+- [PostGIS空間データガイド](./spatial.md)
+- [データベーススキーマ](./schema.md)
+
 ---
 
-最終更新: 2025年9月27日
+最終更新: 2025年10月17日

@@ -6,29 +6,49 @@ Polisterのデータベーススキーマは、PostgreSQL 17 + PostGIS 3.5を使
 
 ## ER図
 
+### 現在の実装（Phase 1）
+
 ```mermaid
 erDiagram
     BOARDS ||--o{ BOARD_IMAGES : has
     BOARDS ||--o{ VERIFICATIONS : receives
+    BOARDS ||--o{ BOARD_HISTORIES : "change history"
     BOARDS }o--|| MUNICIPALITIES : belongs_to
     USERS ||--o{ VERIFICATIONS : performs
     USERS ||--o{ BOARD_IMAGES : uploads
     USERS ||--o{ USER_LOCATIONS : has
     USERS ||--o{ ACCOUNTS : has
     USERS ||--o{ SESSIONS : has
+    USERS ||--o{ BOARD_HISTORIES : changes
     USER_LOCATIONS }o--|| MUNICIPALITIES : references
 
     BOARDS {
         uuid id PK
         int board_number
+        string name
         string address
         geography location "POINT"
         uuid municipality_id FK
         enum trust_level
         enum status
+        string note
         timestamp created_at
         timestamp updated_at
         timestamp deleted_at
+    }
+
+    BOARD_HISTORIES {
+        uuid id PK
+        uuid board_id FK
+        json before_data
+        json after_data
+        enum change_reason
+        uuid data_source_id FK
+        uuid normalized_csv_id FK
+        uuid error_report_id FK
+        uuid user_id FK
+        text comment
+        timestamp changed_at
     }
 
     MUNICIPALITIES {
@@ -38,6 +58,13 @@ erDiagram
         string prefecture
         geography polygon "MULTIPOLYGON"
         string source
+        string url
+        int board_count
+        string data_version
+        enum status
+        enum contact_status
+        string notes
+        string folder_id
         timestamp created_at
         timestamp updated_at
     }
@@ -46,12 +73,14 @@ erDiagram
         uuid id PK
         string email UK
         string name
+        string slack_name
         string image
         enum role
         float trust_score
         int verification_count
         timestamp created_at
         timestamp updated_at
+        timestamp deleted_at
         timestamp email_verified
     }
 
@@ -100,24 +129,256 @@ erDiagram
     }
 ```
 
+### 将来の拡張計画（Phase 2-4）
+
+Phase 2以降で実装予定のデータインポート・品質管理機能を含む完全なER図：
+
+```mermaid
+erDiagram
+    MUNICIPALITIES ||--o{ BOARDS : has
+    MUNICIPALITIES ||--o{ DATA_SOURCES : provides
+    MUNICIPALITIES ||--o{ WORK_TASKS : "assigned to"
+    MUNICIPALITIES ||--o{ USER_LOCATIONS : references
+
+    USERS ||--o{ WORK_TASKS : "works on"
+    USERS ||--o{ VERIFICATIONS : performs
+    USERS ||--o{ BOARD_IMAGES : uploads
+    USERS ||--o{ USER_LOCATIONS : has
+    USERS ||--o{ NORMALIZATION_TASKS : processes
+    USERS ||--o{ FIX_TASKS : fixes
+    USERS ||--o{ BOARD_HISTORIES : changes
+    USERS ||--o{ ACCOUNTS : has
+    USERS ||--o{ SESSIONS : has
+
+    DATA_SOURCES ||--o{ DATA_FILES : contains
+    DATA_SOURCES ||--o{ BOARD_HISTORIES : "source of"
+    DATA_FILES ||--o{ NORMALIZATION_TASKS : "input to"
+
+    NORMALIZATION_TASKS ||--o{ QUALITY_CHECKS : requires
+    NORMALIZATION_TASKS ||--o{ NORMALIZED_CSVS : produces
+
+    NORMALIZED_CSVS ||--o{ BOARDS : defines
+    NORMALIZED_CSVS ||--o{ BOARD_HISTORIES : "source of"
+
+    BOARDS ||--o{ VERIFICATIONS : receives
+    BOARDS ||--o{ BOARD_IMAGES : has
+    BOARDS ||--o{ ERROR_REPORTS : has
+    BOARDS ||--o{ BOARD_HISTORIES : "change history"
+
+    ERROR_REPORTS ||--o{ FIX_TASKS : requires
+    ERROR_REPORTS ||--o{ BOARD_HISTORIES : "triggers"
+
+    MUNICIPALITIES {
+        uuid id PK
+        string name
+        string code UK
+        string prefecture
+        geography polygon
+        string source
+        string url
+        int board_count
+        string data_version
+        enum status
+        enum contact_status
+        string notes
+        string folder_id
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USERS {
+        uuid id PK
+        string email UK
+        string name
+        string slack_name
+        string image
+        enum role
+        float trust_score
+        int verification_count
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+        timestamp email_verified
+    }
+
+    DATA_SOURCES {
+        uuid id PK
+        uuid municipality_id FK
+        enum source_type
+        string description
+        timestamp received_at
+        timestamp created_at
+    }
+
+    DATA_FILES {
+        uuid id PK
+        uuid data_source_id FK
+        enum file_type
+        string file_path
+        bigint file_size
+        string version
+        boolean has_all
+        timestamp uploaded_at
+        timestamp created_at
+    }
+
+    NORMALIZATION_TASKS {
+        uuid id PK
+        uuid data_file_id FK
+        uuid user_id FK
+        enum status
+        json config
+        timestamp started_at
+        timestamp completed_at
+        timestamp created_at
+    }
+
+    NORMALIZED_CSVS {
+        uuid id PK
+        uuid normalization_task_id FK
+        string file_path
+        int board_count
+        int error_count
+        enum quality_status
+        timestamp created_at
+    }
+
+    BOARDS {
+        uuid id PK
+        int board_number
+        string name
+        string address
+        geography location
+        uuid municipality_id FK
+        uuid normalized_csv_id FK
+        enum trust_level
+        enum status
+        string note
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    BOARD_HISTORIES {
+        uuid id PK
+        uuid board_id FK
+        json before_data
+        json after_data
+        enum change_reason
+        uuid data_source_id FK
+        uuid normalized_csv_id FK
+        uuid error_report_id FK
+        uuid user_id FK
+        text comment
+        timestamp changed_at
+    }
+
+    VERIFICATIONS {
+        uuid id PK
+        uuid board_id FK
+        uuid user_id FK
+        boolean result
+        boolean has_photo
+        float gps_accuracy
+        text comment
+        timestamp verified_at
+        timestamp created_at
+    }
+
+    BOARD_IMAGES {
+        uuid id PK
+        uuid board_id FK
+        uuid user_id FK
+        string image_url
+        timestamp taken_at
+        timestamp created_at
+    }
+
+    USER_LOCATIONS {
+        uuid id PK
+        uuid user_id FK
+        uuid municipality_id FK
+        boolean is_primary
+        timestamp created_at
+    }
+
+    ERROR_REPORTS {
+        uuid id PK
+        uuid board_id FK
+        enum error_type
+        string description
+        string reporter
+        enum status
+        timestamp reported_at
+        timestamp created_at
+    }
+
+    FIX_TASKS {
+        uuid id PK
+        uuid error_report_id FK
+        uuid user_id FK
+        enum status
+        string fix_description
+        timestamp fixed_at
+        timestamp created_at
+    }
+
+    WORK_TASKS {
+        uuid id PK
+        uuid municipality_id FK
+        uuid user_id FK
+        enum status
+        timestamp assigned_at
+        timestamp completed_at
+        timestamp created_at
+    }
+
+    QUALITY_CHECKS {
+        uuid id PK
+        uuid normalization_task_id FK
+        enum check_type
+        enum result
+        string details
+        timestamp checked_at
+    }
+
+    ACCOUNTS {
+        uuid id PK
+        uuid user_id FK
+        string type
+        string provider
+        string provider_account_id
+    }
+
+    SESSIONS {
+        uuid id PK
+        string session_token UK
+        uuid user_id FK
+        timestamp expires
+    }
+```
+
 ## 主要テーブル
 
 ### boards（掲示板）
 
 掲示板の位置情報と基本データを管理します。
 
-| カラム名        | 型               | 説明                   |
-| --------------- | ---------------- | ---------------------- |
-| id              | UUID             | 主キー                 |
-| board_number    | Integer          | 掲示板番号             |
-| address         | String           | 住所                   |
-| location        | Geography(POINT) | 位置情報（緯度経度）   |
-| municipality_id | UUID             | 市区町村ID（外部キー） |
-| trust_level     | TrustLevel       | 信頼度レベル           |
-| status          | BoardStatus      | ステータス             |
-| created_at      | Timestamp        | 作成日時               |
-| updated_at      | Timestamp        | 更新日時               |
-| deleted_at      | Timestamp        | 削除日時（論理削除）   |
+| カラム名          | 型               | 説明                               |
+| ----------------- | ---------------- | ---------------------------------- |
+| id                | UUID             | 主キー                             |
+| board_number      | Integer          | 掲示板番号                         |
+| name              | String           | 掲示場名称（例: "第1投票区第1号"） |
+| address           | String           | 住所                               |
+| location          | Geography(POINT) | 位置情報（緯度経度）               |
+| municipality_id   | UUID             | 市区町村ID（外部キー）             |
+| normalized_csv_id | UUID             | 正規化CSVID（外部キー、Phase 2+）  |
+| trust_level       | TrustLevel       | 信頼度レベル                       |
+| status            | BoardStatus      | ステータス                         |
+| note              | Text             | 備考（例: "緯度経度は怪しい"）     |
+| created_at        | Timestamp        | 作成日時                           |
+| updated_at        | Timestamp        | 更新日時                           |
+| deleted_at        | Timestamp        | 削除日時（論理削除）               |
 
 **インデックス**:
 
@@ -136,6 +397,8 @@ erDiagram
 
 国土数値情報から取得した市区町村データを管理します。
 
+**基本属性**:
+
 | カラム名   | 型                      | 説明                               |
 | ---------- | ----------------------- | ---------------------------------- |
 | id         | UUID                    | 主キー                             |
@@ -146,6 +409,18 @@ erDiagram
 | source     | String                  | データソース（デフォルト: "MLIT"） |
 | created_at | Timestamp               | 作成日時                           |
 | updated_at | Timestamp               | 更新日時                           |
+
+**データ収集管理属性（Phase 1で追加）**:
+
+| カラム名       | 型                 | 説明                           |
+| -------------- | ------------------ | ------------------------------ |
+| url            | String             | 選挙管理委員会URL              |
+| board_count    | Integer            | 掲示場数                       |
+| data_version   | String             | データ版（例: "2025参院選版"） |
+| status         | MunicipalityStatus | 作業ステータス（11種類）       |
+| contact_status | ContactStatus      | 選管対応ステータス             |
+| notes          | Text               | 備考                           |
+| folder_id      | String             | Google DriveフォルダID         |
 
 **インデックス**:
 
@@ -166,6 +441,7 @@ erDiagram
 | id                 | UUID      | 主キー                     |
 | email              | String    | メールアドレス（ユニーク） |
 | name               | String    | 表示名                     |
+| slack_name         | String    | Slackアカウント名          |
 | image              | String    | プロフィール画像URL        |
 | role               | UserRole  | 役割                       |
 | trust_score        | Float     | 信頼度スコア（0.0-1.0）    |
@@ -233,6 +509,97 @@ erDiagram
 - 現地確認時の証拠写真
 - データ信頼度向上
 
+### board_histories（掲示板変更履歴）
+
+**Phase 1補足で追加予定**
+
+掲示板情報の変更履歴を記録し、監査証跡を提供します。
+
+| カラム名          | 型           | 説明                                 |
+| ----------------- | ------------ | ------------------------------------ |
+| id                | UUID         | 主キー                               |
+| board_id          | UUID         | 掲示板ID（外部キー）                 |
+| before_data       | JSONB        | 変更前の値（JSON形式）               |
+| after_data        | JSONB        | 変更後の値（JSON形式）               |
+| change_reason     | ChangeReason | 変更理由                             |
+| data_source_id    | UUID         | データソースID（外部キー、Phase 2+） |
+| normalized_csv_id | UUID         | 正規化CSVID（外部キー、Phase 2+）    |
+| error_report_id   | UUID         | エラー報告ID（外部キー、Phase 3+）   |
+| user_id           | UUID         | 変更者ID（外部キー）                 |
+| comment           | Text         | コメント                             |
+| changed_at        | Timestamp    | 変更日時                             |
+
+**インデックス**:
+
+- board_id
+- user_id
+- change_reason
+- changed_at
+
+**リレーション**:
+
+- Board（変更対象の掲示板）
+- User（変更者）
+- DataSource（自治体データの場合の参照元、Phase 2+）
+- NormalizedCsv（インポート元の正規化ファイル、Phase 2+）
+- ErrorReport（エラー修正の場合の報告元、Phase 3+）
+
+**用途**:
+
+- **データの信頼性向上**: 変更理由とソースを明確にすることで、データの信頼性を担保
+- **監査証跡の確保**: 誰がいつ何を変更したかを追跡可能
+- **エラー分析**: どのフィールドがよく変更されるかを分析し、データ品質向上に活用
+- **トラブルシューティング**: 問題発生時に変更履歴から原因を特定
+- **タイムライン表示**: 掲示板詳細画面で変更履歴をタイムライン形式で表示
+- **差分表示**: 変更前後の値を並べて比較表示
+- **ロールバック**: 必要に応じて過去の状態に戻す
+
+**ChangeReason（変更理由）**:
+
+| 値                 | 名称                   | 説明                                 |
+| ------------------ | ---------------------- | ------------------------------------ |
+| MANUAL_INPUT       | 手動入力               | ユーザーが直接入力                   |
+| DATA_SOURCE_IMPORT | 自治体データインポート | 自治体から提供されたデータの取り込み |
+| FIELD_VERIFICATION | 現地確認による修正     | 実地確認に基づく修正                 |
+| ERROR_CORRECTION   | エラー修正             | エラー報告に基づく修正               |
+| DATA_NORMALIZATION | データ正規化           | 正規化処理による自動修正             |
+| GEOCODING_UPDATE   | ジオコーディング更新   | 座標変換APIの更新                    |
+| MIGRATION          | データマイグレーション | システム移行時の一括変更             |
+| SYSTEM_UPDATE      | システムによる自動更新 | 自動処理による更新                   |
+| OTHER              | その他                 | 上記以外の理由                       |
+
+**beforeDataとafterDataのJSON形式例**:
+
+```json
+// before_data
+{
+  "boardNumber": 44,
+  "name": "県道給父西枇杷島線富塚信号西",
+  "address": "あま市富塚七反地53番地1",
+  "location": {"lat": 35.199806, "lng": 136.805573},
+  "trustLevel": "LEVEL_3",
+  "status": "PENDING",
+  "note": "緯度経度は怪しい"
+}
+
+// after_data
+{
+  "boardNumber": 45,
+  "name": "県道給父西枇杷島線富塚信号西",
+  "address": "あま市冨塚郷1",
+  "location": {"lat": 35.199850, "lng": 136.805600},
+  "trustLevel": "LEVEL_2",
+  "status": "VERIFIED",
+  "note": "実地確認により番号と住所を修正"
+}
+```
+
+**カスケード削除**:
+
+- Board削除時: BoardHistoryは削除を制限（RESTRICT）- 監査証跡として保持
+- User削除時: BoardHistoryのuser_idをNULLに設定（SET NULL）
+- DataSource、NormalizedCsv、ErrorReport削除時: BoardHistoryの該当IDをNULLに設定（SET NULL）
+
 ### user_locations（ユーザー居住地）
 
 ユーザーの活動地域を管理し、地域ベース検証依頼に使用します。
@@ -286,6 +653,54 @@ erDiagram
 | COORDINATOR | 地域コーディネーター | 承認権限あり         | 全て（承認・却下含む）                 |
 | ADMIN       | 管理者               | システム管理者       | 全て（ユーザー管理、システム設定含む） |
 
+### MunicipalityStatus（自治体作業ステータス）
+
+**Phase 1で追加予定**
+
+| 値            | 名称                         | 説明                         |
+| ------------- | ---------------------------- | ---------------------------- |
+| NOT_STARTED   | 未着手                       | まだ手がついていない自治体   |
+| IN_PROGRESS   | 作業中                       | 現在作業中                   |
+| CONTACTING    | 自治体へ問い合わせ中         | 選管へ問い合わせ中           |
+| DIGITIZING    | 紙で入手したのでデジタル化中 | スキャン作業中               |
+| PDF_COMPLETED | PDFを作ったので後はお願い    | PDF化完了、CSV化待ち         |
+| CSV_COMPLETED | CSVを作ったので後はお願い    | CSV化完了、正規化待ち        |
+| COMPLETED     | 完了(CSV正規化済み)          | 全作業完了                   |
+| QUALITY_CHECK | データの不備を確認・調整中   | データ品質チェック中         |
+| URL_FOUND     | URL見つけたので後はお願い    | URL発見、ダウンロード待ち    |
+| OTHER         | その他                       | 特殊なケース（備考欄に補足） |
+| OUT_OF_SCOPE  | 対象外地域                   | 立候補者が出ていない地域など |
+
+### ContactStatus（選管対応ステータス）
+
+**Phase 1で追加予定**
+
+| 値                  | 名称             | 説明                               |
+| ------------------- | ---------------- | ---------------------------------- |
+| NOT_CONTACTED       | 未問い合わせ     | まだ問い合わせていない             |
+| WAITING_RESPONSE    | 回答待ち         | 問い合わせ済み、回答待ち           |
+| RECEIVED            | データ受領       | データを受領済み                   |
+| DIRECT_TO_CANDIDATE | 候補者へ直接提供 | 候補者へ直接提供される（運営対応） |
+| STOPPED             | 問い合わせ停止   | 問い合わせ停止（北海道、福岡県等） |
+
+### ChangeReason（変更理由）
+
+**Phase 1補足で追加予定**
+
+掲示板情報の変更理由を示します。
+
+| 値                 | 名称                   | 説明                                 |
+| ------------------ | ---------------------- | ------------------------------------ |
+| MANUAL_INPUT       | 手動入力               | ユーザーが直接入力                   |
+| DATA_SOURCE_IMPORT | 自治体データインポート | 自治体から提供されたデータの取り込み |
+| FIELD_VERIFICATION | 現地確認による修正     | 実地確認に基づく修正                 |
+| ERROR_CORRECTION   | エラー修正             | エラー報告に基づく修正               |
+| DATA_NORMALIZATION | データ正規化           | 正規化処理による自動修正             |
+| GEOCODING_UPDATE   | ジオコーディング更新   | 座標変換APIの更新                    |
+| MIGRATION          | データマイグレーション | システム移行時の一括変更             |
+| SYSTEM_UPDATE      | システムによる自動更新 | 自動処理による更新                   |
+| OTHER              | その他                 | 上記以外の理由                       |
+
 ## PostGIS空間データ
 
 ### 座標系（SRID）
@@ -333,13 +748,19 @@ CREATE INDEX idx_municipalities_polygon ON municipalities USING GIST(polygon);
 
 関連データの整合性を保つため、適切なカスケード設定：
 
-- **Board削除時**: 関連するBoardImage、Verificationも削除
+- **Board削除時**:
+  - BoardImage、Verificationは削除（CASCADE）
+  - BoardHistory、ErrorReportは削除を制限（RESTRICT）- 監査証跡として保持
 - **User削除時**:
   - **物理削除は行わない**（論理削除を使用）
   - Account、Sessionのみカスケード削除
-  - Verification、BoardImageは保持（検証履歴の保全）
+  - Verification、BoardImage、BoardHistoryは保持（検証履歴・監査証跡の保全）
+    - BoardHistoryのuser_idはNULLに設定（SET NULL）
   - UserLocationはカスケード削除
-- **Municipality削除時**: 参照整合性エラー（先にBoardを削除する必要あり）
+- **Municipality削除時**:
+  - 参照整合性エラー（先にBoardを削除する必要あり）
+- **DataSource、NormalizedCsv、ErrorReport削除時**（Phase 2+）:
+  - BoardHistoryの該当IDをNULLに設定（SET NULL）
 
 ### ソフトデリート（論理削除）
 
@@ -375,8 +796,17 @@ await prisma.user.findMany({
 1. **検証履歴の喪失**: 過去の検証記録から検証者情報が失われる
 2. **信頼度の低下**: 誰が検証したか不明になり、データの信頼度が判断できない
 3. **監査証跡の欠損**: データ品質管理の履歴が追跡できない
+4. **変更履歴の追跡不能**: 誰が掲示板情報を変更したかが不明になる
 
-そのため、ユーザーは論理削除し、検証記録・画像データは保持します。GDPR等の削除要求には、個人情報（email、name、image）のみを匿名化して対応します。
+そのため、ユーザーは論理削除し、検証記録・画像データ・変更履歴は保持します。GDPR等の削除要求には、個人情報（email、name、image）のみを匿名化して対応します。
+
+**Boardの論理削除と変更履歴**:
+
+Boardを論理削除した場合でも、BoardHistoryは保持されます。これにより：
+
+1. **削除前の状態を追跡**: 掲示板がいつ削除されたか、なぜ削除されたかを記録
+2. **誤削除のロールバック**: 必要に応じて削除前の状態に復元可能
+3. **データ品質分析**: 削除された掲示板の傾向を分析（撤去された掲示場の統計など）
 
 ```typescript
 // GDPR対応の匿名化
@@ -419,4 +849,4 @@ NextAuth.js v5に対応したテーブル構成：
 
 ---
 
-最終更新: 2025年9月27日
+最終更新: 2025年10月17日
