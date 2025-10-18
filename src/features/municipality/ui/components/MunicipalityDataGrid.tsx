@@ -6,6 +6,10 @@
 
 "use client";
 
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+} from "@/features/municipality/constants";
 import { Chip } from "@mui/material";
 import {
   DataGrid,
@@ -32,39 +36,6 @@ interface MunicipalityDataGridProps {
   page: number;
   pageSize: number;
 }
-
-// ステータスの日本語ラベル
-const STATUS_LABELS: Record<string, string> = {
-  NOT_STARTED: "未着手",
-  IN_PROGRESS: "作業中",
-  CONTACTING: "問い合わせ中",
-  DIGITIZING: "デジタル化中",
-  PDF_COMPLETED: "PDF完了",
-  CSV_COMPLETED: "CSV完了",
-  COMPLETED: "完了",
-  QUALITY_CHECK: "品質確認中",
-  URL_FOUND: "URL発見",
-  OTHER: "その他",
-  OUT_OF_SCOPE: "対象外",
-};
-
-// ステータスの色
-const STATUS_COLORS: Record<
-  string,
-  "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
-> = {
-  NOT_STARTED: "default",
-  IN_PROGRESS: "info",
-  CONTACTING: "info",
-  DIGITIZING: "info",
-  PDF_COMPLETED: "primary",
-  CSV_COMPLETED: "primary",
-  COMPLETED: "success",
-  QUALITY_CHECK: "warning",
-  URL_FOUND: "info",
-  OTHER: "default",
-  OUT_OF_SCOPE: "error",
-};
 
 export function MunicipalityDataGrid({
   municipalities,
