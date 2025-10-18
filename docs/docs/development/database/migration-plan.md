@@ -292,8 +292,8 @@ model BoardHistory {
   changedAt       DateTime     @default(now()) @map("changed_at")
 
   // リレーション
-  board           Board           @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  user            User?           @relation(fields: [userId], references: [id])
+  board           Board           @relation(fields: [boardId], references: [id], onDelete: Restrict)
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   dataSource      DataSource?     @relation(fields: [dataSourceId], references: [id])
   normalizedCsv   NormalizedCsv?  @relation(fields: [normalizedCsvId], references: [id])
   errorReport     ErrorReport?    @relation(fields: [errorReportId], references: [id])
@@ -349,7 +349,7 @@ CREATE TABLE "board_histories" (
   "changed_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   CONSTRAINT "fk_board_histories_board"
-    FOREIGN KEY ("board_id") REFERENCES "boards"("id") ON DELETE CASCADE,
+    FOREIGN KEY ("board_id") REFERENCES "boards"("id") ON DELETE RESTRICT,
   CONSTRAINT "fk_board_histories_user"
     FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL,
   CONSTRAINT "fk_board_histories_data_source"
