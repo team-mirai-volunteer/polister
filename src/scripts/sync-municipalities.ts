@@ -73,14 +73,18 @@ async function downloadFile(url: string, outputPath: string): Promise<void> {
         }
 
         totalBytes = parseInt(response.headers["content-length"] || "0", 10);
-        const totalMB = (totalBytes / 1024 / 1024).toFixed(2);
+        const totalMB =
+          totalBytes > 0 ? (totalBytes / 1024 / 1024).toFixed(2) : "未知";
 
         response.on("data", (chunk) => {
           downloadedBytes += chunk.length;
           const downloadedMB = (downloadedBytes / 1024 / 1024).toFixed(2);
-          const progress = ((downloadedBytes / totalBytes) * 100).toFixed(1);
+          const progress =
+            totalBytes > 0
+              ? ` (${((downloadedBytes / totalBytes) * 100).toFixed(1)}%)`
+              : "";
           process.stdout.write(
-            `  進捗: ${downloadedMB}MB / ${totalMB}MB (${progress}%)\r`
+            `  進捗: ${downloadedMB}MB / ${totalMB}MB${progress}\r`
           );
         });
 
@@ -263,7 +267,12 @@ async function insertBatch(
           ${data.name},
           ${data.code},
           ${data.prefecture},
-          ST_GeomFromText(${data.wkt}, 4326)::geography,
+          ST_Multi(
+            ST_CollectionExtract(
+              ST_MakeValid(ST_GeomFromText(${data.wkt}, 4326)),
+              3
+            )
+          )::geography,
           'MLIT',
           CURRENT_TIMESTAMP,
           CURRENT_TIMESTAMP
@@ -306,11 +315,7 @@ async function syncMunicipalities() {
     }
   }
 
-  // 環境変数の確認（デバッグ）
-  console.log(
-    `DATABASE_URL: ${process.env.DATABASE_URL ? "設定済み" : "未設定"}`
-  );
-
+  // 環境変数の確認
   if (!process.env.DATABASE_URL) {
     console.error(
       `${colors.red}エラー: DATABASE_URLが設定されていません${colors.reset}`
@@ -318,9 +323,6 @@ async function syncMunicipalities() {
     console.error("  .envファイルを確認してください");
     process.exit(1);
   }
-
-  console.log(`DATABASE_URL: ${process.env.DATABASE_URL.substring(0, 50)}...`);
-  console.log("");
 
   // PrismaClientは環境変数から自動的にDATABASE_URLを読み込む
   const prisma = new PrismaClient();
@@ -447,13 +449,13 @@ async function syncMunicipalities() {
       SELECT prefecture, COUNT(*) as count
       FROM municipalities
       GROUP BY prefecture
-      ORDER BY prefecture
+      ORDER BY count DESC
       LIMIT 5
     `;
 
     console.log("都道府県別件数（上位5件）:");
     for (const row of prefectureCounts) {
-      console.log(`  ${row.prefecture}: ${row.count} 件`);
+      console.log(`  ${row.prefecture}: ${Number(row.count)} 件`);
     }
     console.log("");
 
