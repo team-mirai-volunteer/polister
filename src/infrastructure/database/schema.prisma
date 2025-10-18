@@ -202,7 +202,7 @@ model BoardHistory {
   comment      String?      @db.Text
   changedAt    DateTime     @default(now()) @map("changed_at")
 
-  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board Board @relation(fields: [boardId], references: [id], onDelete: Restrict)
   user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([boardId])
