@@ -214,40 +214,25 @@ async function* readShapefile(
 
   // 市区町村単位でポリゴンを結合してyield
   for (const data of municipalityMap.values()) {
-    // 複数のポリゴンをMULTIPOLYGONに結合
-    let combinedWkt: string;
+    // 各WKTをGeoJSONに変換してから結合
+    const parts = data.wkts
+      .map((w) => wellknown.parse(w))
+      .filter((g) => g !== null && g !== undefined);
 
-    if (data.wkts.length === 1) {
-      // 単一ポリゴンの場合はそのまま
-      combinedWkt = data.wkts[0];
-    } else {
-      // 複数ポリゴンをMULTIPOLYGONに統合
-      const polygonParts = data.wkts
-        .map((wkt) => {
-          // POLYGONまたはMULTIPOLYGONからカッコ内の座標部分を抽出
-          if (wkt.startsWith("POLYGON")) {
-            const match = wkt.match(/POLYGON\s*\((.+)\)$/);
-            return match ? [match[1]] : [];
-          } else if (wkt.startsWith("MULTIPOLYGON")) {
-            const match = wkt.match(/MULTIPOLYGON\s*\((.+)\)$/);
-            if (match) {
-              // MULTIPOLYGONの各パーツを抽出
-              return match[1].split(/\),\s*\(/).map((part) => {
-                return part.replace(/^\(/, "").replace(/\)$/, "");
-              });
-            }
-          }
-          return [];
-        })
-        .flat()
-        .filter((p) => p);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const coordinates = parts.flatMap((g: any) =>
+      g.type === "Polygon"
+        ? [g.coordinates]
+        : g.type === "MultiPolygon"
+          ? g.coordinates
+          : []
+    );
 
-      if (polygonParts.length > 0) {
-        combinedWkt = `MULTIPOLYGON(${polygonParts.map((p) => `(${p})`).join(",")})`;
-      } else {
-        continue;
-      }
-    }
+    if (coordinates.length === 0) continue;
+
+    const combinedGeo = { type: "MultiPolygon", coordinates };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const combinedWkt = wellknown.stringify(combinedGeo as any);
 
     yield {
       name: data.name,

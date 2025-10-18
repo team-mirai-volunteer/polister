@@ -98,9 +98,8 @@ export function MunicipalityDataGrid({
       width: 120,
       align: "right",
       headerAlign: "right",
-      valueFormatter: (value: number | null) => {
-        return value !== null ? value.toLocaleString() : "-";
-      },
+      valueFormatter: (value: number | null) =>
+        value !== null && value !== undefined ? value.toLocaleString() : "-",
     },
     {
       field: "status",
