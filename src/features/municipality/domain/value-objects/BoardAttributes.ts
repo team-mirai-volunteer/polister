@@ -4,11 +4,7 @@
  * ドメイン層で Prisma 依存を避けるための文字列リテラル型
  */
 
-export const BOARD_STATUS_VALUES = [
-  "PENDING",
-  "VERIFIED",
-  "REJECTED",
-] as const;
+export const BOARD_STATUS_VALUES = ["PENDING", "VERIFIED", "REJECTED"] as const;
 export type BoardStatus = (typeof BOARD_STATUS_VALUES)[number];
 
 export const TRUST_LEVEL_VALUES = [

@@ -86,9 +86,7 @@ export const MunicipalityBoardsTable = ({
                     label={
                       TRUST_LEVEL_LABELS[board.trustLevel] ?? board.trustLevel
                     }
-                    color={
-                      TRUST_LEVEL_COLORS[board.trustLevel] ?? "info"
-                    }
+                    color={TRUST_LEVEL_COLORS[board.trustLevel] ?? "info"}
                     variant="outlined"
                   />
                 </TableCell>

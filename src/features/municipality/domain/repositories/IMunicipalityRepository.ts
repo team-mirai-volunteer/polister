@@ -5,10 +5,7 @@
  */
 
 import type { Municipality } from "../entities/Municipality";
-import type {
-  BoardStatus,
-  TrustLevel,
-} from "../value-objects/BoardAttributes";
+import type { BoardStatus, TrustLevel } from "../value-objects/BoardAttributes";
 
 export interface FindMunicipalitiesOptions {
   skip?: number;

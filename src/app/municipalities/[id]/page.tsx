@@ -16,12 +16,12 @@ import {
   Box,
   Chip,
   Container,
+  Grid,
   Link,
   Paper,
   Stack,
   Typography,
 } from "@mui/material";
-import Grid from "@mui/material/PigmentGrid";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -58,8 +58,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
 
   const geojson = geojsonResult.value;
 
-  const boards =
-    boardsResult.status === "fulfilled" ? boardsResult.value : [];
+  const boards = boardsResult.status === "fulfilled" ? boardsResult.value : [];
 
   if (boardsResult.status === "rejected") {
     console.error(
@@ -160,10 +159,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
                     <Typography variant="body2" color="text.secondary">
                       選管URL
                     </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{ wordBreak: "break-all" }}
-                    >
+                    <Typography variant="body1" sx={{ wordBreak: "break-all" }}>
                       <Link
                         href={municipality.url}
                         target="_blank"

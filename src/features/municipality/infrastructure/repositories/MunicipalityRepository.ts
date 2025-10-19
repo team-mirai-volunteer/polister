@@ -147,9 +147,7 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       const trustLevelCandidate = row.trust_level;
 
       if (!isBoardStatus(statusCandidate)) {
-        throw new Error(
-          `Unexpected board status received: ${statusCandidate}`
-        );
+        throw new Error(`Unexpected board status received: ${statusCandidate}`);
       }
 
       if (!isTrustLevel(trustLevelCandidate)) {
