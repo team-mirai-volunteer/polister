@@ -9,11 +9,31 @@ const containsNameJa = (expression: unknown): boolean => {
     return true;
   }
 
-  return expression.some((child) => containsNameJa(child));
+  return expression.some(
+    (child) => Array.isArray(child) && containsNameJa(child)
+  );
 };
 
 const isFormatExpression = (expression: unknown): boolean =>
   Array.isArray(expression) && expression[0] === "format";
+
+const containsZoomExpression = (expression: unknown): boolean => {
+  if (expression === "zoom") {
+    return true;
+  }
+
+  if (!Array.isArray(expression)) {
+    return false;
+  }
+
+  if (expression[0] === "zoom") {
+    return true;
+  }
+
+  return expression.some(
+    (child) => Array.isArray(child) && containsZoomExpression(child)
+  );
+};
 
 export const setMapLanguageToJapanese = (map: mapboxgl.Map) => {
   const style = map.getStyle();
@@ -27,29 +47,23 @@ export const setMapLanguageToJapanese = (map: mapboxgl.Map) => {
     }
 
     const textField = layer.layout?.["text-field"];
-    if (!textField || containsNameJa(textField)) {
+    if (
+      !textField ||
+      containsNameJa(textField) ||
+      containsZoomExpression(textField)
+    ) {
       return;
     }
 
-    const preferredField = (isFormatExpression(textField)
-      ? [
-          "coalesce",
-          [
-            "format",
-            [
-              "coalesce",
-              ["get", "name_ja"],
-              ["get", "name:ja"],
-            ],
-          ],
-          textField,
-        ]
-      : [
-          "coalesce",
-          ["get", "name_ja"],
-          ["get", "name:ja"],
-          textField,
-        ]) as mapboxgl.Expression;
+    const preferredField = (
+      isFormatExpression(textField)
+        ? [
+            "coalesce",
+            ["format", ["coalesce", ["get", "name_ja"], ["get", "name:ja"]]],
+            textField,
+          ]
+        : ["coalesce", ["get", "name_ja"], ["get", "name:ja"], textField]
+    ) as mapboxgl.Expression;
 
     map.setLayoutProperty(layer.id, "text-field", preferredField);
   });

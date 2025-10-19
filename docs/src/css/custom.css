@@ -198,3 +198,11 @@
   background-color: rgba(29, 41, 61, 0.03);
   border-top: 1px solid rgba(29, 41, 61, 0.08);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

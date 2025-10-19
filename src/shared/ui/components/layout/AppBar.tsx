@@ -64,7 +64,11 @@ export function AppBar() {
 
           <Stack direction="row" spacing={1} alignItems="center">
             {navItems.map((item) => {
-              const isActive = pathname === item.path;
+              const isActive =
+                item.path === "/"
+                  ? pathname === "/"
+                  : pathname === item.path ||
+                    pathname.startsWith(`${item.path}/`);
               return (
                 <Button
                   key={item.path}
@@ -72,6 +76,7 @@ export function AppBar() {
                   href={item.path}
                   variant={isActive ? "contained" : "text"}
                   color={isActive ? "secondary" : "inherit"}
+                  aria-current={isActive ? "page" : undefined}
                   sx={{ fontWeight: 600 }}
                 >
                   {item.label}

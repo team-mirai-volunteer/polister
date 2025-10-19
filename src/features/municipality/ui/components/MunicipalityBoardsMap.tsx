@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import bbox from "@turf/bbox";
 import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
 import {
   SyntheticEvent,
   useCallback,
@@ -67,6 +66,7 @@ export const MunicipalityBoardsMap = ({
   const styleStateRef = useRef<MapStyleKey>("poster");
   const appliedStyleRef = useRef<MapStyleKey>("poster");
   const [mapStyle, setMapStyle] = useState<MapStyleKey>("poster");
+  const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
 
   const coordinates = useMemo(
     () =>
@@ -147,172 +147,158 @@ export const MunicipalityBoardsMap = ({
     };
   }, [coordinates, polygonBounds]);
 
-  const adjustViewport = useCallback(() => {
-    const map = mapRef.current?.getMap();
-    if (!map) {
-      return;
-    }
-
-    if (polygonBounds) {
-      const { minLng, minLat, maxLng, maxLat } = polygonBounds;
-      if (minLng === maxLng && minLat === maxLat) {
-        map.easeTo({ center: [minLng, minLat], zoom: 12, duration: 600 });
-      } else {
-        map.fitBounds(
-          [
-            [minLng, minLat],
-            [maxLng, maxLat],
-          ],
-          { padding: 40, duration: 800 }
-        );
+  const adjustViewport = useCallback(
+    (map: mapboxgl.Map) => {
+      if (polygonBounds) {
+        const { minLng, minLat, maxLng, maxLat } = polygonBounds;
+        if (minLng === maxLng && minLat === maxLat) {
+          map.easeTo({ center: [minLng, minLat], zoom: 12, duration: 600 });
+        } else {
+          map.fitBounds(
+            [
+              [minLng, minLat],
+              [maxLng, maxLat],
+            ],
+            { padding: 40, duration: 800 }
+          );
+        }
+        return;
       }
-      return;
-    }
 
-    if (coordinates.length === 0) {
-      return;
-    }
-
-    if (coordinates.length === 1) {
-      const [only] = coordinates;
-      map.easeTo({
-        center: [only.longitude, only.latitude],
-        zoom: 14,
-        duration: 600,
-      });
-      return;
-    }
-
-    const bounds = coordinates.reduce(
-      (acc, coord) => {
-        acc.minLng = Math.min(acc.minLng, coord.longitude);
-        acc.minLat = Math.min(acc.minLat, coord.latitude);
-        acc.maxLng = Math.max(acc.maxLng, coord.longitude);
-        acc.maxLat = Math.max(acc.maxLat, coord.latitude);
-        return acc;
-      },
-      {
-        minLng: Number.POSITIVE_INFINITY,
-        minLat: Number.POSITIVE_INFINITY,
-        maxLng: Number.NEGATIVE_INFINITY,
-        maxLat: Number.NEGATIVE_INFINITY,
+      if (coordinates.length === 0) {
+        return;
       }
-    );
 
-    if (bounds.minLng === bounds.maxLng && bounds.minLat === bounds.maxLat) {
-      map.easeTo({
-        center: [bounds.minLng, bounds.minLat],
-        zoom: 14,
-        duration: 600,
-      });
-      return;
-    }
+      if (coordinates.length === 1) {
+        const [only] = coordinates;
+        map.easeTo({
+          center: [only.longitude, only.latitude],
+          zoom: 14,
+          duration: 600,
+        });
+        return;
+      }
 
-    map.fitBounds(
-      [
-        [bounds.minLng, bounds.minLat],
-        [bounds.maxLng, bounds.maxLat],
-      ],
-      { padding: 48, duration: 800 }
-    );
-  }, [coordinates, polygonBounds]);
+      const bounds = coordinates.reduce(
+        (acc, coord) => {
+          acc.minLng = Math.min(acc.minLng, coord.longitude);
+          acc.minLat = Math.min(acc.minLat, coord.latitude);
+          acc.maxLng = Math.max(acc.maxLng, coord.longitude);
+          acc.maxLat = Math.max(acc.maxLat, coord.latitude);
+          return acc;
+        },
+        {
+          minLng: Number.POSITIVE_INFINITY,
+          minLat: Number.POSITIVE_INFINITY,
+          maxLng: Number.NEGATIVE_INFINITY,
+          maxLat: Number.NEGATIVE_INFINITY,
+        }
+      );
+
+      if (bounds.minLng === bounds.maxLng && bounds.minLat === bounds.maxLat) {
+        map.easeTo({
+          center: [bounds.minLng, bounds.minLat],
+          zoom: 14,
+          duration: 600,
+        });
+        return;
+      }
+
+      map.fitBounds(
+        [
+          [bounds.minLng, bounds.minLat],
+          [bounds.maxLng, bounds.maxLat],
+        ],
+        { padding: 48, duration: 800 }
+      );
+    },
+    [coordinates, polygonBounds]
+  );
 
   useEffect(() => {
-    const mapInstance = mapRef.current;
-    const map = mapInstance?.getMap();
-    if (!mapInstance || !map) {
+    if (mapInstance || !mapRef.current) {
+      return;
+    }
+    const map = mapRef.current.getMap();
+    if (map) {
+      setMapInstance(map);
+    }
+  }, [mapInstance]);
+
+  const handleMapLoad = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (map) {
+      setMapInstance(map);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!mapInstance) {
       return;
     }
 
-    if (map.isStyleLoaded()) {
-      adjustViewport();
+    if (mapInstance.isStyleLoaded()) {
+      adjustViewport(mapInstance);
       return;
     }
 
     const handleLoad = () => {
-      adjustViewport();
-      map.off("load", handleLoad);
+      adjustViewport(mapInstance);
+      mapInstance.off("load", handleLoad);
     };
 
-    map.on("load", handleLoad);
+    mapInstance.on("load", handleLoad);
 
     return () => {
-      map.off("load", handleLoad);
+      mapInstance.off("load", handleLoad);
     };
-  }, [adjustViewport, mapStyle, coordinates, polygonBounds]);
+  }, [mapInstance, adjustViewport]);
 
   useEffect(() => {
-    const mapInstance = mapRef.current;
-    const map = mapInstance?.getMap();
-    if (!mapInstance || !map) {
+    if (!mapInstance) {
       return;
     }
 
     const applyStyle = () => {
-      setMapLanguageToJapanese(map);
+      setMapLanguageToJapanese(mapInstance);
       if (styleStateRef.current === "poster") {
-        applyPosterStyling(map);
+        applyPosterStyling(mapInstance);
       }
     };
 
-    const setup = () => {
-      applyStyle();
-      map.on("styledata", applyStyle);
+    applyStyle();
+    mapInstance.on("styledata", applyStyle);
 
-      const navControl = new mapboxgl.NavigationControl({
-        visualizePitch: true,
-        showCompass: true,
-        showZoom: true,
-      });
-      map.addControl(navControl, "top-right");
-
-      return () => {
-        map.off("styledata", applyStyle);
-        map.removeControl(navControl);
-      };
-    };
-
-    if (map.isStyleLoaded()) {
-      return setup();
-    }
-
-    let cleanup: (() => void) | undefined;
-    const handleLoad = () => {
-      cleanup = setup();
-      map.off("load", handleLoad);
-    };
-
-    map.on("load", handleLoad);
+    const navControl = new mapboxgl.NavigationControl({
+      visualizePitch: true,
+      showCompass: true,
+      showZoom: true,
+    });
+    mapInstance.addControl(navControl, "top-right");
 
     return () => {
-      map.off("load", handleLoad);
-      cleanup?.();
+      mapInstance.off("styledata", applyStyle);
+      mapInstance.removeControl(navControl);
     };
-  }, []);
+  }, [mapInstance]);
 
   useEffect(() => {
     styleStateRef.current = mapStyle;
   }, [mapStyle]);
 
   useEffect(() => {
-    const map = mapRef.current?.getMap();
-    if (!map) {
+    if (!mapInstance) {
       return;
     }
     if (appliedStyleRef.current === mapStyle) {
       return;
     }
     appliedStyleRef.current = mapStyle;
-    map.setStyle(MAP_STYLE_URLS[mapStyle]);
-  }, [mapStyle]);
+    mapInstance.setStyle(MAP_STYLE_URLS[mapStyle]);
+  }, [mapInstance, mapStyle]);
 
   useEffect(() => {
-    if (!focusedBoardId) {
-      return;
-    }
-
-    const map = mapRef.current?.getMap();
-    if (!map) {
+    if (!focusedBoardId || !mapInstance) {
       return;
     }
 
@@ -321,12 +307,12 @@ export const MunicipalityBoardsMap = ({
       return;
     }
 
-    map.easeTo({
+    mapInstance.easeTo({
       center: [target.longitude, target.latitude],
-      zoom: Math.max(map.getZoom(), 14),
+      zoom: Math.max(mapInstance.getZoom(), 14),
       duration: 500,
     });
-  }, [coordinates, focusedBoardId]);
+  }, [mapInstance, coordinates, focusedBoardId]);
 
   if (!mapboxToken) {
     return (
@@ -362,7 +348,7 @@ export const MunicipalityBoardsMap = ({
         mapboxAccessToken={mapboxToken}
         initialViewState={initialViewState}
         mapStyle={MAP_STYLE_URLS[mapStyle]}
-        attributionControl={false}
+        onLoad={handleMapLoad}
       >
         {hasGeoJSON ? null : (
           <Typography
