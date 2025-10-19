@@ -5,6 +5,7 @@
  */
 
 import type { Municipality } from "../entities/Municipality";
+import type { BoardStatus, TrustLevel } from "../value-objects/BoardAttributes";
 
 export interface FindMunicipalitiesOptions {
   skip?: number;
@@ -28,6 +29,17 @@ export interface GeoJSONFeature {
     prefecture: string;
   };
   geometry: GeoJSON.Geometry;
+}
+
+export interface MunicipalityBoardRecord {
+  id: string;
+  boardNumber: number | null;
+  name: string | null;
+  address: string;
+  longitude: number | null;
+  latitude: number | null;
+  status: BoardStatus;
+  trustLevel: TrustLevel;
 }
 
 export interface IMunicipalityRepository {
@@ -60,4 +72,11 @@ export interface IMunicipalityRepository {
    * 市区町村を保存
    */
   save(municipality: Municipality): Promise<void>;
+
+  /**
+   * 市区町村に紐づく掲示板一覧を取得
+   */
+  findBoardsByMunicipalityId(
+    municipalityId: string
+  ): Promise<MunicipalityBoardRecord[]>;
 }

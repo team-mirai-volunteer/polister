@@ -2,6 +2,11 @@
  * 自治体関連の定数定義
  */
 
+import type {
+  BoardStatus,
+  TrustLevel,
+} from "./domain/value-objects/BoardAttributes";
+
 /**
  * 自治体ステータスの日本語ラベル
  */
@@ -38,3 +43,35 @@ export const STATUS_COLORS: Record<
   OTHER: "default",
   OUT_OF_SCOPE: "error",
 };
+
+export const BOARD_STATUS_LABELS = {
+  PENDING: "未検証",
+  VERIFIED: "検証済み",
+  REJECTED: "却下",
+} as const satisfies Record<BoardStatus, string>;
+
+export const BOARD_STATUS_COLORS = {
+  PENDING: "warning",
+  VERIFIED: "success",
+  REJECTED: "error",
+} as const satisfies Record<
+  BoardStatus,
+  "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
+>;
+
+export const TRUST_LEVEL_LABELS = {
+  LEVEL_1: "公式",
+  LEVEL_2: "確信",
+  LEVEL_3: "報告",
+  LEVEL_4: "未確認",
+} as const satisfies Record<TrustLevel, string>;
+
+export const TRUST_LEVEL_COLORS = {
+  LEVEL_1: "success",
+  LEVEL_2: "primary",
+  LEVEL_3: "info",
+  LEVEL_4: "warning",
+} as const satisfies Record<
+  TrustLevel,
+  "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
+>;

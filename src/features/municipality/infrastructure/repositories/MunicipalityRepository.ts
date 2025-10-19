@@ -5,15 +5,27 @@
  */
 
 import { TOKENS } from "@/shared/lib/di/tokens";
-import type { PrismaClient } from "@prisma/client";
+import type {
+  BoardStatus as PrismaBoardStatus,
+  PrismaClient,
+  TrustLevel as PrismaTrustLevel,
+} from "@prisma/client";
 import { inject, injectable } from "tsyringe";
+
 import type { Municipality } from "../../domain/entities/Municipality";
 import type {
   CountMunicipalitiesOptions,
   FindMunicipalitiesOptions,
   GeoJSONFeature,
   IMunicipalityRepository,
+  MunicipalityBoardRecord,
 } from "../../domain/repositories/IMunicipalityRepository";
+import {
+  isBoardStatus,
+  isTrustLevel,
+  type BoardStatus,
+  type TrustLevel,
+} from "../../domain/value-objects/BoardAttributes";
 import { MunicipalityMapper } from "../mappers/MunicipalityMapper";
 
 @injectable()
@@ -98,6 +110,78 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       where: { id: municipality.id },
       data,
     });
+  }
+
+  async findBoardsByMunicipalityId(
+    municipalityId: string
+  ): Promise<MunicipalityBoardRecord[]> {
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        id: string;
+        board_number: number | null;
+        name: string | null;
+        address: string;
+        longitude: number | null;
+        latitude: number | null;
+        status: PrismaBoardStatus;
+        trust_level: PrismaTrustLevel;
+      }>
+    >`
+      SELECT
+        id,
+        board_number,
+        name,
+        address,
+        ST_X(location::geometry) AS longitude,
+        ST_Y(location::geometry) AS latitude,
+        status,
+        trust_level
+      FROM boards
+      WHERE municipality_id = ${municipalityId}
+        AND deleted_at IS NULL
+      ORDER BY board_number ASC NULLS LAST, created_at ASC
+    `;
+
+    return rows
+      .map((row) => {
+        const statusCandidate = row.status;
+        const trustLevelCandidate = row.trust_level;
+
+        if (!isBoardStatus(statusCandidate)) {
+          console.warn("[MunicipalityRepository] Skip row: invalid status", {
+            id: row.id,
+            status: statusCandidate,
+          });
+          return null;
+        }
+
+        if (!isTrustLevel(trustLevelCandidate)) {
+          console.warn(
+            "[MunicipalityRepository] Skip row: invalid trust level",
+            {
+              id: row.id,
+              trustLevel: trustLevelCandidate,
+            }
+          );
+          return null;
+        }
+
+        const status: BoardStatus = statusCandidate;
+        const trustLevel: TrustLevel = trustLevelCandidate;
+
+        return {
+          id: row.id,
+          boardNumber:
+            row.board_number !== null ? Number(row.board_number) : null,
+          name: row.name,
+          address: row.address,
+          longitude: row.longitude !== null ? Number(row.longitude) : null,
+          latitude: row.latitude !== null ? Number(row.latitude) : null,
+          status,
+          trustLevel,
+        };
+      })
+      .filter((item): item is MunicipalityBoardRecord => item !== null);
   }
 
   /**
