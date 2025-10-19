@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { Box } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 
 import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 import { MunicipalityBoardsMap } from "./MunicipalityBoardsMap";
@@ -41,13 +41,15 @@ export const MunicipalityBoardsSection = ({
   }, [boards, selectedBoardId, hasBoards]);
 
   return (
-    <Box sx={{
-      flexGrow: 1,
-      display: "flex",
-      flexDirection: "column",
-      gap: 2,
-      minHeight: 360,
-    }}>
+    <Box
+      sx={{
+        flexGrow: 1,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        minHeight: 360,
+      }}
+    >
       <Box sx={{ flexGrow: 1, minHeight: 360 }}>
         <MunicipalityBoardsMap
           boards={boards}
@@ -56,11 +58,13 @@ export const MunicipalityBoardsSection = ({
           onBoardFocused={setSelectedBoardId}
         />
       </Box>
-      <Box sx={{
-        flexBasis: 260,
-        flexGrow: 0,
-        maxHeight: "calc(100vh - 520px)",
-      }}>
+      <Box
+        sx={{
+          flexBasis: 260,
+          flexGrow: 0,
+          maxHeight: "calc(100vh - 520px)",
+        }}
+      >
         <MunicipalityBoardsTable
           boards={boards}
           selectedBoardId={focusedBoardId}

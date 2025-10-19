@@ -4,12 +4,23 @@
  * Server Componentで実装
  */
 
-import { getMunicipalityByIdAction } from "@/features/municipality/application/actions/getMunicipalityByIdAction";
 import { getMunicipalityBoardsAction } from "@/features/municipality/application/actions/getMunicipalityBoardsAction";
+import { getMunicipalityByIdAction } from "@/features/municipality/application/actions/getMunicipalityByIdAction";
 import { getMunicipalityGeoJSONAction } from "@/features/municipality/application/actions/getMunicipalityGeoJSONAction";
-import { STATUS_COLORS, STATUS_LABELS } from "@/features/municipality/constants";
+import {
+  STATUS_COLORS,
+  STATUS_LABELS,
+} from "@/features/municipality/constants";
 import { MunicipalityBoardsSection } from "@/features/municipality/ui/components/MunicipalityBoardsSection";
-import { Box, Chip, Container, Grid, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  Container,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -59,7 +70,9 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
                   <Typography variant="body2" color="text.secondary">
                     都道府県
                   </Typography>
-                  <Typography variant="body1">{municipality.prefecture}</Typography>
+                  <Typography variant="body1">
+                    {municipality.prefecture}
+                  </Typography>
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
@@ -157,7 +170,10 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
               掲示板一覧
             </Typography>
 
-            <MunicipalityBoardsSection boards={boards} geojson={geojson ?? undefined} />
+            <MunicipalityBoardsSection
+              boards={boards}
+              geojson={geojson ?? undefined}
+            />
           </Paper>
         </Grid>
       </Grid>

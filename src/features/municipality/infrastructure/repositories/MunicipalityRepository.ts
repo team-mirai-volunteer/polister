@@ -5,17 +5,16 @@
  */
 
 import { TOKENS } from "@/shared/lib/di/tokens";
-import type { PrismaClient } from "@prisma/client";
+import type { BoardStatus, PrismaClient, TrustLevel } from "@prisma/client";
 import { inject, injectable } from "tsyringe";
-import type { BoardStatus, TrustLevel } from "@prisma/client";
 
 import type { Municipality } from "../../domain/entities/Municipality";
 import type {
   CountMunicipalitiesOptions,
   FindMunicipalitiesOptions,
   GeoJSONFeature,
-  MunicipalityBoardRecord,
   IMunicipalityRepository,
+  MunicipalityBoardRecord,
 } from "../../domain/repositories/IMunicipalityRepository";
 import { MunicipalityMapper } from "../mappers/MunicipalityMapper";
 
@@ -106,8 +105,8 @@ export class MunicipalityRepository implements IMunicipalityRepository {
   async findBoardsByMunicipalityId(
     municipalityId: string
   ): Promise<MunicipalityBoardRecord[]> {
-    const rows = await this.prisma.$queryRaw<Array<
-      {
+    const rows = await this.prisma.$queryRaw<
+      Array<{
         id: string;
         board_number: number | null;
         name: string | null;
@@ -116,8 +115,8 @@ export class MunicipalityRepository implements IMunicipalityRepository {
         latitude: number | null;
         status: BoardStatus;
         trust_level: TrustLevel;
-      }
-    >>`
+      }>
+    >`
       SELECT
         id,
         board_number,

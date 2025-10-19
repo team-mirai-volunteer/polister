@@ -5,9 +5,9 @@
 "use server";
 
 import { setupDI } from "@/shared/lib/di/container";
+import { container } from "tsyringe";
 import type { MunicipalityBoardDTO } from "../dto/MunicipalityBoardDTO";
 import { GetMunicipalityBoardsUseCase } from "../usecases/GetMunicipalityBoardsUseCase";
-import { container } from "tsyringe";
 
 export async function getMunicipalityBoardsAction(
   municipalityId: string

@@ -11,12 +11,12 @@ import {
   Typography,
 } from "@mui/material";
 
+import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 import {
   BOARD_STATUS_COLORS,
   BOARD_STATUS_LABELS,
   TRUST_LEVEL_LABELS,
 } from "../../constants";
-import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 
 interface MunicipalityBoardsTableProps {
   boards: MunicipalityBoardDTO[];
@@ -67,7 +67,9 @@ export const MunicipalityBoardsTable = ({
                 onClick={() => onSelectBoard?.(board.id)}
                 sx={{ cursor: "pointer" }}
               >
-                <TableCell width="80">{formatBoardNumber(board.boardNumber)}</TableCell>
+                <TableCell width="80">
+                  {formatBoardNumber(board.boardNumber)}
+                </TableCell>
                 <TableCell width="200">{board.name ?? "名称未設定"}</TableCell>
                 <TableCell>{board.address}</TableCell>
                 <TableCell width="120">
@@ -80,7 +82,9 @@ export const MunicipalityBoardsTable = ({
                 <TableCell width="120">
                   <Chip
                     size="small"
-                    label={TRUST_LEVEL_LABELS[board.trustLevel] ?? board.trustLevel}
+                    label={
+                      TRUST_LEVEL_LABELS[board.trustLevel] ?? board.trustLevel
+                    }
                     color="info"
                     variant="outlined"
                   />

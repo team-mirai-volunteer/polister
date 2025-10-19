@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { mock, mockReset } from "jest-mock-extended";
 
-import type { MunicipalityBoardRecord, IMunicipalityRepository } from "../../../domain/repositories/IMunicipalityRepository";
+import type {
+  IMunicipalityRepository,
+  MunicipalityBoardRecord,
+} from "../../../domain/repositories/IMunicipalityRepository";
 import { GetMunicipalityBoardsUseCase } from "../GetMunicipalityBoardsUseCase";
 
 describe("GetMunicipalityBoardsUseCase", () => {
@@ -20,10 +23,8 @@ describe("GetMunicipalityBoardsUseCase", () => {
       overrides.boardNumber !== undefined ? overrides.boardNumber : 1,
     name: overrides.name ?? "掲示板",
     address: overrides.address ?? "住所",
-    longitude:
-      overrides.longitude !== undefined ? overrides.longitude : 139.0,
-    latitude:
-      overrides.latitude !== undefined ? overrides.latitude : 35.0,
+    longitude: overrides.longitude !== undefined ? overrides.longitude : 139.0,
+    latitude: overrides.latitude !== undefined ? overrides.latitude : 35.0,
     status: overrides.status ?? "PENDING",
     trustLevel: overrides.trustLevel ?? "LEVEL_3",
   });
@@ -31,13 +32,20 @@ describe("GetMunicipalityBoardsUseCase", () => {
   it("掲示板一覧を取得できる", async () => {
     const records = [
       createBoardRecord({ id: "board-1", boardNumber: 10 }),
-      createBoardRecord({ id: "board-2", boardNumber: 20, longitude: null, latitude: null }),
+      createBoardRecord({
+        id: "board-2",
+        boardNumber: 20,
+        longitude: null,
+        latitude: null,
+      }),
     ];
     repository.findBoardsByMunicipalityId.mockResolvedValue(records);
 
     const result = await useCase.execute("municipality-1");
 
-    expect(repository.findBoardsByMunicipalityId).toHaveBeenCalledWith("municipality-1");
+    expect(repository.findBoardsByMunicipalityId).toHaveBeenCalledWith(
+      "municipality-1"
+    );
     expect(result).toEqual([
       {
         id: "board-1",

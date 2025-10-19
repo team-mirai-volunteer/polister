@@ -6,9 +6,9 @@
 
 import { inject, injectable } from "tsyringe";
 
-import type { MunicipalityBoardDTO } from "../dto/MunicipalityBoardDTO";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import type { IMunicipalityRepository } from "../../domain/repositories/IMunicipalityRepository";
+import type { MunicipalityBoardDTO } from "../dto/MunicipalityBoardDTO";
 
 @injectable()
 export class GetMunicipalityBoardsUseCase {
@@ -18,9 +18,10 @@ export class GetMunicipalityBoardsUseCase {
   ) {}
 
   async execute(municipalityId: string): Promise<MunicipalityBoardDTO[]> {
-    const boards = await this.municipalityRepository.findBoardsByMunicipalityId(
-      municipalityId
-    );
+    const boards =
+      await this.municipalityRepository.findBoardsByMunicipalityId(
+        municipalityId
+      );
 
     return boards.map((board) => ({
       id: board.id,

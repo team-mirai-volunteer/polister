@@ -106,7 +106,10 @@ export const MunicipalityBoardsMap = ({
         polygonBounds.minLat === polygonBounds.maxLat
       ) {
         map.easeTo({
-          center: [polygonBounds.center.longitude, polygonBounds.center.latitude],
+          center: [
+            polygonBounds.center.longitude,
+            polygonBounds.center.latitude,
+          ],
           zoom: 12,
           duration: 600,
         });
@@ -275,7 +278,8 @@ export const MunicipalityBoardsMap = ({
                     borderRadius: "50%",
                     backgroundColor: "primary.main",
                     opacity: isFocused ? 1 : 0.7,
-                    border: (theme) => `2px solid ${theme.palette.common.white}`,
+                    border: (theme) =>
+                      `2px solid ${theme.palette.common.white}`,
                     boxShadow: 2,
                     transition: "all 0.2s ease",
                     cursor: "pointer",
