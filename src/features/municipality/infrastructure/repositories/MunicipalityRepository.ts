@@ -142,35 +142,46 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       ORDER BY board_number ASC NULLS LAST, created_at ASC
     `;
 
-    return rows.map((row) => {
-      const statusCandidate = row.status;
-      const trustLevelCandidate = row.trust_level;
+    return rows
+      .map((row) => {
+        const statusCandidate = row.status;
+        const trustLevelCandidate = row.trust_level;
 
-      if (!isBoardStatus(statusCandidate)) {
-        throw new Error(`Unexpected board status received: ${statusCandidate}`);
-      }
+        if (!isBoardStatus(statusCandidate)) {
+          console.warn("[MunicipalityRepository] Skip row: invalid status", {
+            id: row.id,
+            status: statusCandidate,
+          });
+          return null;
+        }
 
-      if (!isTrustLevel(trustLevelCandidate)) {
-        throw new Error(
-          `Unexpected trust level received: ${trustLevelCandidate}`
-        );
-      }
+        if (!isTrustLevel(trustLevelCandidate)) {
+          console.warn(
+            "[MunicipalityRepository] Skip row: invalid trust level",
+            {
+              id: row.id,
+              trustLevel: trustLevelCandidate,
+            }
+          );
+          return null;
+        }
 
-      const status: BoardStatus = statusCandidate;
-      const trustLevel: TrustLevel = trustLevelCandidate;
+        const status: BoardStatus = statusCandidate;
+        const trustLevel: TrustLevel = trustLevelCandidate;
 
-      return {
-        id: row.id,
-        boardNumber:
-          row.board_number !== null ? Number(row.board_number) : null,
-        name: row.name,
-        address: row.address,
-        longitude: row.longitude !== null ? Number(row.longitude) : null,
-        latitude: row.latitude !== null ? Number(row.latitude) : null,
-        status,
-        trustLevel,
-      };
-    });
+        return {
+          id: row.id,
+          boardNumber:
+            row.board_number !== null ? Number(row.board_number) : null,
+          name: row.name,
+          address: row.address,
+          longitude: row.longitude !== null ? Number(row.longitude) : null,
+          latitude: row.latitude !== null ? Number(row.latitude) : null,
+          status,
+          trustLevel,
+        };
+      })
+      .filter((item): item is MunicipalityBoardRecord => item !== null);
   }
 
   /**

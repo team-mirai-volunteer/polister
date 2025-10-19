@@ -1,7 +1,5 @@
 "use client";
 
-import "mapbox-gl/dist/mapbox-gl.css";
-
 import { Box, Tooltip, Typography } from "@mui/material";
 import bbox from "@turf/bbox";
 import type { MutableRefObject } from "react";

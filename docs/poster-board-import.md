@@ -59,17 +59,23 @@ erDiagram
     string id
     string code
     string name
+    datetime created_at
+    datetime updated_at
   }
   BOARDS {
     string id
     string municipality_id
     int board_number
+    datetime created_at
+    datetime updated_at
+    datetime deleted_at
   }
   BOARD_HISTORIES {
     string id
     string board_id
     jsonb before_data
     jsonb after_data
+    datetime changed_at
   }
 ```
 
@@ -77,6 +83,17 @@ erDiagram
 
 - `merge_boards.sql` では `deleted_at IS NULL` な掲示板のみ取り込みます。座標や自治体名が一致しないレコードがある場合は、ステージングテーブルを確認して補正してください。
 - 大規模データを扱う場合は、`export.sh` で生成したCSVをバージョン管理せず別ストレージに置き、必要に応じて `data/poster-board/` へ配置してから `import.sh` を実行してください。
+
+### トラブルシューティング
+
+- **インポートが `ERROR: relation "*_stage" does not exist` で失敗する**
+  - ステージングテーブルが残っていない可能性があります。`./scripts/poster-board-import/import.sh --prepare` を先に実行するか、`psql "$DATABASE_URL" -f scripts/poster-board-import/sql/create_stage_tables.sql` で再作成してください。
+- **CSVの列数不一致で `COPY` が停止する**
+  - 事前に `csvstat boards.csv` や `head -n 1 boards.csv` でヘッダーを確認し、列名・順序が `scripts/poster-board-import/sql/create_stage_tables.sql` の定義と一致しているかを確認してください。`iconv -f UTF-8` 等で文字コードも統一します。
+- **`psql: could not translate host name` など接続エラーになる**
+  - `.env` の `DATABASE_URL` が正しいか、`pg_isready -d "$DATABASE_URL"` や `psql "$DATABASE_URL" -c 'SELECT 1'` で疎通テストを実施します。SSHトンネル経由の場合は接続が確立しているか確認してください。
+- **取り込み後に件数が合わない／欠損が見つかる**
+  - ステージングと本テーブルの差分を `SELECT * FROM boards_import_stage EXCEPT SELECT * FROM boards;` で確認し、ズレがある場合は該当レコードを手動で修正のうえ再投入してください。`merge_boards.sql` は `deleted_at IS NULL` のみを同期するため、論理削除済みレコードは対象外です。
 
 ---
 

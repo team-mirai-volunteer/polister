@@ -66,6 +66,14 @@ export const MunicipalityBoardsTable = ({
                 hover
                 selected={isSelected}
                 onClick={() => onSelectBoard?.(board.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelectBoard?.(board.id);
+                  }
+                }}
+                tabIndex={0}
+                aria-selected={isSelected}
                 sx={{ cursor: "pointer" }}
               >
                 <TableCell width="80">

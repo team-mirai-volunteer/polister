@@ -11,6 +11,7 @@ import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
 import { setupDI } from "@/shared/lib/di";
 import { AppBar } from "@/shared/ui/components/layout/AppBar";
 
+import "mapbox-gl/dist/mapbox-gl.css";
 import theme from "../theme";
 import "./globals.css";
 
