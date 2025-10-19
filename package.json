@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "validate": "yarn typecheck && yarn lint && yarn format:check",
+    "validate": "yarn typecheck && yarn lint && yarn format:check && yarn test:coverage && yarn test:e2e",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

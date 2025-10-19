@@ -1,157 +1,86 @@
 /**
- * GitHub-inspired design system for Polister documentation
- * Based on GitHub's color palette and typography
+ * Docusaurus custom theme aligned with Polister UI palette
  */
 
-/* Import GitHub-style fonts */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
-/* GitHub Color Palette - Light Mode */
 :root {
-  /* Primary colors - GitHub blue */
-  --ifm-color-primary: #0969da;
-  --ifm-color-primary-dark: #0860ca;
-  --ifm-color-primary-darker: #0757ba;
-  --ifm-color-primary-darkest: #044289;
-  --ifm-color-primary-light: #1f73e6;
-  --ifm-color-primary-lighter: #388bfd;
-  --ifm-color-primary-lightest: #54aeff;
+  --polister-primary: #2aa693;
+  --polister-primary-dark: #1f7f6f;
+  --polister-primary-light: #5bc6ad;
+  --polister-accent: #e40014;
+  --polister-bg: #f7f4f0;
+  --polister-surface: #ffffff;
+  --polister-border: rgba(29, 41, 61, 0.12);
+  --polister-text: #1d293d;
+  --polister-text-subtle: #45556c;
 
-  /* GitHub Color System */
-  --gh-color-canvas-default: #ffffff;
-  --gh-color-canvas-subtle: #f6f8fa;
-  --gh-color-canvas-inset: #f6f8fa;
-  --gh-color-fg-default: #1f2328;
-  --gh-color-fg-muted: #656d76;
-  --gh-color-fg-subtle: #6e7781;
-  --gh-color-border-default: #d1d9e0;
-  --gh-color-border-muted: #d8dee4;
-  --gh-color-accent-fg: #0969da;
-  --gh-color-accent-emphasis: #0969da;
-  --gh-color-attention-fg: #9a6700;
-  --gh-color-attention-emphasis: #fb8500;
-  --gh-color-danger-fg: #d1242f;
-  --gh-color-success-fg: #1a7f37;
+  --ifm-color-primary: var(--polister-primary);
+  --ifm-color-primary-dark: var(--polister-primary-dark);
+  --ifm-color-primary-darker: #1b6b5d;
+  --ifm-color-primary-darkest: #155148;
+  --ifm-color-primary-light: var(--polister-primary-light);
+  --ifm-color-primary-lighter: #7cd6c0;
+  --ifm-color-primary-lightest: #c1ede0;
 
-  /* Typography */
   --ifm-font-family-base:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
-    Helvetica, Arial, sans-serif;
+    "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
   --ifm-font-family-monospace:
-    "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
-    Consolas, "Courier New", monospace;
-  --ifm-font-size-base: 14px;
-  --ifm-line-height-base: 1.5;
-  --ifm-font-weight-normal: 400;
-  --ifm-font-weight-semibold: 500;
-  --ifm-font-weight-bold: 600;
+    "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --ifm-font-size-base: 15px;
+  --ifm-line-height-base: 1.65;
 
-  /* Background colors */
-  --ifm-background-color: var(--gh-color-canvas-default);
-  --ifm-background-surface-color: var(--gh-color-canvas-default);
-  --ifm-color-content-secondary: var(--gh-color-fg-muted);
+  --ifm-background-color: var(--polister-bg);
+  --ifm-background-surface-color: var(--polister-surface);
+  --ifm-color-content: var(--polister-text);
+  --ifm-color-content-secondary: var(--polister-text-subtle);
+  --ifm-heading-color: var(--polister-text);
+  --ifm-link-color: var(--polister-primary);
+  --ifm-link-hover-color: var(--polister-primary-dark);
 
-  /* Text colors */
-  --ifm-color-content: var(--gh-color-fg-default);
-  --ifm-heading-color: var(--gh-color-fg-default);
-  --ifm-link-color: var(--gh-color-accent-fg);
-  --ifm-link-hover-color: var(--gh-color-accent-emphasis);
+  --ifm-code-font-size: 90%;
+  --ifm-code-background: rgba(42, 166, 147, 0.08);
+  --ifm-code-border-radius: 8px;
+  --ifm-pre-background: rgba(29, 41, 61, 0.04);
+  --ifm-pre-border-radius: 10px;
 
-  /* Code styling */
-  --ifm-code-font-size: 85%;
-  --ifm-code-background: #f6f8fa;
-  --ifm-code-border-radius: 6px;
-  --ifm-code-padding-horizontal: 0.4rem;
-  --ifm-code-padding-vertical: 0.2rem;
-  --ifm-pre-background: #f6f8fa;
-  --ifm-pre-border-radius: 6px;
-  --ifm-pre-padding: 1rem;
-
-  /* Borders and spacing */
   --ifm-global-border-width: 1px;
-  --ifm-border-color: var(--gh-color-border-default);
-  --ifm-global-radius: 6px;
-  --ifm-spacing-horizontal: 1rem;
-  --ifm-spacing-vertical: 1rem;
+  --ifm-border-color: var(--polister-border);
+  --ifm-global-radius: 10px;
+  --ifm-spacing-horizontal: 1.2rem;
+  --ifm-spacing-vertical: 1.2rem;
 
-  /* Code highlighting */
-  --docusaurus-highlighted-code-line-bg: rgba(175, 184, 193, 0.2);
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.95);
+  --ifm-navbar-link-hover-color: var(--polister-primary-dark);
+  --ifm-navbar-shadow: 0 10px 24px rgba(29, 41, 61, 0.08);
 
-  /* Navbar */
-  --ifm-navbar-background-color: var(--gh-color-canvas-default);
-  --ifm-navbar-shadow: 0 1px 0 rgba(208, 215, 222, 1);
-  --ifm-navbar-item-padding-horizontal: 0.75rem;
-  --ifm-navbar-item-padding-vertical: 0.5rem;
+  --ifm-sidebar-border-color: var(--polister-border);
+  --ifm-menu-color-background-hover: rgba(42, 166, 147, 0.08);
+  --ifm-menu-color-background-active: rgba(42, 166, 147, 0.12);
 
-  /* Sidebar */
-  --ifm-menu-color: var(--gh-color-fg-default);
-  --ifm-menu-color-background-active: var(--gh-color-canvas-subtle);
-  --ifm-menu-color-background-hover: var(--gh-color-canvas-subtle);
-
-  /* Tables */
-  --ifm-table-border-color: var(--gh-color-border-default);
-  --ifm-table-head-background: var(--gh-color-canvas-subtle);
-
-  /* Alerts */
-  --ifm-alert-border-radius: 6px;
-  --ifm-alert-border-width: 1px;
+  --docusaurus-highlighted-code-line-bg: rgba(29, 41, 61, 0.08);
 }
 
-/* GitHub Color Palette - Dark Mode */
 [data-theme="dark"] {
-  --ifm-color-primary: #1f6feb;
-  --ifm-color-primary-dark: #1c64ed;
-  --ifm-color-primary-darker: #1959d9;
-  --ifm-color-primary-darkest: #144cc7;
-  --ifm-color-primary-light: #2d72f0;
-  --ifm-color-primary-lighter: #4285f4;
-  --ifm-color-primary-lightest: #5c93f7;
+  --polister-bg: #0f172b;
+  --polister-surface: #1d2638;
+  --polister-border: rgba(255, 255, 255, 0.08);
+  --polister-text: #f1f5f9;
+  --polister-text-subtle: #9aa7c2;
 
-  /* GitHub Dark Colors */
-  --gh-color-canvas-default: #0d1117;
-  --gh-color-canvas-subtle: #161b22;
-  --gh-color-canvas-inset: #010409;
-  --gh-color-fg-default: #e6edf3;
-  --gh-color-fg-muted: #7d8590;
-  --gh-color-fg-subtle: #6e7681;
-  --gh-color-border-default: #30363d;
-  --gh-color-border-muted: #21262d;
-  --gh-color-accent-fg: #2f81f7;
-  --gh-color-accent-emphasis: #1f6feb;
-  --gh-color-attention-fg: #d29922;
-  --gh-color-attention-emphasis: #fb8500;
-  --gh-color-danger-fg: #f85149;
-  --gh-color-success-fg: #3fb950;
-
-  /* Dark mode overrides */
-  --ifm-background-color: var(--gh-color-canvas-default);
-  --ifm-background-surface-color: var(--gh-color-canvas-subtle);
-  --ifm-color-content: var(--gh-color-fg-default);
-  --ifm-color-content-secondary: var(--gh-color-fg-muted);
-  --ifm-heading-color: var(--gh-color-fg-default);
-  --ifm-link-color: var(--gh-color-accent-fg);
-  --ifm-link-hover-color: var(--gh-color-accent-emphasis);
-
-  /* Code styling for dark mode */
-  --ifm-code-background: #161b22;
-  --ifm-pre-background: #161b22;
-  --docusaurus-highlighted-code-line-bg: rgba(110, 118, 129, 0.4);
-
-  /* Navbar dark */
-  --ifm-navbar-background-color: var(--gh-color-canvas-default);
-  --ifm-navbar-shadow: 0 1px 0 var(--gh-color-border-default);
-
-  /* Sidebar dark */
-  --ifm-menu-color: var(--gh-color-fg-default);
-  --ifm-menu-color-background-active: var(--gh-color-canvas-subtle);
-  --ifm-menu-color-background-hover: var(--gh-color-canvas-subtle);
-
-  /* Tables dark */
-  --ifm-table-border-color: var(--gh-color-border-default);
-  --ifm-table-head-background: var(--gh-color-canvas-subtle);
+  --ifm-background-color: var(--polister-bg);
+  --ifm-background-surface-color: var(--polister-surface);
+  --ifm-color-content: var(--polister-text);
+  --ifm-color-content-secondary: var(--polister-text-subtle);
+  --ifm-navbar-background-color: rgba(15, 23, 43, 0.92);
+  --ifm-navbar-shadow: 0 8px 20px rgba(12, 18, 34, 0.6);
+  --ifm-code-background: rgba(76, 207, 187, 0.18);
+  --ifm-pre-background: rgba(29, 41, 61, 0.4);
+  --docusaurus-highlighted-code-line-bg: rgba(76, 207, 187, 0.18);
 }
 
-/* GitHub-style Typography */
 .markdown h1,
 .markdown h2,
 .markdown h3,
@@ -159,290 +88,113 @@
 .markdown h5,
 .markdown h6 {
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.3;
   margin-bottom: 16px;
-  margin-top: 24px;
+  margin-top: 28px;
 }
 
 .markdown h1 {
-  font-size: 2rem;
-  border-bottom: 1px solid var(--gh-color-border-muted);
-  padding-bottom: 0.3em;
+  font-size: 2.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .markdown h2 {
-  font-size: 1.5rem;
-  border-bottom: 1px solid var(--gh-color-border-muted);
-  padding-bottom: 0.3em;
+  font-size: 1.8rem;
+  margin-bottom: 0.75rem;
 }
 
 .markdown h3 {
-  font-size: 1.25rem;
+  font-size: 1.4rem;
 }
 
 .markdown h4 {
-  font-size: 1rem;
+  font-size: 1.15rem;
+  color: var(--polister-text-subtle);
 }
 
-.markdown h5 {
-  font-size: 0.875rem;
-}
-
+.markdown h5,
 .markdown h6 {
-  font-size: 0.85rem;
-  color: var(--gh-color-fg-muted);
+  font-size: 1rem;
+  color: var(--polister-text-subtle);
 }
 
-/* GitHub-style Inline Code */
 .markdown code {
   background-color: var(--ifm-code-background);
   border-radius: 6px;
-  font-size: 85%;
-  padding: 0.2em 0.4em;
-  font-family: var(--ifm-font-family-monospace);
+  font-size: 90%;
+  padding: 0.2rem 0.35rem;
 }
 
-/* GitHub-style Code Blocks */
 .markdown pre {
-  background-color: var(--ifm-pre-background);
-  border-radius: 6px;
-  font-size: 85%;
-  line-height: 1.45;
-  overflow: auto;
-  padding: 16px;
-  border: 1px solid var(--gh-color-border-default);
+  border: 1px solid rgba(29, 41, 61, 0.08);
 }
 
-.markdown pre code {
-  background-color: transparent;
-  border-radius: 0;
-  padding: 0;
-}
-
-/* GitHub-style Blockquotes */
-.markdown blockquote {
-  border-left: 4px solid var(--gh-color-border-default);
-  color: var(--gh-color-fg-muted);
-  margin: 0 0 16px 0;
-  padding: 0 1em;
-}
-
-/* GitHub-style Tables */
 .markdown table {
-  border-collapse: collapse;
+  border-collapse: separate;
   border-spacing: 0;
-  display: block;
-  max-width: 100%;
-  overflow: auto;
-  width: max-content;
-  margin-bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--polister-border);
 }
 
-.markdown table th,
-.markdown table td {
-  border: 1px solid var(--gh-color-border-default);
-  padding: 6px 13px;
-}
-
-.markdown table th {
-  background-color: var(--gh-color-canvas-subtle);
+.markdown table thead {
+  background-color: rgba(42, 166, 147, 0.06);
   font-weight: 600;
 }
 
-.markdown table tr {
-  background-color: var(--gh-color-canvas-default);
-  border-top: 1px solid var(--gh-color-border-default);
-}
-
-.markdown table tr:nth-child(2n) {
-  background-color: var(--gh-color-canvas-subtle);
-}
-
-/* GitHub-style Lists */
-.markdown ul,
-.markdown ol {
-  margin-bottom: 16px;
-  padding-left: 2em;
-}
-
-.markdown li {
-  margin-bottom: 0.25em;
-}
-
-.markdown li > p {
-  margin-bottom: 16px;
-}
-
-/* GitHub-style Links */
-.markdown a {
-  color: var(--gh-color-accent-fg);
-  text-decoration: none;
-}
-
-.markdown a:hover {
-  color: var(--gh-color-accent-emphasis);
-  text-decoration: underline;
-}
-
-/* GitHub-style Alert/Admonition Styles */
 .alert {
-  border-radius: 6px;
-  border: 1px solid transparent;
-  margin-bottom: 16px;
-  padding: 16px;
-}
-
-.alert--note {
-  background-color: rgba(9, 105, 218, 0.1);
-  border-color: rgba(9, 105, 218, 0.4);
-}
-
-.alert--tip {
-  background-color: rgba(26, 127, 55, 0.1);
-  border-color: rgba(26, 127, 55, 0.4);
-}
-
-.alert--info {
-  background-color: rgba(9, 105, 218, 0.1);
-  border-color: rgba(9, 105, 218, 0.4);
-}
-
-.alert--warning {
-  background-color: rgba(154, 103, 0, 0.1);
-  border-color: rgba(154, 103, 0, 0.4);
-}
-
-.alert--danger {
-  background-color: rgba(209, 36, 47, 0.1);
-  border-color: rgba(209, 36, 47, 0.4);
-}
-
-/* Navigation and Sidebar GitHub-style */
-.navbar {
-  border-bottom: 1px solid var(--gh-color-border-default);
+  border-radius: 10px;
+  border-width: 1px;
   box-shadow: none;
 }
 
-.navbar__brand {
-  font-weight: 600;
+.markdown blockquote {
+  border-left: 4px solid rgba(42, 166, 147, 0.4);
+  color: var(--polister-text-subtle);
+  padding: 0.5rem 1rem;
+  background-color: transparent;
 }
 
-.navbar__link {
-  font-weight: 500;
-  padding: 0.75rem 1rem;
+.navbar__title {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.navbar__items .navbar__link {
   border-radius: 6px;
   transition: background-color 0.2s ease;
 }
 
-.navbar__link:hover {
-  background-color: var(--gh-color-canvas-subtle);
-  text-decoration: none;
+.navbar__items .navbar__link:hover,
+.navbar__items .navbar__link--active {
+  background-color: rgba(42, 166, 147, 0.12);
 }
 
-.navbar__link--active {
-  background-color: var(--gh-color-canvas-subtle);
-  color: var(--gh-color-accent-fg);
-}
-
-/* Sidebar styling */
-.theme-doc-sidebar-container {
-  border-right: 1px solid var(--gh-color-border-default);
-}
-
-.menu__link {
+.theme-doc-sidebar-menu .menu__link {
   border-radius: 6px;
-  font-size: 14px;
-  padding: 0.5rem 0.75rem;
-  line-height: 1.5;
 }
 
-.menu__link:hover {
-  background-color: var(--gh-color-canvas-subtle);
-  text-decoration: none;
+.theme-doc-sidebar-menu .menu__link--active,
+.theme-doc-sidebar-menu .menu__link:hover {
+  background-color: rgba(42, 166, 147, 0.12);
+  color: var(--ifm-color-primary);
 }
 
-.menu__link--active {
-  background-color: var(--gh-color-canvas-subtle);
-  color: var(--gh-color-accent-fg);
-  font-weight: 600;
+.card {
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(29, 41, 61, 0.12);
 }
 
-.menu__list-item-collapsible:hover {
-  background-color: var(--gh-color-canvas-subtle);
+.card__header {
+  border-bottom: 1px solid rgba(29, 41, 61, 0.08);
+  margin-bottom: 0.5rem;
 }
 
-.menu__caret {
-  transition: transform 0.2s ease;
+.card__body {
+  color: var(--ifm-color-content-secondary);
 }
 
-/* Content area */
-.theme-doc-markdown {
-  max-width: none;
-}
-
-.container {
-  max-width: 1280px;
-}
-
-/* Footer styling */
 .footer {
-  border-top: 1px solid var(--gh-color-border-default);
-  background-color: var(--gh-color-canvas-subtle);
-}
-
-.footer__title {
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.footer__item {
-  font-size: 14px;
-}
-
-/* Badge/Tag styling */
-.badge {
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 0.25em 0.6em;
-}
-
-.badge--primary {
-  background-color: var(--gh-color-accent-emphasis);
-  color: white;
-}
-
-.badge--secondary {
-  background-color: var(--gh-color-canvas-subtle);
-  color: var(--gh-color-fg-default);
-  border: 1px solid var(--gh-color-border-default);
-}
-
-/* Button styling */
-.button {
-  border-radius: 6px;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  transition: all 0.2s ease;
-}
-
-.button--primary {
-  background-color: var(--gh-color-accent-emphasis);
-  border-color: var(--gh-color-accent-emphasis);
-}
-
-.button--primary:hover {
-  background-color: var(--gh-color-accent-fg);
-  border-color: var(--gh-color-accent-fg);
-}
-
-.button--secondary {
-  background-color: var(--gh-color-canvas-subtle);
-  border-color: var(--gh-color-border-default);
-  color: var(--gh-color-fg-default);
-}
-
-.button--secondary:hover {
-  background-color: var(--gh-color-canvas-inset);
-  border-color: var(--gh-color-border-muted);
+  background-color: rgba(29, 41, 61, 0.03);
+  border-top: 1px solid rgba(29, 41, 61, 0.08);
 }

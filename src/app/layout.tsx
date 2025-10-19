@@ -58,7 +58,13 @@ export default function RootLayout({
               }}
             >
               <AppBar />
-              <Box component="main" sx={{ flexGrow: 1 }}>
+              <Box
+                component="main"
+                sx={{
+                  flexGrow: 1,
+                  pt: { xs: 10, md: 12 },
+                }}
+              >
                 {children}
               </Box>
             </Box>
