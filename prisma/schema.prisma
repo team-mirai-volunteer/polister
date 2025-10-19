@@ -35,7 +35,6 @@ model Board {
   @@index([municipalityId])
   @@index([trustLevel])
   @@index([status])
-  @@index([municipalityId, deletedAt, boardNumber, createdAt])
   @@map("boards")
 }
 

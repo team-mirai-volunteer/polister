@@ -82,4 +82,26 @@ describe("GetMunicipalityBoardsUseCase", () => {
     );
     expect(repository.findBoardsByMunicipalityId).not.toHaveBeenCalled();
   });
+
+  it("掲示板が存在しない場合は空配列を返す", async () => {
+    repository.findBoardsByMunicipalityId.mockResolvedValue([]);
+
+    const municipalityId = "123e4567-e89b-12d3-a456-426614174001";
+
+    const result = await useCase.execute(municipalityId);
+
+    expect(repository.findBoardsByMunicipalityId).toHaveBeenCalledWith(
+      municipalityId
+    );
+    expect(result).toEqual([]);
+  });
+
+  it("リポジトリエラーが発生した場合はエラーを伝播する", async () => {
+    const error = new Error("Database connection failed");
+    repository.findBoardsByMunicipalityId.mockRejectedValue(error);
+
+    const municipalityId = "123e4567-e89b-12d3-a456-426614174002";
+
+    await expect(useCase.execute(municipalityId)).rejects.toThrow(error);
+  });
 });

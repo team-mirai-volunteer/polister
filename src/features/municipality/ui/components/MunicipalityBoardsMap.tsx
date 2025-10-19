@@ -158,6 +158,15 @@ export const MunicipalityBoardsMap = ({
       }
     );
 
+    if (bounds.minLng === bounds.maxLng && bounds.minLat === bounds.maxLat) {
+      map.easeTo({
+        center: [bounds.minLng, bounds.minLat],
+        zoom: 14,
+        duration: 600,
+      });
+      return;
+    }
+
     map.fitBounds(
       [
         [bounds.minLng, bounds.minLat],

@@ -8,6 +8,12 @@
 - `DATABASE_URL` が `.env` などに設定されていること
 - プロジェクトルートでコマンドを実行すること
 
+### ツール
+
+- `csvkit`（`csvstat` を利用するため）
+  - `pipx install csvkit` もしくは `pip install --user csvkit`
+  - インストール後に `csvstat --version` でパスが通っているか確認してください
+
 ## エクスポート手順
 
 `scripts/poster-board-import/export.sh` を使うと、自治体／掲示板／掲示板履歴のCSVをまとめて出力できます。引数に出力先ディレクトリを指定します（省略時は `exports/`）。
