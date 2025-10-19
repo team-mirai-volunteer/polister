@@ -46,7 +46,7 @@ export function AppBar() {
                 placeItems: "center",
                 fontWeight: 700,
                 fontSize: "0.85rem",
-                backgroundColor: "rgba(42, 166, 147, 0.12)",
+                backgroundColor: (theme) => theme.palette.secondary.light,
                 color: "secondary.main",
               }}
             >
@@ -56,7 +56,13 @@ export function AppBar() {
               <Typography variant="h6" sx={{ letterSpacing: "0.08em" }}>
                 POLISTER
               </Typography>
-              <Typography variant="subtitle2" sx={{ fontSize: "1rem" }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  // デザイン仕様により、subtitle2のデフォルトサイズをオーバーライド
+                  fontSize: "1rem",
+                }}
+              >
                 ポスター掲示板データ基盤
               </Typography>
             </Box>
