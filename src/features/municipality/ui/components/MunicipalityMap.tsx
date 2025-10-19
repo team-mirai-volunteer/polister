@@ -7,7 +7,6 @@
 "use client";
 
 import * as turf from "@turf/turf";
-import "mapbox-gl/dist/mapbox-gl.css";
 import { useRef } from "react";
 import Map, { type MapRef, Layer, Source } from "react-map-gl/mapbox";
 

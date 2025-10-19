@@ -28,13 +28,20 @@ export const MunicipalityBoardsSection = ({
       if (prev && boards.some((board) => board.id === prev)) {
         return prev;
       }
-      return boards[0].id;
+      return null;
     });
   }, [boards]);
 
   const focusedBoardId = useMemo(() => {
-    if (boards.length === 0) return null;
-    return selectedBoardId ?? boards[0].id;
+    if (boards.length === 0) {
+      return null;
+    }
+    if (!selectedBoardId) {
+      return null;
+    }
+    return boards.some((board) => board.id === selectedBoardId)
+      ? selectedBoardId
+      : null;
   }, [boards, selectedBoardId]);
 
   return (

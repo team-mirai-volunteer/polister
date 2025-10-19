@@ -6,7 +6,7 @@ describe("Home Page", () => {
   it("should render the welcome heading", () => {
     render(<Page />);
     expect(
-      screen.getByText("Polisterプロジェクトへようこそ")
+      screen.getByText("掲示板データ運用を直感的に可視化するトップページ")
     ).toBeInTheDocument();
   });
 });

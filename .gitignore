@@ -55,3 +55,6 @@ tmp/
 
 # scripts data
 /scripts/data/
+
+# poster-board data
+data/poster-board
