@@ -1,4 +1,7 @@
-import type { BoardStatus, TrustLevel } from "@prisma/client";
+import type {
+  BoardStatus,
+  TrustLevel,
+} from "../../domain/value-objects/BoardAttributes";
 
 export interface MunicipalityBoardDTO {
   id: string;

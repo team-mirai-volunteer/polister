@@ -15,6 +15,7 @@ import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoa
 import {
   BOARD_STATUS_COLORS,
   BOARD_STATUS_LABELS,
+  TRUST_LEVEL_COLORS,
   TRUST_LEVEL_LABELS,
 } from "../../constants";
 
@@ -85,7 +86,9 @@ export const MunicipalityBoardsTable = ({
                     label={
                       TRUST_LEVEL_LABELS[board.trustLevel] ?? board.trustLevel
                     }
-                    color="info"
+                    color={
+                      TRUST_LEVEL_COLORS[board.trustLevel] ?? "info"
+                    }
                     variant="outlined"
                   />
                 </TableCell>

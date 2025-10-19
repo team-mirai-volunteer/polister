@@ -16,11 +16,12 @@ import {
   Box,
   Chip,
   Container,
-  Grid,
+  Link,
   Paper,
   Stack,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/PigmentGrid";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -34,14 +35,37 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   // Server Actionsを並列実行
-  const [municipality, geojson, boards] = await Promise.all([
-    getMunicipalityByIdAction(id),
-    getMunicipalityGeoJSONAction(id),
-    getMunicipalityBoardsAction(id),
-  ]);
+  const [municipalityResult, geojsonResult, boardsResult] =
+    await Promise.allSettled([
+      getMunicipalityByIdAction(id),
+      getMunicipalityGeoJSONAction(id),
+      getMunicipalityBoardsAction(id),
+    ]);
+
+  if (municipalityResult.status === "rejected") {
+    throw municipalityResult.reason;
+  }
+
+  const municipality = municipalityResult.value;
 
   if (!municipality) {
     notFound();
+  }
+
+  if (geojsonResult.status === "rejected") {
+    throw geojsonResult.reason;
+  }
+
+  const geojson = geojsonResult.value;
+
+  const boards =
+    boardsResult.status === "fulfilled" ? boardsResult.value : [];
+
+  if (boardsResult.status === "rejected") {
+    console.error(
+      `Failed to load boards for municipality ${id}:`,
+      boardsResult.reason
+    );
   }
 
   return (
@@ -50,7 +74,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
         {municipality.fullName}
       </Typography>
 
-      <Grid container spacing={3} alignItems="stretch">
+      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
         {/* 基本情報 */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Stack spacing={3} sx={{ height: "100%" }}>
@@ -111,7 +135,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    掲示場数
+                    掲示板数
                   </Typography>
                   <Typography variant="body1">
                     {municipality.boardCount !== null
@@ -138,15 +162,17 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
                     </Typography>
                     <Typography
                       variant="body1"
-                      sx={{ wordBreak: "break-all", color: "primary.main" }}
+                      sx={{ wordBreak: "break-all" }}
                     >
-                      <a
+                      <Link
                         href={municipality.url}
                         target="_blank"
                         rel="noopener noreferrer"
+                        underline="hover"
+                        color="primary"
                       >
                         {municipality.url}
-                      </a>
+                      </Link>
                     </Typography>
                   </Box>
                 )}

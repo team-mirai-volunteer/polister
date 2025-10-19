@@ -5,7 +5,11 @@
  */
 
 import { TOKENS } from "@/shared/lib/di/tokens";
-import type { BoardStatus, PrismaClient, TrustLevel } from "@prisma/client";
+import type {
+  BoardStatus as PrismaBoardStatus,
+  PrismaClient,
+  TrustLevel as PrismaTrustLevel,
+} from "@prisma/client";
 import { inject, injectable } from "tsyringe";
 
 import type { Municipality } from "../../domain/entities/Municipality";
@@ -16,6 +20,12 @@ import type {
   IMunicipalityRepository,
   MunicipalityBoardRecord,
 } from "../../domain/repositories/IMunicipalityRepository";
+import {
+  isBoardStatus,
+  isTrustLevel,
+  type BoardStatus,
+  type TrustLevel,
+} from "../../domain/value-objects/BoardAttributes";
 import { MunicipalityMapper } from "../mappers/MunicipalityMapper";
 
 @injectable()
@@ -113,8 +123,8 @@ export class MunicipalityRepository implements IMunicipalityRepository {
         address: string;
         longitude: number | null;
         latitude: number | null;
-        status: BoardStatus;
-        trust_level: TrustLevel;
+        status: PrismaBoardStatus;
+        trust_level: PrismaTrustLevel;
       }>
     >`
       SELECT
@@ -132,25 +142,37 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       ORDER BY board_number ASC NULLS LAST, created_at ASC
     `;
 
-    return rows.map((row) => ({
-      id: row.id,
-      boardNumber:
-        row.board_number !== null && row.board_number !== undefined
-          ? Number(row.board_number)
-          : null,
-      name: row.name,
-      address: row.address,
-      longitude:
-        row.longitude !== null && row.longitude !== undefined
-          ? Number(row.longitude)
-          : null,
-      latitude:
-        row.latitude !== null && row.latitude !== undefined
-          ? Number(row.latitude)
-          : null,
-      status: row.status,
-      trustLevel: row.trust_level,
-    }));
+    return rows.map((row) => {
+      const statusCandidate = row.status;
+      const trustLevelCandidate = row.trust_level;
+
+      if (!isBoardStatus(statusCandidate)) {
+        throw new Error(
+          `Unexpected board status received: ${statusCandidate}`
+        );
+      }
+
+      if (!isTrustLevel(trustLevelCandidate)) {
+        throw new Error(
+          `Unexpected trust level received: ${trustLevelCandidate}`
+        );
+      }
+
+      const status: BoardStatus = statusCandidate;
+      const trustLevel: TrustLevel = trustLevelCandidate;
+
+      return {
+        id: row.id,
+        boardNumber:
+          row.board_number !== null ? Number(row.board_number) : null,
+        name: row.name,
+        address: row.address,
+        longitude: row.longitude !== null ? Number(row.longitude) : null,
+        latitude: row.latitude !== null ? Number(row.latitude) : null,
+        status,
+        trustLevel,
+      };
+    });
   }
 
   /**

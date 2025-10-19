@@ -38,6 +38,41 @@
 
 別ディレクトリに出力したCSVを取り込みたい場合は、上記スクリプトの `COPY` 部分を直接実行してください（例: `psql "$DATABASE_URL" -c "\copy boards_import_stage FROM 'exports/boards.csv' WITH (FORMAT csv, HEADER true)"`）。
 
+### インポートフロー
+
+```mermaid
+flowchart TD
+  A[ステージングテーブル作成\ncreate_stage_tables.sql] --> B[CSV投入\n\copy data/poster-board/*.csv]
+  B --> C[本テーブル反映\nmerge_*.sql]
+  C --> D[件数確認]
+  D --> E[インポート完了]
+```
+
+### データ関連図
+
+```mermaid
+erDiagram
+  MUNICIPALITIES ||--o{ BOARDS : "1対多"
+  BOARDS ||--o{ BOARD_HISTORIES : "1対多"
+
+  MUNICIPALITIES {
+    string id
+    string code
+    string name
+  }
+  BOARDS {
+    string id
+    string municipality_id
+    int board_number
+  }
+  BOARD_HISTORIES {
+    string id
+    string board_id
+    jsonb before_data
+    jsonb after_data
+  }
+```
+
 ### メモ
 
 - `merge_boards.sql` では `deleted_at IS NULL` な掲示板のみ取り込みます。座標や自治体名が一致しないレコードがある場合は、ステージングテーブルを確認して補正してください。

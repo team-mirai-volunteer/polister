@@ -3,10 +3,15 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { Box, Tooltip, Typography } from "@mui/material";
-import * as turf from "@turf/turf";
+import bbox from "@turf/bbox";
 import type { MutableRefObject } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import Map, { Layer, MapRef, Marker, Source } from "react-map-gl/mapbox";
+import MapboxMap, {
+  Layer,
+  MapRef as MapboxMapRef,
+  Marker,
+  Source,
+} from "react-map-gl/mapbox";
 
 import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 
@@ -26,7 +31,7 @@ export const MunicipalityBoardsMap = ({
   onBoardFocused,
 }: MunicipalityBoardsMapProps) => {
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-  const mapRef = useRef<MapRef | null>(null);
+  const mapRef = useRef<MapboxMapRef | null>(null);
 
   const coordinates = useMemo(
     () =>
@@ -47,12 +52,12 @@ export const MunicipalityBoardsMap = ({
       return null;
     }
 
-    const bbox = turf.bbox(geojson as GeoJSON.Feature);
-    if (!bbox || bbox.length !== 4) {
+    const boundingBox = bbox(geojson as GeoJSON.Feature);
+    if (!boundingBox || boundingBox.length !== 4) {
       return null;
     }
 
-    const [minLng, minLat, maxLng, maxLat] = bbox;
+    const [minLng, minLat, maxLng, maxLat] = boundingBox;
     return {
       minLng,
       minLat,
@@ -168,10 +173,6 @@ export const MunicipalityBoardsMap = ({
   }, [coordinates, polygonBounds]);
 
   useEffect(() => {
-    adjustViewport();
-  }, [adjustViewport]);
-
-  useEffect(() => {
     if (!focusedBoardId) {
       return;
     }
@@ -229,7 +230,7 @@ export const MunicipalityBoardsMap = ({
         position: "relative",
       }}
     >
-      <Map
+      <MapboxMap
         ref={mapRef}
         initialViewState={initialViewState}
         mapStyle="mapbox://styles/mapbox/streets-v12"
@@ -255,6 +256,12 @@ export const MunicipalityBoardsMap = ({
         <MapboxMapAdjuster adjust={adjustViewport} mapRef={mapRef} />
         {coordinates.map((coord) => {
           const isFocused = coord.id === focusedBoardId;
+          const markerLabel =
+            coord.boardNumber !== null
+              ? `掲示板 No.${coord.boardNumber}${
+                  coord.name ? ` ${coord.name}` : ""
+                }`
+              : `掲示板${coord.name ? ` ${coord.name}` : ""}`;
           return (
             <Marker
               key={coord.id}
@@ -271,7 +278,17 @@ export const MunicipalityBoardsMap = ({
                 PopperProps={{ disablePortal: true }}
               >
                 <Box
+                  role="button"
+                  tabIndex={0}
+                  aria-label={markerLabel}
+                  aria-pressed={isFocused}
                   onClick={() => onBoardFocused?.(coord.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onBoardFocused?.(coord.id);
+                    }
+                  }}
                   sx={{
                     width: isFocused ? 18 : 14,
                     height: isFocused ? 18 : 14,
@@ -283,20 +300,26 @@ export const MunicipalityBoardsMap = ({
                     boxShadow: 2,
                     transition: "all 0.2s ease",
                     cursor: "pointer",
+                    outline: "none",
+                    "&:focus-visible": {
+                      outline: (theme) =>
+                        `3px solid ${theme.palette.secondary.main}`,
+                      outlineOffset: 2,
+                    },
                   }}
                 />
               </Tooltip>
             </Marker>
           );
         })}
-      </Map>
+      </MapboxMap>
     </Box>
   );
 };
 
 interface MapboxMapAdjusterProps {
   adjust: () => void;
-  mapRef: MutableRefObject<MapRef | null>;
+  mapRef: MutableRefObject<MapboxMapRef | null>;
 }
 
 const MapboxMapAdjuster = ({ adjust, mapRef }: MapboxMapAdjusterProps) => {
@@ -306,15 +329,19 @@ const MapboxMapAdjuster = ({ adjust, mapRef }: MapboxMapAdjusterProps) => {
       return;
     }
 
-    const listener = () => {
+    const handleLoad = () => {
       adjust();
-      map.off("load", listener);
+      map.off("load", handleLoad);
     };
 
-    map.on("load", listener);
+    if (map.isStyleLoaded()) {
+      adjust();
+    } else {
+      map.on("load", handleLoad);
+    }
 
     return () => {
-      map.off("load", listener);
+      map.off("load", handleLoad);
     };
   }, [adjust, mapRef]);
 

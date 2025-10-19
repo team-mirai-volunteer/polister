@@ -4,9 +4,11 @@
  * 市区町村データの永続化を抽象化するリポジトリインターフェース
  */
 
-import type { BoardStatus, TrustLevel } from "@prisma/client";
-
 import type { Municipality } from "../entities/Municipality";
+import type {
+  BoardStatus,
+  TrustLevel,
+} from "../value-objects/BoardAttributes";
 
 export interface FindMunicipalitiesOptions {
   skip?: number;

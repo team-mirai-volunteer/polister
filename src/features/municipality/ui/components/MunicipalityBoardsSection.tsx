@@ -32,13 +32,10 @@ export const MunicipalityBoardsSection = ({
     });
   }, [boards]);
 
-  const hasBoards = boards.length > 0;
   const focusedBoardId = useMemo(() => {
-    if (!hasBoards) {
-      return null;
-    }
-    return selectedBoardId ?? boards[0]?.id ?? null;
-  }, [boards, selectedBoardId, hasBoards]);
+    if (boards.length === 0) return null;
+    return selectedBoardId ?? boards[0].id;
+  }, [boards, selectedBoardId]);
 
   return (
     <Box

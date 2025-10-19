@@ -60,3 +60,13 @@ export const TRUST_LEVEL_LABELS: Record<string, string> = {
   LEVEL_3: "報告",
   LEVEL_4: "未確認",
 };
+
+export const TRUST_LEVEL_COLORS: Record<
+  string,
+  "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
+> = {
+  LEVEL_1: "success",
+  LEVEL_2: "primary",
+  LEVEL_3: "info",
+  LEVEL_4: "warning",
+};
