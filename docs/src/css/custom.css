@@ -65,7 +65,7 @@
 
   --ifm-sidebar-border-color: var(--polister-border);
   --ifm-menu-color-background-hover: var(--polister-overlay-medium);
-  --ifm-menu-color-background-active: rgba(42, 166, 147, 0.12);
+  --ifm-menu-color-background-active: var(--polister-overlay-strong);
 
   --docusaurus-highlighted-code-line-bg: var(--polister-shadow-subtle);
 }
@@ -83,9 +83,11 @@
   --ifm-color-content-secondary: var(--polister-text-subtle);
   --ifm-navbar-background-color: rgba(15, 23, 43, 0.92);
   --ifm-navbar-shadow: 0 8px 20px rgba(12, 18, 34, 0.6);
-  --ifm-code-background: rgba(76, 207, 187, 0.18);
-  --ifm-pre-background: rgba(29, 41, 61, 0.4);
-  --docusaurus-highlighted-code-line-bg: rgba(76, 207, 187, 0.18);
+  --polister-code-bg-dark: rgba(76, 207, 187, 0.18);
+  --polister-pre-bg-dark: rgba(29, 41, 61, 0.4);
+  --ifm-code-background: var(--polister-code-bg-dark);
+  --ifm-pre-background: var(--polister-pre-bg-dark);
+  --docusaurus-highlighted-code-line-bg: var(--polister-code-bg-dark);
 }
 
 .markdown h1,

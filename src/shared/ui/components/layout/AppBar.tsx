@@ -13,6 +13,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -23,6 +24,10 @@ export function AppBar() {
     { label: "ホーム", path: "/" },
     { label: "自治体一覧", path: "/municipalities" },
   ];
+
+  const docsUrl =
+    process.env.NEXT_PUBLIC_DOCS_URL ??
+    "https://team-mirai-volunteer.github.io/polister/";
 
   return (
     <MuiAppBar position="fixed">
@@ -36,37 +41,46 @@ export function AppBar() {
             gap: 2,
           }}
         >
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                display: "grid",
-                placeItems: "center",
-                fontWeight: 700,
-                fontSize: "0.85rem",
-                backgroundColor: (theme) => theme.palette.secondary.light,
-                color: "secondary.main",
-              }}
+          <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              alignItems="center"
+              sx={{ cursor: "pointer" }}
             >
-              P
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ letterSpacing: "0.08em" }}>
-                POLISTER
-              </Typography>
-              <Typography
-                variant="subtitle2"
+              <Box
+                aria-hidden="true"
                 sx={{
-                  // デザイン仕様により、subtitle2のデフォルトサイズをオーバーライド
-                  fontSize: "1rem",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 1,
+                  display: "grid",
+                  placeItems: "center",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  backgroundColor: (theme) =>
+                    alpha(theme.palette.primary.main, 0.12),
+                  color: "secondary.main",
                 }}
               >
-                ポスター掲示板データ基盤
-              </Typography>
-            </Box>
-          </Stack>
+                P
+              </Box>
+              <Box>
+                <Typography variant="h6" sx={{ letterSpacing: "0.08em" }}>
+                  POLISTER
+                </Typography>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    // デザイン仕様により、subtitle2のデフォルトサイズをオーバーライド
+                    fontSize: "1rem",
+                  }}
+                >
+                  ポスター掲示板データ基盤
+                </Typography>
+              </Box>
+            </Stack>
+          </Link>
 
           <Stack direction="row" spacing={1} alignItems="center">
             {navItems.map((item) => {
@@ -91,7 +105,7 @@ export function AppBar() {
             })}
             <Button
               component={Link}
-              href="https://team-mirai-volunteer.github.io/polister/"
+              href={docsUrl}
               target="_blank"
               rel="noopener noreferrer"
               variant="outlined"
