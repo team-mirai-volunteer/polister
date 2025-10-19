@@ -6,6 +6,34 @@ HEAD_BRANCH=${HEAD_BRANCH:-develop}
 RELEASE_LABEL=${RELEASE_LABEL:-release}
 DRY_RUN=false
 
+format_merge_datetime() {
+  local raw="$1"
+  local target_format='+%Y-%m-%d %H:%M %Z'
+
+  if [[ -z "$raw" || "$raw" == "null" ]]; then
+    echo "N/A"
+    return
+  fi
+
+  if date --version >/dev/null 2>&1; then
+    date -d "$raw" "$target_format" 2>/dev/null && return
+  fi
+
+  local bsd_formatted
+  bsd_formatted=$(date -j -f '%Y-%m-%dT%H:%M:%SZ' "$raw" "$target_format" 2>/dev/null) || true
+  if [[ -n "$bsd_formatted" ]]; then
+    echo "$bsd_formatted"
+    return
+  fi
+
+  if command -v gdate >/dev/null 2>&1; then
+    gdate -d "$raw" "$target_format" 2>/dev/null && return
+  fi
+
+  # BSD dateなどGNU互換オプションが使えない場合は生の日時文字列を返す
+  echo "$raw"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)
@@ -72,12 +100,7 @@ for pr in $pr_numbers; do
   fi
   title=$(echo "$pr_json" | jq -r '.title')
   author=$(echo "$pr_json" | jq -r '.author // "unknown"')
-  merged_at=$(echo "$pr_json" | jq -r '.mergedAt // empty')
-  if [[ -n "$merged_at" && "$merged_at" != "null" ]]; then
-    merged_text=$(date -d "$merged_at" '+%Y-%m-%d %H:%M %Z' 2>/dev/null || echo "$merged_at")
-  else
-    merged_text="N/A"
-  fi
+  merged_text=$(format_merge_datetime "$(echo "$pr_json" | jq -r '.mergedAt // empty')")
   checklist+=$'- [ ] #'"$pr"" $title (@$author)
   - マージ日時: $merged_text
 
