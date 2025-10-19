@@ -38,3 +38,25 @@ export const STATUS_COLORS: Record<
   OTHER: "default",
   OUT_OF_SCOPE: "error",
 };
+
+export const BOARD_STATUS_LABELS: Record<string, string> = {
+  PENDING: "未検証",
+  VERIFIED: "検証済み",
+  REJECTED: "却下",
+};
+
+export const BOARD_STATUS_COLORS: Record<
+  string,
+  "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
+> = {
+  PENDING: "warning",
+  VERIFIED: "success",
+  REJECTED: "error",
+};
+
+export const TRUST_LEVEL_LABELS: Record<string, string> = {
+  LEVEL_1: "公式",
+  LEVEL_2: "確信",
+  LEVEL_3: "報告",
+  LEVEL_4: "未確認",
+};

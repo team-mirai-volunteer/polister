@@ -7,11 +7,14 @@
 import { TOKENS } from "@/shared/lib/di/tokens";
 import type { PrismaClient } from "@prisma/client";
 import { inject, injectable } from "tsyringe";
+import type { BoardStatus, TrustLevel } from "@prisma/client";
+
 import type { Municipality } from "../../domain/entities/Municipality";
 import type {
   CountMunicipalitiesOptions,
   FindMunicipalitiesOptions,
   GeoJSONFeature,
+  MunicipalityBoardRecord,
   IMunicipalityRepository,
 } from "../../domain/repositories/IMunicipalityRepository";
 import { MunicipalityMapper } from "../mappers/MunicipalityMapper";
@@ -98,6 +101,57 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       where: { id: municipality.id },
       data,
     });
+  }
+
+  async findBoardsByMunicipalityId(
+    municipalityId: string
+  ): Promise<MunicipalityBoardRecord[]> {
+    const rows = await this.prisma.$queryRaw<Array<
+      {
+        id: string;
+        board_number: number | null;
+        name: string | null;
+        address: string;
+        longitude: number | null;
+        latitude: number | null;
+        status: BoardStatus;
+        trust_level: TrustLevel;
+      }
+    >>`
+      SELECT
+        id,
+        board_number,
+        name,
+        address,
+        ST_X(location::geometry) AS longitude,
+        ST_Y(location::geometry) AS latitude,
+        status,
+        trust_level
+      FROM boards
+      WHERE municipality_id = ${municipalityId}
+        AND deleted_at IS NULL
+      ORDER BY board_number ASC NULLS LAST, created_at ASC
+    `;
+
+    return rows.map((row) => ({
+      id: row.id,
+      boardNumber:
+        row.board_number !== null && row.board_number !== undefined
+          ? Number(row.board_number)
+          : null,
+      name: row.name,
+      address: row.address,
+      longitude:
+        row.longitude !== null && row.longitude !== undefined
+          ? Number(row.longitude)
+          : null,
+      latitude:
+        row.latitude !== null && row.latitude !== undefined
+          ? Number(row.latitude)
+          : null,
+      status: row.status,
+      trustLevel: row.trust_level,
+    }));
   }
 
   /**
