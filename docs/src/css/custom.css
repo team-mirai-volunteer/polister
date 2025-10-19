@@ -6,6 +6,10 @@
 
 :root {
   --polister-primary: #2aa693;
+  --polister-shadow-subtle: rgba(29, 41, 61, 0.08);
+  --polister-shadow-strong: rgba(29, 41, 61, 0.12);
+  --polister-overlay-soft: rgba(42, 166, 147, 0.06);
+  --polister-overlay-strong: rgba(42, 166, 147, 0.12);
   --polister-primary-dark: #1f7f6f;
   --polister-primary-light: #5bc6ad;
   --polister-accent: #e40014;
@@ -126,7 +130,7 @@
 }
 
 .markdown pre {
-  border: 1px solid rgba(29, 41, 61, 0.08);
+  border: 1px solid var(--polister-shadow-subtle);
 }
 
 .markdown table {
@@ -138,7 +142,7 @@
 }
 
 .markdown table thead {
-  background-color: rgba(42, 166, 147, 0.06);
+  background-color: var(--polister-overlay-soft);
   font-weight: 600;
 }
 
@@ -167,7 +171,7 @@
 
 .navbar__items .navbar__link:hover,
 .navbar__items .navbar__link--active {
-  background-color: rgba(42, 166, 147, 0.12);
+  background-color: var(--polister-overlay-strong);
 }
 
 .theme-doc-sidebar-menu .menu__link {
@@ -176,17 +180,17 @@
 
 .theme-doc-sidebar-menu .menu__link--active,
 .theme-doc-sidebar-menu .menu__link:hover {
-  background-color: rgba(42, 166, 147, 0.12);
+  background-color: var(--polister-overlay-strong);
   color: var(--ifm-color-primary);
 }
 
 .card {
   border-radius: 10px;
-  box-shadow: 0 12px 28px rgba(29, 41, 61, 0.12);
+  box-shadow: 0 12px 28px var(--polister-shadow-strong);
 }
 
 .card__header {
-  border-bottom: 1px solid rgba(29, 41, 61, 0.08);
+  border-bottom: 1px solid var(--polister-shadow-subtle);
   margin-bottom: 0.5rem;
 }
 
@@ -196,7 +200,7 @@
 
 .footer {
   background-color: rgba(29, 41, 61, 0.03);
-  border-top: 1px solid rgba(29, 41, 61, 0.08);
+  border-top: 1px solid var(--polister-shadow-subtle);
 }
 
 @media (prefers-reduced-motion: reduce) {

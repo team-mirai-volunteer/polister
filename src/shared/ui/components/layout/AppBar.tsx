@@ -53,10 +53,10 @@ export function AppBar() {
               P
             </Box>
             <Box>
-              <Typography variant="subtitle2" sx={{ letterSpacing: "0.08em" }}>
+              <Typography variant="h6" sx={{ letterSpacing: "0.08em" }}>
                 POLISTER
               </Typography>
-              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+              <Typography variant="subtitle2" sx={{ fontSize: "1rem" }}>
                 ポスター掲示板データ基盤
               </Typography>
             </Box>
