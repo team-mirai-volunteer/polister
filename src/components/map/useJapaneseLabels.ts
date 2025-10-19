@@ -1,27 +1,20 @@
 import mapboxgl from "mapbox-gl";
 
-const isAlreadyJapanese = (expression: unknown): boolean => {
-  if (!expression) {
+const containsNameJa = (expression: unknown): boolean => {
+  if (!Array.isArray(expression)) {
     return false;
   }
 
-  if (
-    Array.isArray(expression) &&
-    expression.length >= 3 &&
-    expression[0] === "coalesce"
-  ) {
-    const first = expression[1];
-    if (Array.isArray(first) && first[0] === "get" && first[1] === "name_ja") {
-      return true;
-    }
-    return expression.some((child) => isAlreadyJapanese(child));
+  if (expression[0] === "get" && expression[1] === "name_ja") {
+    return true;
   }
 
-  return false;
+  return expression.some((child) => containsNameJa(child));
 };
 
-// Mapboxのスタイルに日本語ラベルを適用する。Standardスタイル以外では
-// basemapコンポーネントが存在しないため、name_jaを優先する形で手動設定する。
+const isFormatExpression = (expression: unknown): boolean =>
+  Array.isArray(expression) && expression[0] === "format";
+
 export const setMapLanguageToJapanese = (map: mapboxgl.Map) => {
   const style = map.getStyle();
   if (!style?.layers) {
@@ -34,15 +27,30 @@ export const setMapLanguageToJapanese = (map: mapboxgl.Map) => {
     }
 
     const textField = layer.layout?.["text-field"];
-    if (!textField || isAlreadyJapanese(textField)) {
+    if (!textField || containsNameJa(textField)) {
       return;
     }
 
-    // 既存の式を尊重しつつ、name_ja を最初に参照する共通式を適用する。
-    map.setLayoutProperty(layer.id, "text-field", [
-      "coalesce",
-      ["get", "name_ja"],
-      textField,
-    ]);
+    const preferredField = (isFormatExpression(textField)
+      ? [
+          "coalesce",
+          [
+            "format",
+            [
+              "coalesce",
+              ["get", "name_ja"],
+              ["get", "name:ja"],
+            ],
+          ],
+          textField,
+        ]
+      : [
+          "coalesce",
+          ["get", "name_ja"],
+          ["get", "name:ja"],
+          textField,
+        ]) as mapboxgl.Expression;
+
+    map.setLayoutProperty(layer.id, "text-field", preferredField);
   });
 };
