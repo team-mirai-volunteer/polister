@@ -5,6 +5,10 @@ import type {
   IMunicipalityRepository,
   MunicipalityBoardRecord,
 } from "../../../domain/repositories/IMunicipalityRepository";
+import type {
+  BoardStatus,
+  TrustLevel,
+} from "../../../domain/value-objects/BoardAttributes";
 import { GetMunicipalityBoardsUseCase } from "../GetMunicipalityBoardsUseCase";
 
 describe("GetMunicipalityBoardsUseCase", () => {
@@ -25,8 +29,8 @@ describe("GetMunicipalityBoardsUseCase", () => {
     address: overrides.address ?? "住所",
     longitude: overrides.longitude !== undefined ? overrides.longitude : 139.0,
     latitude: overrides.latitude !== undefined ? overrides.latitude : 35.0,
-    status: overrides.status ?? "PENDING",
-    trustLevel: overrides.trustLevel ?? "LEVEL_3",
+    status: overrides.status ?? ("PENDING" as BoardStatus),
+    trustLevel: overrides.trustLevel ?? ("LEVEL_3" as TrustLevel),
   });
 
   it("掲示板一覧を取得できる", async () => {
@@ -41,10 +45,12 @@ describe("GetMunicipalityBoardsUseCase", () => {
     ];
     repository.findBoardsByMunicipalityId.mockResolvedValue(records);
 
-    const result = await useCase.execute("municipality-1");
+    const municipalityId = "123e4567-e89b-12d3-a456-426614174000";
+
+    const result = await useCase.execute(municipalityId);
 
     expect(repository.findBoardsByMunicipalityId).toHaveBeenCalledWith(
-      "municipality-1"
+      municipalityId
     );
     expect(result).toEqual([
       {
@@ -68,5 +74,12 @@ describe("GetMunicipalityBoardsUseCase", () => {
         trustLevel: "LEVEL_3",
       },
     ]);
+  });
+
+  it("不正なUUIDの場合はエラーを投げる", async () => {
+    await expect(useCase.execute("invalid-id")).rejects.toThrow(
+      "municipalityId must be a valid UUID"
+    );
+    expect(repository.findBoardsByMunicipalityId).not.toHaveBeenCalled();
   });
 });
