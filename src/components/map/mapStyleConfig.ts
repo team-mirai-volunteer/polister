@@ -7,8 +7,8 @@ export const MAP_STYLE_URLS: Record<MapStyleKey, string> = {
   satellite: "mapbox://styles/mapbox/satellite-streets-v12",
 };
 
-export const DEFAULT_CENTER: mapboxgl.LngLatLike = [139.767125, 35.681236];
-export const DEFAULT_ZOOM = 11;
+export const DEFAULT_CENTER: mapboxgl.LngLatLike = [137.0, 38.0];
+export const DEFAULT_ZOOM = 4.5;
 
 const POSTER_LAYER_CUSTOMIZATIONS: LayerCustomization[] = [
   {
