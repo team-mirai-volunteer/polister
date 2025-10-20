@@ -97,10 +97,11 @@ export class MunicipalityRepository implements IMunicipalityRepository {
     }
 
     const take = Math.min(Math.max(options?.take ?? 50, 1), 200);
+    const skip = Math.max(options?.skip ?? 0, 0);
 
     const municipalities = await this.prisma.municipality.findMany({
       where: effectiveWhere,
-      skip: options?.skip,
+      skip,
       take,
       orderBy,
       include: {
