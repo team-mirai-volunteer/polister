@@ -503,15 +503,27 @@ export class MunicipalityRepository implements IMunicipalityRepository {
   }
 
   private isValidFilter(filter: MunicipalityFilter): boolean {
-    if (!filter.operator) {
+    const operator = filter.operator;
+
+    if (!operator) {
       return false;
     }
 
-    if (filter.operator === "isEmpty" || filter.operator === "isNotEmpty") {
+    if (operator === "isEmpty" || operator === "isNotEmpty") {
       return true;
     }
 
-    return filter.value !== undefined && filter.value !== "";
+    const trimmedValue = (filter.value ?? "").trim();
+
+    if (filter.field === "boardCount") {
+      if (trimmedValue === "") {
+        return false;
+      }
+
+      return Number.isFinite(Number(trimmedValue));
+    }
+
+    return trimmedValue !== "";
   }
 
   private isMunicipalityStatusValue(
