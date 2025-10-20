@@ -4,7 +4,7 @@
 
 "use client";
 
-import type { BoardLocationDTO } from "@/features/board/application/usecases/GetBoardLocationsUseCase";
+import type { BoardLocationDTO } from "@/features/board/application/dto/BoardLocationDTO";
 import { BoardsClusterMap } from "@/features/board/ui/components/BoardsClusterMap";
 
 interface PrefectureBoardsMapProps {

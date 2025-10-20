@@ -24,7 +24,7 @@ import {
 } from "@/components/map/mapStyleConfig";
 import { setMapLanguageToJapanese } from "@/components/map/useJapaneseLabels";
 import theme from "@/theme";
-import type { BoardLocationDTO } from "../../application/usecases/GetBoardLocationsUseCase";
+import type { BoardLocationDTO } from "../../application/dto/BoardLocationDTO";
 
 const SOURCE_ID = "boards-cluster-source";
 const CLUSTER_LAYER_ID = "boards-cluster-circles";

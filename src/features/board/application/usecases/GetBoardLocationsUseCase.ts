@@ -8,24 +8,9 @@ import { TOKENS } from "@/shared/lib/di/tokens";
 import { inject, injectable } from "tsyringe";
 
 import { BOARD_LOCATION_FETCH_LIMIT_MAX } from "@/features/board/domain/constants";
-import type {
-  BoardStatus,
-  TrustLevel,
-} from "@/shared/domain/board/BoardAttributes";
 import { sanitizeLimit } from "@/shared/lib/validation/sanitizeLimit";
 import type { IBoardRepository } from "../../domain/repositories/IBoardRepository";
-import { BoardLocationMapper } from "../../infrastructure/mappers/BoardLocationMapper";
-
-export interface BoardLocationDTO {
-  id: string;
-  boardNumber: number | null;
-  name: string | null;
-  address: string;
-  longitude: number | null;
-  latitude: number | null;
-  status: BoardStatus;
-  trustLevel: TrustLevel;
-}
+import type { BoardLocationDTO } from "../dto/BoardLocationDTO";
 
 export interface GetBoardLocationsInput {
   limit?: number;
@@ -47,6 +32,15 @@ export class GetBoardLocationsUseCase {
 
     const locations = await this.repository.findAllWithLocation({ limit });
 
-    return locations.map((location) => BoardLocationMapper.toDTO(location));
+    return locations.map((location) => ({
+      id: location.id,
+      boardNumber: location.boardNumber,
+      name: location.name,
+      address: location.address,
+      longitude: location.longitude,
+      latitude: location.latitude,
+      status: location.status,
+      trustLevel: location.trustLevel,
+    }));
   }
 }

@@ -4,7 +4,7 @@
  * PrefectureドメインモデルをDTOへ変換するマッパー
  */
 
-import type { BoardLocationDTO } from "@/features/board/application/usecases/GetBoardLocationsUseCase";
+import type { BoardLocationDTO } from "@/features/board/application/dto/BoardLocationDTO";
 import { MunicipalityMapper } from "@/features/municipality/infrastructure/mappers/MunicipalityMapper";
 
 import type { Prefecture } from "../../domain/entities/Prefecture";
