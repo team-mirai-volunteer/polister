@@ -82,12 +82,11 @@ export class BoardRepository implements IBoardRepository {
 
         return new BoardLocation({
           id: row.id,
-          boardNumber:
-            row.board_number !== null ? Number(row.board_number) : null,
+          boardNumber: row.board_number,
           name: row.name,
           address: row.address,
-          longitude: row.longitude !== null ? Number(row.longitude) : null,
-          latitude: row.latitude !== null ? Number(row.latitude) : null,
+          longitude: row.longitude,
+          latitude: row.latitude,
           status: row.status,
           trustLevel: row.trust_level,
         });

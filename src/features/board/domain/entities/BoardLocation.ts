@@ -21,7 +21,15 @@ export interface BoardLocationProps {
 }
 
 export class BoardLocation {
-  constructor(private readonly props: BoardLocationProps) {}
+  constructor(private readonly props: BoardLocationProps) {
+    if (!props.id) {
+      throw new Error("BoardLocation requires id");
+    }
+
+    if (!props.address || props.address.trim().length === 0) {
+      throw new Error("BoardLocation requires a non-empty address");
+    }
+  }
 
   get id(): string {
     return this.props.id;

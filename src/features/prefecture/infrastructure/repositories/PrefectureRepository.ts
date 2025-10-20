@@ -10,6 +10,7 @@ import {
 } from "@/features/municipality/domain/value-objects/BoardAttributes";
 import { MunicipalityMapper } from "@/features/municipality/infrastructure/mappers/MunicipalityMapper";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import type { AppLogger } from "@/shared/lib/di/tokens";
 import type {
   Municipality,
   MunicipalityStatus,
@@ -28,7 +29,8 @@ import type { IPrefectureRepository } from "../../domain/repositories/IPrefectur
 @injectable()
 export class PrefectureRepository implements IPrefectureRepository {
   constructor(
-    @inject(TOKENS.PrismaClient) private readonly prisma: PrismaClient
+    @inject(TOKENS.PrismaClient) private readonly prisma: PrismaClient,
+    @inject(TOKENS.Logger) private readonly logger: AppLogger
   ) {}
 
   async findAll(): Promise<Prefecture[]> {
@@ -51,7 +53,7 @@ export class PrefectureRepository implements IPrefectureRepository {
       }
 
       if (existing.name !== municipality.prefecture) {
-        console.warn(
+        this.logger.warn(
           "[PrefectureRepository] Prefecture name mismatch detected",
           {
             code: prefectureCode,
@@ -139,6 +141,7 @@ export class PrefectureRepository implements IPrefectureRepository {
         ON b.municipality_id = m.id
       WHERE m.code LIKE ${normalizedCode + "%"}
         AND b.deleted_at IS NULL
+        AND b.location IS NOT NULL
       ORDER BY m.code ASC, b.board_number ASC NULLS LAST, b.created_at ASC
     `;
 
@@ -184,8 +187,8 @@ export class PrefectureRepository implements IPrefectureRepository {
   private normalizePrefectureCode(code: string): string {
     const normalized = code.trim();
 
-    if (normalized.length >= 2) {
-      return normalized.slice(0, 2);
+    if (!/^\d{1,2}$/.test(normalized)) {
+      throw new Error("Invalid prefecture code format");
     }
 
     return normalized.padStart(2, "0");
@@ -206,7 +209,7 @@ export class PrefectureRepository implements IPrefectureRepository {
     return rows
       .map((row) => {
         if (!isBoardStatus(row.status)) {
-          console.warn("[PrefectureRepository] Skip board: invalid status", {
+          this.logger.warn("[PrefectureRepository] Skip board: invalid status", {
             id: row.id,
             status: row.status,
           });
@@ -214,7 +217,7 @@ export class PrefectureRepository implements IPrefectureRepository {
         }
 
         if (!isTrustLevel(row.trust_level)) {
-          console.warn(
+          this.logger.warn(
             "[PrefectureRepository] Skip board: invalid trust level",
             {
               id: row.id,
@@ -226,12 +229,11 @@ export class PrefectureRepository implements IPrefectureRepository {
 
         return {
           id: row.id,
-          boardNumber:
-            row.board_number !== null ? Number(row.board_number) : null,
+          boardNumber: row.board_number,
           name: row.name,
           address: row.address,
-          longitude: row.longitude !== null ? Number(row.longitude) : null,
-          latitude: row.latitude !== null ? Number(row.latitude) : null,
+          longitude: row.longitude,
+          latitude: row.latitude,
           status: row.status,
           trustLevel: row.trust_level,
         } satisfies MunicipalityBoardRecord;

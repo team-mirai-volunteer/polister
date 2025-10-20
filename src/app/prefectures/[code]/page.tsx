@@ -27,7 +27,8 @@ interface PageProps {
 }
 
 const formatCompletionRate = (rate: number): string => {
-  const percentage = Math.round(rate * 1000) / 10;
+  const clamped = Math.max(0, Math.min(1, rate));
+  const percentage = clamped * 100;
   return `${percentage.toFixed(1)}%`;
 };
 

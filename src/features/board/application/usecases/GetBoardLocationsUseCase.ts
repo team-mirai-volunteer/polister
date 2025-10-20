@@ -11,7 +11,6 @@ import type {
   BoardStatus,
   TrustLevel,
 } from "@/features/municipality/domain/value-objects/BoardAttributes";
-import type { BoardLocation } from "../../domain/entities/BoardLocation";
 import type { IBoardRepository } from "../../domain/repositories/IBoardRepository";
 import { BoardLocationMapper } from "../../infrastructure/mappers/BoardLocationMapper";
 
@@ -43,8 +42,6 @@ export class GetBoardLocationsUseCase {
     const { limit } = input;
     const locations = await this.repository.findAllWithLocation({ limit });
 
-    return locations.map((location: BoardLocation) =>
-      BoardLocationMapper.toDTO(location)
-    );
+    return locations.map((location) => BoardLocationMapper.toDTO(location));
   }
 }

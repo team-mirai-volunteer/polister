@@ -192,6 +192,13 @@ export function BoardsClusterMap({
       return;
     }
 
+    const setPointer = () => {
+      mapInstance.getCanvas().style.cursor = "pointer";
+    };
+    const unsetPointer = () => {
+      mapInstance.getCanvas().style.cursor = "";
+    };
+
     const enhanceStyle = () => {
       setMapLanguageToJapanese(mapInstance);
       applyPosterStyling(mapInstance);
@@ -199,6 +206,10 @@ export function BoardsClusterMap({
 
     enhanceStyle();
     mapInstance.on("styledata", enhanceStyle);
+    mapInstance.on("mouseenter", CLUSTER_LAYER_ID, setPointer);
+    mapInstance.on("mouseleave", CLUSTER_LAYER_ID, unsetPointer);
+    mapInstance.on("mouseenter", UNCLUSTERED_LAYER_ID, setPointer);
+    mapInstance.on("mouseleave", UNCLUSTERED_LAYER_ID, unsetPointer);
 
     const navControl = new mapboxgl.NavigationControl({
       visualizePitch: true,
@@ -209,6 +220,10 @@ export function BoardsClusterMap({
 
     return () => {
       mapInstance.off("styledata", enhanceStyle);
+      mapInstance.off("mouseenter", CLUSTER_LAYER_ID, setPointer);
+      mapInstance.off("mouseleave", CLUSTER_LAYER_ID, unsetPointer);
+      mapInstance.off("mouseenter", UNCLUSTERED_LAYER_ID, setPointer);
+      mapInstance.off("mouseleave", UNCLUSTERED_LAYER_ID, unsetPointer);
       mapInstance.removeControl(navControl);
     };
   }, [mapInstance]);

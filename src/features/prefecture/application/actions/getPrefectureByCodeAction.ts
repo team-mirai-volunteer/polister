@@ -11,11 +11,17 @@ import { PrefectureMapper } from "../../infrastructure/mappers/PrefectureMapper"
 import { GetPrefectureByCodeUseCase } from "../usecases/GetPrefectureByCodeUseCase";
 
 export async function getPrefectureByCodeAction(code: string) {
+  if (!code || !code.trim()) {
+    throw new Error("都道府県コードが指定されていません");
+  }
+
+  const trimmedCode = code.trim();
+
   try {
     setupDI(container);
 
     const useCase = container.resolve(GetPrefectureByCodeUseCase);
-    const prefecture = await useCase.execute(code);
+    const prefecture = await useCase.execute(trimmedCode);
 
     if (!prefecture) {
       return null;
@@ -24,6 +30,6 @@ export async function getPrefectureByCodeAction(code: string) {
     return PrefectureMapper.toDetailDTO(prefecture);
   } catch (error) {
     console.error("Error in getPrefectureByCodeAction:", error);
-    throw new Error("都道府県詳細の取得に失敗しました");
+    throw new Error("都道府県詳細の取得に失敗しました", { cause: error });
   }
 }

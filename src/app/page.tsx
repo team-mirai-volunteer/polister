@@ -4,6 +4,8 @@ import { getSystemMetricsAction } from "@/features/statistics/application/action
 
 import { HomePageContent } from "./_components/HomePageContent";
 
+export const revalidate = 600; // 10分キャッシュ
+
 export default async function Home() {
   const metrics = await getSystemMetricsAction();
 

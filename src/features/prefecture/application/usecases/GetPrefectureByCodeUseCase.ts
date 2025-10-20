@@ -18,6 +18,12 @@ export class GetPrefectureByCodeUseCase {
   ) {}
 
   async execute(code: string): Promise<PrefectureDetail | null> {
-    return this.repository.findByCode(code);
+    const normalized = code.trim();
+
+    if (!/^\d{1,2}$/.test(normalized)) {
+      return null;
+    }
+
+    return this.repository.findByCode(normalized.padStart(2, "0"));
   }
 }

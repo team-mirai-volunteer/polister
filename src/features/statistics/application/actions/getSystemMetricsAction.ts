@@ -22,6 +22,6 @@ export async function getSystemMetricsAction() {
     };
   } catch (error) {
     console.error("Error in getSystemMetricsAction:", error);
-    throw new Error("統計情報の取得に失敗しました");
+    throw new Error("統計情報の取得に失敗しました", { cause: error });
   }
 }

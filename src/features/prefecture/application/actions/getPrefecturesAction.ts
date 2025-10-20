@@ -20,6 +20,6 @@ export async function getPrefecturesAction() {
     return prefectures.map((prefecture) => PrefectureMapper.toDTO(prefecture));
   } catch (error) {
     console.error("Error in getPrefecturesAction:", error);
-    throw new Error("都道府県一覧の取得に失敗しました");
+    throw new Error("都道府県一覧の取得に失敗しました", { cause: error });
   }
 }
