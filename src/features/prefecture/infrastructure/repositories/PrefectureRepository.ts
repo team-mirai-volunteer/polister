@@ -25,6 +25,10 @@ import type { PrefectureProps } from "../../domain/entities/Prefecture";
 import { Prefecture } from "../../domain/entities/Prefecture";
 import { PrefectureDetail } from "../../domain/entities/PrefectureDetail";
 import type { IPrefectureRepository } from "../../domain/repositories/IPrefectureRepository";
+import {
+  normalizePrefectureCode,
+  sanitizePrefectureCode,
+} from "../../domain/value-objects/PrefectureCode";
 
 @injectable()
 export class PrefectureRepository implements IPrefectureRepository {
@@ -75,7 +79,7 @@ export class PrefectureRepository implements IPrefectureRepository {
   }
 
   async findByCode(code: string): Promise<PrefectureDetail | null> {
-    const normalizedCode = this.normalizePrefectureCode(code);
+    const normalizedCode = normalizePrefectureCode(code);
 
     const municipalities = await this.prisma.municipality.findMany({
       where: {
@@ -113,7 +117,7 @@ export class PrefectureRepository implements IPrefectureRepository {
   async findBoardsByPrefectureCode(
     code: string
   ): Promise<MunicipalityBoardRecord[]> {
-    const normalizedCode = this.normalizePrefectureCode(code);
+    const normalizedCode = normalizePrefectureCode(code);
 
     const rows = await this.prisma.$queryRaw<
       Array<{
@@ -178,20 +182,13 @@ export class PrefectureRepository implements IPrefectureRepository {
 
   private extractPrefectureCode(municipalityCode: string): string {
     if (municipalityCode.length >= 2) {
-      return municipalityCode.slice(0, 2);
+      const candidate = municipalityCode.slice(0, 2);
+      return (
+        sanitizePrefectureCode(candidate) ?? normalizePrefectureCode(candidate)
+      );
     }
 
-    return this.normalizePrefectureCode(municipalityCode);
-  }
-
-  private normalizePrefectureCode(code: string): string {
-    const normalized = code.trim();
-
-    if (!/^\d{1,2}$/.test(normalized)) {
-      throw new Error("Invalid prefecture code format");
-    }
-
-    return normalized.padStart(2, "0");
+    return normalizePrefectureCode(municipalityCode);
   }
 
   private transformBoardRows(

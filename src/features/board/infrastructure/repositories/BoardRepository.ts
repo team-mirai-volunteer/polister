@@ -2,12 +2,14 @@
  * Board Repository 実装
  */
 
+import { BOARD_LOCATION_FETCH_LIMIT_MAX } from "@/features/board/domain/constants";
 import {
   isBoardStatus,
   isTrustLevel,
 } from "@/shared/domain/board/BoardAttributes";
 import type { AppLogger } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import { sanitizeLimit } from "@/shared/lib/validation/sanitizeLimit";
 import type {
   BoardStatus as PrismaBoardStatus,
   PrismaClient,
@@ -32,11 +34,9 @@ export class BoardRepository implements IBoardRepository {
   async findAllWithLocation(
     options?: FindBoardLocationsOptions
   ): Promise<BoardLocation[]> {
-    const rawLimit = options?.limit;
-    const normalizedLimit =
-      typeof rawLimit === "number" && Number.isFinite(rawLimit) && rawLimit > 0
-        ? Math.max(Math.floor(rawLimit), 1)
-        : undefined;
+    const normalizedLimit = sanitizeLimit(options?.limit, {
+      max: BOARD_LOCATION_FETCH_LIMIT_MAX,
+    });
 
     const limitClause = normalizedLimit
       ? Prisma.sql`LIMIT ${normalizedLimit}`
@@ -66,7 +66,7 @@ export class BoardRepository implements IBoardRepository {
       FROM boards
       WHERE deleted_at IS NULL
         AND location IS NOT NULL
-      ORDER BY created_at ASC
+      ORDER BY created_at ASC, id ASC
       ${limitClause}
     `);
 
@@ -91,16 +91,24 @@ export class BoardRepository implements IBoardRepository {
           return null;
         }
 
-        return new BoardLocation({
-          id: row.id,
-          boardNumber: row.board_number,
-          name: row.name,
-          address: row.address,
-          longitude: row.longitude,
-          latitude: row.latitude,
-          status: row.status,
-          trustLevel: row.trust_level,
-        });
+        try {
+          return new BoardLocation({
+            id: row.id,
+            boardNumber: row.board_number,
+            name: row.name,
+            address: row.address,
+            longitude: row.longitude,
+            latitude: row.latitude,
+            status: row.status,
+            trustLevel: row.trust_level,
+          });
+        } catch (error) {
+          this.logger.warn("[BoardRepository] Skip board: invalid data", {
+            id: row.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return null;
+        }
       })
       .filter((item): item is BoardLocation => item !== null);
   }

@@ -9,6 +9,7 @@ import { inject, injectable } from "tsyringe";
 
 import type { PrefectureDetail } from "../../domain/entities/PrefectureDetail";
 import type { IPrefectureRepository } from "../../domain/repositories/IPrefectureRepository";
+import { sanitizePrefectureCode } from "../../domain/value-objects/PrefectureCode";
 
 @injectable()
 export class GetPrefectureByCodeUseCase {
@@ -18,17 +19,12 @@ export class GetPrefectureByCodeUseCase {
   ) {}
 
   async execute(code: string): Promise<PrefectureDetail | null> {
-    const normalized = code.trim();
+    const normalized = sanitizePrefectureCode(code);
 
-    if (!/^\d{1,2}$/.test(normalized)) {
+    if (!normalized) {
       return null;
     }
 
-    const numericCode = Number(normalized);
-    if (!Number.isInteger(numericCode) || numericCode < 1 || numericCode > 47) {
-      return null;
-    }
-
-    return this.repository.findByCode(normalized.padStart(2, "0"));
+    return this.repository.findByCode(normalized);
   }
 }

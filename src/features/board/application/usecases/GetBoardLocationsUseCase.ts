@@ -7,10 +7,12 @@
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { inject, injectable } from "tsyringe";
 
+import { BOARD_LOCATION_FETCH_LIMIT_MAX } from "@/features/board/domain/constants";
 import type {
   BoardStatus,
   TrustLevel,
 } from "@/shared/domain/board/BoardAttributes";
+import { sanitizeLimit } from "@/shared/lib/validation/sanitizeLimit";
 import type { IBoardRepository } from "../../domain/repositories/IBoardRepository";
 import { BoardLocationMapper } from "../../infrastructure/mappers/BoardLocationMapper";
 
@@ -39,11 +41,9 @@ export class GetBoardLocationsUseCase {
   async execute(
     input: GetBoardLocationsInput = {}
   ): Promise<BoardLocationDTO[]> {
-    const rawLimit = input?.limit;
-    const limit =
-      typeof rawLimit === "number" && Number.isFinite(rawLimit) && rawLimit > 0
-        ? Math.floor(rawLimit)
-        : undefined;
+    const limit = sanitizeLimit(input?.limit, {
+      max: BOARD_LOCATION_FETCH_LIMIT_MAX,
+    });
 
     const locations = await this.repository.findAllWithLocation({ limit });
 
