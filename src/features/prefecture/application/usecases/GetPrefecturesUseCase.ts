@@ -33,7 +33,9 @@ export class GetPrefecturesUseCase {
     private readonly repository: IPrefectureRepository
   ) {}
 
-  async execute(input: GetPrefecturesInput = {}): Promise<Prefecture[]> {
+  async execute(
+    input: Readonly<GetPrefecturesInput> = {}
+  ): Promise<Prefecture[]> {
     const options: FindPrefecturesOptions = {
       filters: input.filters,
       sortField: input.sortField,

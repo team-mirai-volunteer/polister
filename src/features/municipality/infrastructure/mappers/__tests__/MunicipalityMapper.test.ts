@@ -105,7 +105,7 @@ describe("MunicipalityMapper", () => {
       expect(prismaUpdate.prefecture).toBe("東京都");
       expect(prismaUpdate.source).toBe("MLIT");
       expect(prismaUpdate.url).toBe("https://example.com");
-      expect(prismaUpdate.boardCount).toBe(100);
+      expect(prismaUpdate.boardCount).toBeUndefined();
     });
 
     it("idとcreatedAt、updatedAtは含まれない", () => {

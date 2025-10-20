@@ -47,7 +47,7 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
         : undefined;
   const filterField = params.filterField;
   const filterOperator = params.filterOperator;
-  const filterValue = params.filterValue ?? "";
+  const filterValue = (params.filterValue ?? "").trim();
 
   const toMunicipalityField = (
     value?: string

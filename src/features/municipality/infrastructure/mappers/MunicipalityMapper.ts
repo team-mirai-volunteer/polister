@@ -4,7 +4,7 @@
  * PrismaモデルとDomainモデルの相互変換を行うマッパー
  */
 
-import type { Municipality as PrismaMunicipality } from "@prisma/client";
+import type { Municipality as PrismaMunicipality, Prisma } from "@prisma/client";
 import { Municipality } from "../../domain/entities/Municipality";
 import { MunicipalityCode } from "../../domain/value-objects/MunicipalityCode";
 
@@ -47,22 +47,21 @@ export class MunicipalityMapper {
   /**
    * DomainモデルからPrisma更新データに変換
    */
-  static toPrisma(
-    municipality: Municipality
-  ): Omit<PrismaMunicipality, "id" | "createdAt" | "updatedAt" | "polygon"> {
-    return {
+  static toPrisma(municipality: Municipality): Prisma.MunicipalityUpdateInput {
+    const prismaData: Prisma.MunicipalityUpdateInput = {
       name: municipality.name,
       code: municipality.code.toString(),
       prefecture: municipality.prefecture,
       source: municipality.source,
       url: municipality.url,
-      boardCount: municipality.boardCount,
       dataVersion: municipality.dataVersion,
       status: municipality.status,
       contactStatus: municipality.contactStatus,
       notes: municipality.notes,
       folderId: municipality.folderId,
     };
+
+    return prismaData;
   }
 
   /**

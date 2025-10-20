@@ -9,6 +9,7 @@ import { container } from "tsyringe";
 import {
   MUNICIPALITY_FIELD_OPERATORS,
   MUNICIPALITY_FILTER_FIELDS,
+  MUNICIPALITY_NO_VALUE_OPERATORS,
   type MunicipalityFilter,
   type MunicipalityFilterOperator,
 } from "../../domain/repositories/IMunicipalityRepository";
@@ -73,6 +74,19 @@ export async function getMunicipalitiesAction(
       filterField
     );
 
+    const rawFilterValue = params.filterValue ?? "";
+    const trimmedFilterValue = rawFilterValue.trim();
+    const operatorRequiresValue =
+      filterOperator && MUNICIPALITY_NO_VALUE_OPERATORS.has(filterOperator)
+        ? false
+        : true;
+    const filterValue =
+      filterField && operatorRequiresValue
+        ? trimmedFilterValue.length > 0
+          ? trimmedFilterValue
+          : undefined
+        : undefined;
+
     const result = await useCase.execute({
       page: params.page,
       limit: params.limit,
@@ -88,7 +102,7 @@ export async function getMunicipalitiesAction(
             : undefined,
       filterField,
       filterOperator,
-      filterValue: params.filterValue,
+      filterValue,
     });
 
     // DTOに変換して返す

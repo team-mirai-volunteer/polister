@@ -55,7 +55,7 @@ export default async function PrefecturesPage({
           ? (filterOperator as PrefectureFilterOperator)
           : undefined
         : undefined;
-    const filterValue = params.filterValue ?? "";
+    const filterValue = (params.filterValue ?? "").trim();
 
     const prefectures = await getPrefecturesAction({
       sortField,
