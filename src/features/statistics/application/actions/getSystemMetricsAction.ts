@@ -27,8 +27,15 @@ export async function getSystemMetricsAction(): Promise<SystemMetricsResult> {
       boards: metrics.totalBoards,
       isFallback: false,
     };
-  } catch (error) {
-    console.error("Error in getSystemMetricsAction:", error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error in getSystemMetricsAction:", {
+        message: error.message,
+        stack: error.stack,
+      });
+    } else {
+      console.error("Error in getSystemMetricsAction:", error);
+    }
     return {
       municipalities: 0,
       boards: 0,
