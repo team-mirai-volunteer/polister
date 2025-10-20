@@ -1,4 +1,7 @@
+import type { IBoardRepository } from "@/features/board/domain/repositories/IBoardRepository";
 import type { IMunicipalityRepository } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
+import type { IPrefectureRepository } from "@/features/prefecture/domain/repositories/IPrefectureRepository";
+import type { IStatisticsRepository } from "@/features/statistics/domain/repositories/IStatisticsRepository";
 import type { PrismaClient } from "@prisma/client";
 
 export interface AppLogger {
@@ -17,6 +20,9 @@ export const TOKENS = {
   Logger: "di.logger",
   DateProvider: "di.dateProvider",
   MunicipalityRepository: "di.municipalityRepository",
+  PrefectureRepository: "di.prefectureRepository",
+  BoardRepository: "di.boardRepository",
+  StatisticsRepository: "di.statisticsRepository",
 } as const;
 
 export type Token = (typeof TOKENS)[keyof typeof TOKENS];
@@ -26,6 +32,9 @@ export type TokenMap = {
   [TOKENS.Logger]: AppLogger;
   [TOKENS.DateProvider]: DateProvider;
   [TOKENS.MunicipalityRepository]: IMunicipalityRepository;
+  [TOKENS.PrefectureRepository]: IPrefectureRepository;
+  [TOKENS.BoardRepository]: IBoardRepository;
+  [TOKENS.StatisticsRepository]: IStatisticsRepository;
 };
 
 export type ResolveToken<T extends Token> = TokenMap[T];

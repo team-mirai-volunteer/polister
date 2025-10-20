@@ -3,8 +3,14 @@ import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import { container, DependencyContainer } from "tsyringe";
 
+import type { IBoardRepository } from "@/features/board/domain/repositories/IBoardRepository";
+import { BoardRepository } from "@/features/board/infrastructure/repositories/BoardRepository";
 import type { IMunicipalityRepository } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
 import { MunicipalityRepository } from "@/features/municipality/infrastructure/repositories/MunicipalityRepository";
+import type { IPrefectureRepository } from "@/features/prefecture/domain/repositories/IPrefectureRepository";
+import { PrefectureRepository } from "@/features/prefecture/infrastructure/repositories/PrefectureRepository";
+import type { IStatisticsRepository } from "@/features/statistics/domain/repositories/IStatisticsRepository";
+import { StatisticsRepository } from "@/features/statistics/infrastructure/repositories/StatisticsRepository";
 import type {
   AppLogger,
   DateProvider,
@@ -149,6 +155,27 @@ const registerDefaults = (target: DependencyContainer): void => {
     target.registerSingleton<IMunicipalityRepository>(
       TOKENS.MunicipalityRepository,
       MunicipalityRepository
+    );
+  }
+
+  if (!target.isRegistered(TOKENS.PrefectureRepository)) {
+    target.registerSingleton<IPrefectureRepository>(
+      TOKENS.PrefectureRepository,
+      PrefectureRepository
+    );
+  }
+
+  if (!target.isRegistered(TOKENS.BoardRepository)) {
+    target.registerSingleton<IBoardRepository>(
+      TOKENS.BoardRepository,
+      BoardRepository
+    );
+  }
+
+  if (!target.isRegistered(TOKENS.StatisticsRepository)) {
+    target.registerSingleton<IStatisticsRepository>(
+      TOKENS.StatisticsRepository,
+      StatisticsRepository
     );
   }
 };

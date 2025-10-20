@@ -10,13 +10,14 @@ import {
   STATUS_COLORS,
   STATUS_LABELS,
 } from "@/features/municipality/constants";
-import { Chip } from "@mui/material";
+import { Chip, Link } from "@mui/material";
 import {
   DataGrid,
   type GridColDef,
   type GridPaginationModel,
   type GridRowParams,
 } from "@mui/x-data-grid";
+import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface MunicipalityDTO {
@@ -56,6 +57,21 @@ export function MunicipalityDataGrid({
       field: "prefecture",
       headerName: "都道府県",
       width: 120,
+      renderCell: (params) => {
+        const code = params.row.code as string;
+        const prefectureCode = typeof code === "string" ? code.slice(0, 2) : "";
+
+        return (
+          <Link
+            component={NextLink}
+            href={`/prefectures/${prefectureCode}`}
+            underline="hover"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {params.value}
+          </Link>
+        );
+      },
     },
     {
       field: "name",

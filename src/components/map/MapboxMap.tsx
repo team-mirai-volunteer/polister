@@ -8,7 +8,6 @@ import {
   ToggleButtonGroup,
 } from "@mui/material";
 import mapboxgl from "mapbox-gl";
-
 import { SyntheticEvent, useEffect, useRef, useState } from "react";
 
 import type { MapStyleKey } from "./mapStyleConfig";

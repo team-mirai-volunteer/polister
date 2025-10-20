@@ -22,6 +22,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import NextLink from "next/link";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -51,6 +52,8 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   if (!municipality) {
     notFound();
   }
+
+  const prefectureCode = municipality.code.slice(0, 2);
 
   if (geojsonResult.status === "rejected") {
     throw geojsonResult.reason;
@@ -93,9 +96,14 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
                   <Typography variant="body2" color="text.secondary">
                     都道府県
                   </Typography>
-                  <Typography variant="body1">
+                  <Link
+                    component={NextLink}
+                    href={`/prefectures/${prefectureCode}`}
+                    underline="hover"
+                    color="primary"
+                  >
                     {municipality.prefecture}
-                  </Typography>
+                  </Link>
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
