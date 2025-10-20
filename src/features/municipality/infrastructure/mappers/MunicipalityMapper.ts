@@ -4,7 +4,10 @@
  * PrismaモデルとDomainモデルの相互変換を行うマッパー
  */
 
-import type { Municipality as PrismaMunicipality, Prisma } from "@prisma/client";
+import type {
+  Prisma,
+  Municipality as PrismaMunicipality,
+} from "@prisma/client";
 import { Municipality } from "../../domain/entities/Municipality";
 import { MunicipalityCode } from "../../domain/value-objects/MunicipalityCode";
 
