@@ -23,7 +23,7 @@ export interface HomePageContentProps {
   metrics: {
     municipalities: number;
     boards: number;
-    isFallback?: boolean;
+    isFallback: boolean;
   };
 }
 
