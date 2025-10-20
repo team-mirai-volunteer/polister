@@ -9,8 +9,8 @@ import {
   isTrustLevel,
 } from "@/features/municipality/domain/value-objects/BoardAttributes";
 import { MunicipalityMapper } from "@/features/municipality/infrastructure/mappers/MunicipalityMapper";
-import { TOKENS } from "@/shared/lib/di/tokens";
 import type { AppLogger } from "@/shared/lib/di/tokens";
+import { TOKENS } from "@/shared/lib/di/tokens";
 import type {
   Municipality,
   MunicipalityStatus,
@@ -209,10 +209,13 @@ export class PrefectureRepository implements IPrefectureRepository {
     return rows
       .map((row) => {
         if (!isBoardStatus(row.status)) {
-          this.logger.warn("[PrefectureRepository] Skip board: invalid status", {
-            id: row.id,
-            status: row.status,
-          });
+          this.logger.warn(
+            "[PrefectureRepository] Skip board: invalid status",
+            {
+              id: row.id,
+              status: row.status,
+            }
+          );
           return null;
         }
 

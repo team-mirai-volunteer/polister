@@ -6,6 +6,7 @@ import {
   isBoardStatus,
   isTrustLevel,
 } from "@/features/municipality/domain/value-objects/BoardAttributes";
+import type { AppLogger } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import type {
   BoardStatus as PrismaBoardStatus,
@@ -24,14 +25,21 @@ import type {
 @injectable()
 export class BoardRepository implements IBoardRepository {
   constructor(
-    @inject(TOKENS.PrismaClient) private readonly prisma: PrismaClient
+    @inject(TOKENS.PrismaClient) private readonly prisma: PrismaClient,
+    @inject(TOKENS.Logger) private readonly logger: AppLogger
   ) {}
 
   async findAllWithLocation(
     options?: FindBoardLocationsOptions
   ): Promise<BoardLocation[]> {
-    const limitClause = options?.limit
-      ? Prisma.sql`LIMIT ${Math.max(options.limit, 1)}`
+    const rawLimit = options?.limit;
+    const normalizedLimit =
+      typeof rawLimit === "number" && Number.isFinite(rawLimit) && rawLimit > 0
+        ? Math.max(Math.floor(rawLimit), 1)
+        : undefined;
+
+    const limitClause = normalizedLimit
+      ? Prisma.sql`LIMIT ${normalizedLimit}`
       : Prisma.empty;
 
     const rows = await this.prisma.$queryRaw<
@@ -65,7 +73,7 @@ export class BoardRepository implements IBoardRepository {
     return rows
       .map((row) => {
         if (!isBoardStatus(row.status)) {
-          console.warn("[BoardRepository] Skip board: invalid status", {
+          this.logger.warn("[BoardRepository] Skip board: invalid status", {
             id: row.id,
             status: row.status,
           });
@@ -73,10 +81,13 @@ export class BoardRepository implements IBoardRepository {
         }
 
         if (!isTrustLevel(row.trust_level)) {
-          console.warn("[BoardRepository] Skip board: invalid trust level", {
-            id: row.id,
-            trustLevel: row.trust_level,
-          });
+          this.logger.warn(
+            "[BoardRepository] Skip board: invalid trust level",
+            {
+              id: row.id,
+              trustLevel: row.trust_level,
+            }
+          );
           return null;
         }
 

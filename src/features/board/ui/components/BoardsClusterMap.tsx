@@ -62,12 +62,23 @@ export function BoardsClusterMap({
     FeatureProperties
   > | null>(() => {
     const features = boards
-      .filter((board) => board.longitude !== null && board.latitude !== null)
+      .filter(
+        (
+          board
+        ): board is BoardLocationDTO & {
+          longitude: number;
+          latitude: number;
+        } =>
+          typeof board.longitude === "number" &&
+          Number.isFinite(board.longitude) &&
+          typeof board.latitude === "number" &&
+          Number.isFinite(board.latitude)
+      )
       .map((board) => ({
         type: "Feature" as const,
         geometry: {
           type: "Point" as const,
-          coordinates: [board.longitude as number, board.latitude as number],
+          coordinates: [board.longitude, board.latitude],
         },
         properties: {
           id: board.id,
@@ -208,6 +219,8 @@ export function BoardsClusterMap({
     mapInstance.on("styledata", enhanceStyle);
     mapInstance.on("mouseenter", CLUSTER_LAYER_ID, setPointer);
     mapInstance.on("mouseleave", CLUSTER_LAYER_ID, unsetPointer);
+    mapInstance.on("mouseenter", CLUSTER_COUNT_LAYER_ID, setPointer);
+    mapInstance.on("mouseleave", CLUSTER_COUNT_LAYER_ID, unsetPointer);
     mapInstance.on("mouseenter", UNCLUSTERED_LAYER_ID, setPointer);
     mapInstance.on("mouseleave", UNCLUSTERED_LAYER_ID, unsetPointer);
 
@@ -222,6 +235,8 @@ export function BoardsClusterMap({
       mapInstance.off("styledata", enhanceStyle);
       mapInstance.off("mouseenter", CLUSTER_LAYER_ID, setPointer);
       mapInstance.off("mouseleave", CLUSTER_LAYER_ID, unsetPointer);
+      mapInstance.off("mouseenter", CLUSTER_COUNT_LAYER_ID, setPointer);
+      mapInstance.off("mouseleave", CLUSTER_COUNT_LAYER_ID, unsetPointer);
       mapInstance.off("mouseenter", UNCLUSTERED_LAYER_ID, setPointer);
       mapInstance.off("mouseleave", UNCLUSTERED_LAYER_ID, unsetPointer);
       mapInstance.removeControl(navControl);
@@ -236,7 +251,9 @@ export function BoardsClusterMap({
 
     const feature = event.features[0];
 
-    if (feature.layer?.id === CLUSTER_LAYER_ID) {
+    const layerId = feature.layer?.id;
+
+    if (layerId === CLUSTER_LAYER_ID || layerId === CLUSTER_COUNT_LAYER_ID) {
       const clusterId = feature.properties?.cluster_id;
       const clusterSource = map.getSource(SOURCE_ID) as
         | (mapboxgl.GeoJSONSource & {
@@ -277,7 +294,7 @@ export function BoardsClusterMap({
       return;
     }
 
-    if (feature.layer?.id === UNCLUSTERED_LAYER_ID) {
+    if (layerId === UNCLUSTERED_LAYER_ID) {
       const geometry = feature.geometry;
       if (geometry.type !== "Point") {
         return;
@@ -313,7 +330,11 @@ export function BoardsClusterMap({
         mapboxAccessToken={mapboxToken}
         mapStyle={MAP_STYLE_URLS.poster}
         initialViewState={initialViewState}
-        interactiveLayerIds={[CLUSTER_LAYER_ID, UNCLUSTERED_LAYER_ID]}
+        interactiveLayerIds={[
+          CLUSTER_LAYER_ID,
+          CLUSTER_COUNT_LAYER_ID,
+          UNCLUSTERED_LAYER_ID,
+        ]}
         onLoad={handleMapLoad}
         onClick={handleMapClick}
       >

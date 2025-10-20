@@ -27,9 +27,8 @@ interface PageProps {
 }
 
 const formatCompletionRate = (rate: number): string => {
-  const clamped = Math.max(0, Math.min(1, rate));
-  const percentage = clamped * 100;
-  return `${percentage.toFixed(1)}%`;
+  const safe = Number.isFinite(rate) ? Math.max(0, Math.min(1, rate)) : 0;
+  return `${(safe * 100).toFixed(1)}%`;
 };
 
 export default async function PrefectureDetailPage({ params }: PageProps) {

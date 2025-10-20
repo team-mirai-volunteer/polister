@@ -24,6 +24,11 @@ export class GetPrefectureByCodeUseCase {
       return null;
     }
 
+    const numericCode = Number(normalized);
+    if (!Number.isInteger(numericCode) || numericCode < 1 || numericCode > 47) {
+      return null;
+    }
+
     return this.repository.findByCode(normalized.padStart(2, "0"));
   }
 }

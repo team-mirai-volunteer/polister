@@ -15,13 +15,11 @@ export async function getPrefectureByCodeAction(code: string) {
     throw new Error("都道府県コードが指定されていません");
   }
 
-  const trimmedCode = code.trim();
-
   try {
     setupDI(container);
 
     const useCase = container.resolve(GetPrefectureByCodeUseCase);
-    const prefecture = await useCase.execute(trimmedCode);
+    const prefecture = await useCase.execute(code);
 
     if (!prefecture) {
       return null;

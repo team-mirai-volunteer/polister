@@ -39,7 +39,12 @@ export class GetBoardLocationsUseCase {
   async execute(
     input: GetBoardLocationsInput = {}
   ): Promise<BoardLocationDTO[]> {
-    const { limit } = input;
+    const rawLimit = input?.limit;
+    const limit =
+      typeof rawLimit === "number" && Number.isFinite(rawLimit) && rawLimit > 0
+        ? Math.floor(rawLimit)
+        : undefined;
+
     const locations = await this.repository.findAllWithLocation({ limit });
 
     return locations.map((location) => BoardLocationMapper.toDTO(location));
