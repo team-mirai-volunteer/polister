@@ -7,7 +7,7 @@
 import type {
   BoardStatus,
   TrustLevel,
-} from "@/features/municipality/domain/value-objects/BoardAttributes";
+} from "@/shared/domain/board/BoardAttributes";
 
 export interface BoardLocationProps {
   id: string;

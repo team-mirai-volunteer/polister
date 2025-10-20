@@ -10,7 +10,7 @@ import { inject, injectable } from "tsyringe";
 import type {
   BoardStatus,
   TrustLevel,
-} from "@/features/municipality/domain/value-objects/BoardAttributes";
+} from "@/shared/domain/board/BoardAttributes";
 import type { IBoardRepository } from "../../domain/repositories/IBoardRepository";
 import { BoardLocationMapper } from "../../infrastructure/mappers/BoardLocationMapper";
 

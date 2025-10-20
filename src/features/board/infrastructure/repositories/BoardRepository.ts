@@ -5,7 +5,7 @@
 import {
   isBoardStatus,
   isTrustLevel,
-} from "@/features/municipality/domain/value-objects/BoardAttributes";
+} from "@/shared/domain/board/BoardAttributes";
 import type { AppLogger } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import type {
