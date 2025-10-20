@@ -96,57 +96,6 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       return [];
     }
 
-    const orderByField = options?.orderBy?.field;
-
-    if (orderByField === "boardCount") {
-      const sortedIds = await this.getMunicipalityIdsSortedByBoardCount(
-        effectiveWhere,
-        options?.orderBy?.direction === "desc" ? "desc" : "asc"
-      );
-
-      if (sortedIds.length === 0) {
-        return [];
-      }
-
-      const skip = options?.skip ?? 0;
-      const take = options?.take ?? 50;
-      const pageIds = sortedIds.slice(skip, skip + take);
-
-      if (pageIds.length === 0) {
-        return [];
-      }
-
-      const municipalities = await this.prisma.municipality.findMany({
-        where: {
-          ...effectiveWhere,
-          id: {
-            in: pageIds,
-          },
-        },
-        include: {
-          _count: {
-            select: {
-              boards: {
-                where: {
-                  deletedAt: null,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      const orderLookup = new Map(pageIds.map((id, index) => [id, index]));
-
-      const ordered = municipalities.sort((a, b) => {
-        const left = orderLookup.get(a.id) ?? 0;
-        const right = orderLookup.get(b.id) ?? 0;
-        return left - right;
-      });
-
-      return ordered.map(MunicipalityMapper.toDomain);
-    }
-
     const municipalities = await this.prisma.municipality.findMany({
       where: effectiveWhere,
       skip: options?.skip,
@@ -395,6 +344,22 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       return baseWhere;
     }
 
+    if (boardCountFilter.operator === "isEmpty") {
+      return {
+        AND: [baseWhere, { boards: { none: { deletedAt: null } } }],
+      } satisfies Prisma.MunicipalityWhereInput;
+    }
+
+    if (boardCountFilter.operator === "isNotEmpty") {
+      return {
+        AND: [baseWhere, { boards: { some: { deletedAt: null } } }],
+      } satisfies Prisma.MunicipalityWhereInput;
+    }
+
+    if (!boardCountFilter.value) {
+      return baseWhere;
+    }
+
     const ids = await this.filterMunicipalityIdsByBoardCount(
       baseWhere,
       boardCountFilter
@@ -413,112 +378,84 @@ export class MunicipalityRepository implements IMunicipalityRepository {
     baseWhere: Prisma.MunicipalityWhereInput,
     filter: MunicipalityFilter
   ): Promise<string[]> {
-    const municipalities = await this.prisma.municipality.findMany({
-      where: baseWhere,
-      select: {
-        id: true,
-        _count: {
-          select: {
-            boards: {
-              where: {
-                deletedAt: null,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    return municipalities
-      .filter(({ _count }) =>
-        this.matchesBoardCount(_count.boards ?? 0, filter)
-      )
-      .map(({ id }) => id);
-  }
-
-  private matchesBoardCount(
-    actual: number,
-    filter: MunicipalityFilter
-  ): boolean {
     const operator = filter.operator ?? "equals";
 
-    if (operator === "isEmpty") {
-      return actual === 0;
-    }
+    const resolveComparator = (
+      comparator: Prisma.NestedIntFilter<"Board">
+    ) =>
+      this.groupBoardCounts(baseWhere, comparator).then((rows) =>
+        rows.map((row) => row.municipalityId)
+      );
 
-    if (operator === "isNotEmpty") {
-      return actual > 0;
+    if (!filter.value && operator !== "notEqual" && operator !== "!=") {
+      return [];
     }
 
     const target = Number(filter.value);
 
-    if (!Number.isFinite(target)) {
-      return false;
+    const normalizedTarget = Math.floor(target);
+
+    if (
+      !Number.isFinite(target) ||
+      (!Number.isFinite(normalizedTarget) && operator !== "notEqual" && operator !== "!=")
+    ) {
+      return [];
     }
 
-    const normalizedTarget = Math.max(0, Math.floor(target));
+    const zeroIdsPromise = this.getMunicipalityIdsWithNoBoards(baseWhere);
 
     switch (operator) {
       case "equals":
       case "=":
-        return actual === normalizedTarget;
-      case "notEqual":
-      case "!=":
-        return actual !== normalizedTarget;
-      case "greaterThan":
-      case ">":
-        return actual > normalizedTarget;
-      case "greaterThanOrEqual":
-      case ">=":
-        return actual >= normalizedTarget;
-      case "lessThan":
-      case "<":
-        return actual < normalizedTarget;
-      case "lessThanOrEqual":
-      case "<=":
-        return actual <= normalizedTarget;
-      default:
-        return actual === normalizedTarget;
-    }
-  }
-
-  private async getMunicipalityIdsSortedByBoardCount(
-    where: Prisma.MunicipalityWhereInput,
-    direction: "asc" | "desc"
-  ): Promise<string[]> {
-    const municipalities = await this.prisma.municipality.findMany({
-      where,
-      select: {
-        id: true,
-        code: true,
-        _count: {
-          select: {
-            boards: {
-              where: {
-                deletedAt: null,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const multiplier = direction === "desc" ? -1 : 1;
-
-    return municipalities
-      .map((municipality) => ({
-        id: municipality.id,
-        count: municipality._count?.boards ?? 0,
-        code: municipality.code,
-      }))
-      .sort((a, b) => {
-        if (a.count === b.count) {
-          return a.code.localeCompare(b.code);
+        if (normalizedTarget === 0) {
+          return zeroIdsPromise;
         }
-
-        return a.count < b.count ? -1 * multiplier : multiplier;
-      })
-      .map((item) => item.id);
+        return resolveComparator({ equals: normalizedTarget });
+      case "notEqual":
+      case "!=": {
+        const [allIds, excludedIds] = await Promise.all([
+          this.getMunicipalityIds(baseWhere),
+          normalizedTarget === 0
+            ? zeroIdsPromise
+            : resolveComparator({ equals: normalizedTarget }),
+        ]);
+        const excluded = new Set(excludedIds);
+        return allIds.filter((id) => !excluded.has(id));
+      }
+      case "greaterThan":
+      case "gt":
+      case ">":
+        return resolveComparator({ gt: normalizedTarget });
+      case "greaterThanOrEqual":
+      case "gte":
+      case ">=": {
+        const [ids, zeroIds] = await Promise.all([
+          resolveComparator({ gte: normalizedTarget }),
+          normalizedTarget <= 0 ? zeroIdsPromise : Promise.resolve([]),
+        ]);
+        return Array.from(new Set([...ids, ...zeroIds]));
+      }
+      case "lessThan":
+      case "lt":
+      case "<": {
+        const [ids, zeroIds] = await Promise.all([
+          resolveComparator({ lt: normalizedTarget }),
+          normalizedTarget > 0 ? zeroIdsPromise : Promise.resolve([]),
+        ]);
+        return Array.from(new Set([...ids, ...zeroIds]));
+      }
+      case "lessThanOrEqual":
+      case "lte":
+      case "<=": {
+        const [ids, zeroIds] = await Promise.all([
+          resolveComparator({ lte: normalizedTarget }),
+          normalizedTarget >= 0 ? zeroIdsPromise : Promise.resolve([]),
+        ]);
+        return Array.from(new Set([...ids, ...zeroIds]));
+      }
+      default:
+        return [];
+    }
   }
 
   private buildOrderBy(
@@ -536,7 +473,14 @@ export class MunicipalityRepository implements IMunicipalityRepository {
     const direction = options.orderBy.direction;
 
     if (field === "boardCount") {
-      return [defaultOrder];
+      return [
+        {
+          boards: {
+            _count: direction,
+          },
+        } as Prisma.MunicipalityOrderByWithRelationInput,
+        defaultOrder,
+      ];
     }
 
     const fieldMap: Record<
@@ -559,15 +503,15 @@ export class MunicipalityRepository implements IMunicipalityRepository {
   }
 
   private isValidFilter(filter: MunicipalityFilter): boolean {
-    if (
-      !filter.value &&
-      filter.operator !== "isEmpty" &&
-      filter.operator !== "isNotEmpty"
-    ) {
+    if (!filter.operator) {
       return false;
     }
 
-    return true;
+    if (filter.operator === "isEmpty" || filter.operator === "isNotEmpty") {
+      return true;
+    }
+
+    return filter.value !== undefined && filter.value !== "";
   }
 
   private isMunicipalityStatusValue(
@@ -576,17 +520,70 @@ export class MunicipalityRepository implements IMunicipalityRepository {
     return (Object.values(MunicipalityStatus) as string[]).includes(value);
   }
 
+  private async getMunicipalityIds(
+    where: Prisma.MunicipalityWhereInput
+  ): Promise<string[]> {
+    const rows = await this.prisma.municipality.findMany({
+      where,
+      select: { id: true },
+    });
+
+    return rows.map((row) => row.id);
+  }
+
+  private async getMunicipalityIdsWithNoBoards(
+    where: Prisma.MunicipalityWhereInput
+  ): Promise<string[]> {
+    const rows = await this.prisma.municipality.findMany({
+      where: {
+        ...where,
+        boards: {
+          none: {
+            deletedAt: null,
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    return rows.map((row) => row.id);
+  }
+
+  private groupBoardCounts(
+    baseWhere: Prisma.MunicipalityWhereInput,
+    comparator: Prisma.NestedIntFilter<"Board">
+  ) {
+    return this.prisma.board.groupBy({
+      by: ["municipalityId"],
+      where: {
+        deletedAt: null,
+        municipality: baseWhere,
+      },
+      _count: {
+        municipalityId: true,
+      },
+      having: {
+        municipalityId: {
+          _count: comparator,
+        },
+      },
+    });
+  }
+
   private buildStringFilter(
     operator: string | undefined,
-    value: string
+    value?: string
   ): Prisma.StringFilter {
     const normalized = operator ?? "contains";
-    const target = value.trim();
+    const target = (value ?? "").trim();
 
     switch (normalized) {
       case "equals":
       case "=":
         return { equals: target };
+      case "notEqual":
+      case "!=":
+        return { not: target };
       case "startsWith":
         return { startsWith: target, mode: "insensitive" };
       case "endsWith":
@@ -603,7 +600,7 @@ export class MunicipalityRepository implements IMunicipalityRepository {
 
   private buildNumberFilter(
     operator: string | undefined,
-    value: string
+    value?: string
   ): Prisma.IntNullableFilter | undefined {
     if (operator === "isEmpty") {
       return { equals: null };
@@ -625,16 +622,23 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       case "equals":
       case "=":
         return { equals: numericValue };
+      case "notEqual":
+      case "!=":
+        return { not: numericValue };
       case "greaterThan":
+      case "gt":
       case ">":
         return { gt: numericValue };
       case "greaterThanOrEqual":
+      case "gte":
       case ">=":
         return { gte: numericValue };
       case "lessThan":
+      case "lt":
       case "<":
         return { lt: numericValue };
       case "lessThanOrEqual":
+      case "lte":
       case "<=":
         return { lte: numericValue };
       default:

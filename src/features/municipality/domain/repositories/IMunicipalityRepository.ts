@@ -7,10 +7,41 @@
 import type { Municipality } from "../entities/Municipality";
 import type { BoardStatus, TrustLevel } from "../value-objects/BoardAttributes";
 
+export const MUNICIPALITY_FILTER_OPERATORS = [
+  "equals",
+  "=",
+  "notEqual",
+  "!=",
+  "contains",
+  "startsWith",
+  "endsWith",
+  "greaterThan",
+  "gt",
+  ">",
+  "greaterThanOrEqual",
+  "gte",
+  ">=",
+  "lessThan",
+  "lt",
+  "<",
+  "lessThanOrEqual",
+  "lte",
+  "<=",
+  "isEmpty",
+  "isNotEmpty",
+] as const;
+
+export type MunicipalityFilterOperator =
+  (typeof MUNICIPALITY_FILTER_OPERATORS)[number];
+
+export const MUNICIPALITY_FILTER_FIELDS: ReadonlyArray<
+  MunicipalityFilter["field"]
+> = ["code", "name", "prefecture", "status", "boardCount"] as const;
+
 export interface MunicipalityFilter {
   field: "code" | "name" | "prefecture" | "status" | "boardCount";
-  operator?: string;
-  value: string;
+  operator?: MunicipalityFilterOperator;
+  value?: string;
 }
 
 export interface FindMunicipalitiesOptions {

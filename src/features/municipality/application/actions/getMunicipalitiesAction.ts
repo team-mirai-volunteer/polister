@@ -8,6 +8,11 @@ import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 import { MunicipalityMapper } from "../../infrastructure/mappers/MunicipalityMapper";
 import { GetMunicipalitiesUseCase } from "../usecases/GetMunicipalitiesUseCase";
+import type {
+  MunicipalityFilter,
+  MunicipalityFilterOperator,
+} from "../../domain/repositories/IMunicipalityRepository";
+import { MUNICIPALITY_FILTER_FIELDS } from "../../domain/repositories/IMunicipalityRepository";
 
 export interface GetMunicipalitiesParams {
   page?: number;
@@ -30,19 +35,69 @@ export async function getMunicipalitiesAction(
     setupDI(container);
 
     const useCase = container.resolve(GetMunicipalitiesUseCase);
-    const normalizeField = (value: string | undefined) => {
-      const allowed = new Set([
-        "code",
-        "name",
-        "prefecture",
-        "status",
-        "boardCount",
-      ]);
-      return value && allowed.has(value) ? value : undefined;
+    const normalizeField = (
+      value: string | undefined
+    ): MunicipalityFilter["field"] | undefined => {
+      const allowed = new Set<MunicipalityFilter["field"]>(
+        MUNICIPALITY_FILTER_FIELDS
+      );
+      return value && allowed.has(value as MunicipalityFilter["field"])
+        ? (value as MunicipalityFilter["field"])
+        : undefined;
+    };
+
+    const normalizeOperator = (
+      value: string | undefined,
+      field: MunicipalityFilter["field"] | undefined
+    ): MunicipalityFilterOperator | undefined => {
+      if (!value || !field) {
+        return undefined;
+      }
+
+      const common: MunicipalityFilterOperator[] = [
+        "equals",
+        "=",
+        "notEqual",
+        "!=",
+        "contains",
+        "startsWith",
+        "endsWith",
+        "isEmpty",
+        "isNotEmpty",
+      ];
+
+      const numeric: MunicipalityFilterOperator[] = [
+        "equals",
+        "=",
+        "notEqual",
+        "!=",
+        "greaterThan",
+        "gt",
+        ">",
+        "greaterThanOrEqual",
+        "gte",
+        ">=",
+        "lessThan",
+        "lt",
+        "<",
+        "lessThanOrEqual",
+        "lte",
+        "<=",
+        "isEmpty",
+        "isNotEmpty",
+      ];
+
+      const allowedOperators =
+        field === "boardCount" ? numeric : common;
+
+      return allowedOperators.includes(value as MunicipalityFilterOperator)
+        ? (value as MunicipalityFilterOperator)
+        : undefined;
     };
 
     const sortField = normalizeField(params.sortField);
     const filterField = normalizeField(params.filterField);
+    const filterOperator = normalizeOperator(params.filterOperator, filterField);
 
     const result = await useCase.execute({
       page: params.page,
@@ -58,7 +113,7 @@ export async function getMunicipalitiesAction(
             ? "asc"
             : undefined,
       filterField,
-      filterOperator: params.filterOperator,
+      filterOperator,
       filterValue: params.filterValue ?? "",
     });
 

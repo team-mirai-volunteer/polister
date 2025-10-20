@@ -28,6 +28,7 @@ import type {
   FindPrefecturesOptions,
   IPrefectureRepository,
   PrefectureFilter,
+  PrefectureFilterOperator,
 } from "../../domain/repositories/IPrefectureRepository";
 import {
   normalizePrefectureCode,
@@ -44,31 +45,51 @@ export class PrefectureRepository implements IPrefectureRepository {
   async findAll(options: FindPrefecturesOptions = {}): Promise<Prefecture[]> {
     const municipalities = await this.prisma.municipality.findMany({
       orderBy: { code: "asc" },
-      include: {
-        _count: {
-          select: {
-            boards: {
-              where: {
-                deletedAt: null,
-              },
-            },
-          },
-        },
+      select: {
+        id: true,
+        code: true,
+        prefecture: true,
+        status: true,
+        boardCount: true,
       },
     });
 
-    type MunicipalityWithCount = Municipality & {
+    const boardCounts = await this.prisma.board.groupBy({
+      by: ["municipalityId"],
+      where: {
+        deletedAt: null,
+      },
       _count: {
-        boards: number;
-      };
+        municipalityId: true,
+      },
+    });
+
+    const boardCountMap = new Map(
+      boardCounts.map((row) => [row.municipalityId, Number(row._count.municipalityId ?? 0)])
+    );
+
+    type MunicipalityWithCount = {
+      id: string;
+      code: string;
+      prefecture: string;
+      status: MunicipalityStatus;
+      boardCount: number | null;
+      computedBoardCount: number;
     };
+
+    const municipalitiesWithCount: MunicipalityWithCount[] = municipalities.map(
+      (municipality) => ({
+        ...municipality,
+        computedBoardCount: boardCountMap.get(municipality.id) ?? 0,
+      })
+    );
 
     const grouped = new Map<
       string,
       { name: string; items: MunicipalityWithCount[] }
     >();
 
-    for (const municipality of municipalities) {
+    for (const municipality of municipalitiesWithCount) {
       let prefectureCode: string;
 
       try {
@@ -88,7 +109,7 @@ export class PrefectureRepository implements IPrefectureRepository {
       if (!existing) {
         grouped.set(prefectureCode, {
           name: municipality.prefecture,
-          items: [municipality as MunicipalityWithCount],
+          items: [municipality],
         });
         continue;
       }
@@ -104,7 +125,7 @@ export class PrefectureRepository implements IPrefectureRepository {
         );
       }
 
-      existing.items.push(municipality as MunicipalityWithCount);
+      existing.items.push(municipality);
     }
 
     let prefectures = Array.from(grouped.entries()).map(
@@ -113,7 +134,7 @@ export class PrefectureRepository implements IPrefectureRepository {
           this.buildPrefectureProps(
             code,
             name,
-            items as MunicipalityWithCount[]
+            items
           )
         )
     );
@@ -216,7 +237,14 @@ export class PrefectureRepository implements IPrefectureRepository {
   private buildPrefectureProps(
     code: string,
     name: string,
-    municipalities: Array<Municipality & { _count: { boards: number } }>
+    municipalities: Array<
+      Pick<Municipality, "status" | "boardCount"> & {
+        computedBoardCount?: number;
+        _count?: {
+          boards?: number;
+        };
+      }
+    >
   ): PrefectureProps {
     const statusCounts: Partial<Record<MunicipalityStatus, number>> = {};
     let totalBoardCount = 0;
@@ -226,7 +254,10 @@ export class PrefectureRepository implements IPrefectureRepository {
       statusCounts[status] = (statusCounts[status] ?? 0) + 1;
 
       const boardCount =
-        municipality.boardCount ?? municipality._count?.boards ?? 0;
+        municipality.boardCount ??
+        municipality._count?.boards ??
+        municipality.computedBoardCount ??
+        0;
 
       totalBoardCount += boardCount;
     }
@@ -306,11 +337,11 @@ export class PrefectureRepository implements IPrefectureRepository {
     filters: PrefectureFilter[] | undefined
   ): Prefecture[] {
     if (!filters || filters.length === 0) {
-      return this.sortByCode(prefectures);
+      return prefectures;
     }
 
     const filtered = filters.reduce((items, filter) => {
-      const normalizedOperator =
+      const normalizedOperator: PrefectureFilterOperator =
         filter.operator ?? this.defaultOperator(filter.field);
 
       return items.filter((prefecture) =>
@@ -321,7 +352,7 @@ export class PrefectureRepository implements IPrefectureRepository {
       );
     }, prefectures);
 
-    return this.sortByCode(filtered);
+    return filtered;
   }
 
   private applySort(
@@ -363,7 +394,9 @@ export class PrefectureRepository implements IPrefectureRepository {
     return sorted;
   }
 
-  private defaultOperator(field: PrefectureFilter["field"]): string {
+  private defaultOperator(
+    field: PrefectureFilter["field"]
+  ): PrefectureFilterOperator {
     switch (field) {
       case "code":
       case "name":
@@ -393,7 +426,7 @@ export class PrefectureRepository implements IPrefectureRepository {
 
   private normalizeNumericFilter(
     field: PrefectureFilter["field"],
-    rawValue: string
+    rawValue?: string
   ): string {
     if (field === "completionRate") {
       const parsed = Number(rawValue);
@@ -403,7 +436,7 @@ export class PrefectureRepository implements IPrefectureRepository {
       }
     }
 
-    return rawValue;
+    return rawValue ?? "";
   }
 
   private compareNumber(
@@ -438,15 +471,19 @@ export class PrefectureRepository implements IPrefectureRepository {
       case "!=":
         return !this.equalsNumber(value, target, field);
       case "greaterThan":
+      case "gt":
       case ">":
         return value > target;
       case "greaterThanOrEqual":
+      case "gte":
       case ">=":
         return value >= target;
       case "lessThan":
+      case "lt":
       case "<":
         return value < target;
       case "lessThanOrEqual":
+      case "lte":
       case "<=":
         return value <= target;
       default:
@@ -471,7 +508,7 @@ export class PrefectureRepository implements IPrefectureRepository {
   private compareString(
     value: string,
     operator: string,
-    rawValue: string
+    rawValue?: string
   ): boolean {
     if (operator === "isEmpty") {
       return value.length === 0;
@@ -481,7 +518,7 @@ export class PrefectureRepository implements IPrefectureRepository {
       return value.length > 0;
     }
 
-    const target = rawValue.trim();
+    const target = (rawValue ?? "").trim();
 
     if (!target) {
       return true;
@@ -494,6 +531,9 @@ export class PrefectureRepository implements IPrefectureRepository {
       case "equals":
       case "=":
         return source === compared;
+      case "notEqual":
+      case "!=":
+        return source !== compared;
       case "startsWith":
         return source.startsWith(compared);
       case "endsWith":

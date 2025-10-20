@@ -10,7 +10,9 @@ import type { Municipality } from "../../domain/entities/Municipality";
 import type {
   IMunicipalityRepository,
   MunicipalityFilter,
+  MunicipalityFilterOperator,
 } from "../../domain/repositories/IMunicipalityRepository";
+import { MUNICIPALITY_FILTER_FIELDS } from "../../domain/repositories/IMunicipalityRepository";
 
 export interface GetMunicipalitiesInput {
   page?: number;
@@ -18,10 +20,10 @@ export interface GetMunicipalitiesInput {
   prefecture?: string;
   search?: string;
   status?: string;
-  sortField?: string;
+  sortField?: MunicipalityFilter["field"];
   sortOrder?: "asc" | "desc";
-  filterField?: string;
-  filterOperator?: string;
+  filterField?: MunicipalityFilter["field"];
+  filterOperator?: MunicipalityFilterOperator;
   filterValue?: string;
 }
 
@@ -96,11 +98,19 @@ export class GetMunicipalitiesUseCase {
     const field = this.normalizeField(input.filterField);
 
     if (field) {
-      const operator = input.filterOperator;
-      const value = input.filterValue ?? "";
+      const operator = this.normalizeOperator(input.filterOperator, field);
+      const rawValue = input.filterValue ?? "";
+      const hasValue = rawValue !== "";
 
-      if (value || operator === "isEmpty" || operator === "isNotEmpty") {
-        filters.push({ field, operator, value });
+      if (
+        operator &&
+        (hasValue || operator === "isEmpty" || operator === "isNotEmpty")
+      ) {
+        filters.push({
+          field,
+          operator,
+          value: hasValue ? rawValue : undefined,
+        });
       }
     }
 
@@ -127,15 +137,59 @@ export class GetMunicipalitiesUseCase {
     }
 
     const allowedFields: MunicipalityFilter["field"][] = [
-      "code",
-      "name",
-      "prefecture",
-      "status",
-      "boardCount",
+      ...MUNICIPALITY_FILTER_FIELDS,
     ];
 
     return allowedFields.includes(value as MunicipalityFilter["field"])
       ? (value as MunicipalityFilter["field"])
+      : undefined;
+  }
+
+  private normalizeOperator(
+    operator: string | undefined,
+    field: MunicipalityFilter["field"]
+  ): MunicipalityFilterOperator | undefined {
+    if (!operator) {
+      return undefined;
+    }
+
+    const commonOperators: MunicipalityFilterOperator[] = [
+      "equals",
+      "=",
+      "notEqual",
+      "!=",
+      "contains",
+      "startsWith",
+      "endsWith",
+      "isEmpty",
+      "isNotEmpty",
+    ];
+
+    const numericOperators: MunicipalityFilterOperator[] = [
+      "equals",
+      "=",
+      "notEqual",
+      "!=",
+      "greaterThan",
+      "gt",
+      ">",
+      "greaterThanOrEqual",
+      "gte",
+      ">=",
+      "lessThan",
+      "lt",
+      "<",
+      "lessThanOrEqual",
+      "lte",
+      "<=",
+      "isEmpty",
+      "isNotEmpty",
+    ];
+
+    const allowed = field === "boardCount" ? numericOperators : commonOperators;
+
+    return allowed.includes(operator as MunicipalityFilterOperator)
+      ? (operator as MunicipalityFilterOperator)
       : undefined;
   }
 }

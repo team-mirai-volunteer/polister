@@ -8,6 +8,44 @@ import type { MunicipalityBoardRecord } from "@/features/municipality/domain/rep
 import type { Prefecture } from "../entities/Prefecture";
 import type { PrefectureDetail } from "../entities/PrefectureDetail";
 
+export const PREFECTURE_FILTER_OPERATORS = [
+  "equals",
+  "=",
+  "notEqual",
+  "!=",
+  "greaterThan",
+  "gt",
+  ">",
+  "greaterThanOrEqual",
+  "gte",
+  ">=",
+  "lessThan",
+  "lt",
+  "<",
+  "lessThanOrEqual",
+  "lte",
+  "<=",
+  "contains",
+  "startsWith",
+  "endsWith",
+  "isEmpty",
+  "isNotEmpty",
+] as const;
+
+export type PrefectureFilterOperator =
+  (typeof PREFECTURE_FILTER_OPERATORS)[number];
+
+export const PREFECTURE_FILTER_FIELDS: ReadonlyArray<
+  PrefectureFilter["field"]
+> = [
+  "code",
+  "name",
+  "municipalityCount",
+  "completedMunicipalityCount",
+  "completionRate",
+  "totalBoardCount",
+] as const;
+
 export interface PrefectureFilter {
   field:
     | "code"
@@ -16,8 +54,8 @@ export interface PrefectureFilter {
     | "completedMunicipalityCount"
     | "completionRate"
     | "totalBoardCount";
-  operator?: string;
-  value: string;
+  operator?: PrefectureFilterOperator;
+  value?: string;
 }
 
 export interface FindPrefecturesOptions {

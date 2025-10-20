@@ -12,6 +12,11 @@ import {
   GetPrefecturesUseCase,
   type GetPrefecturesInput,
 } from "../usecases/GetPrefecturesUseCase";
+import {
+  PREFECTURE_FILTER_FIELDS,
+  type PrefectureFilterOperator,
+} from "../../domain/repositories/IPrefectureRepository";
+import type { PrefectureFilter } from "../../domain/repositories/IPrefectureRepository";
 
 export interface GetPrefecturesParams {
   sortField?: string;
@@ -23,19 +28,65 @@ export interface GetPrefecturesParams {
 
 type PrefectureField = NonNullable<GetPrefecturesInput["sortField"]>;
 
-const PREFECTURE_FIELDS = new Set<PrefectureField>([
-  "code",
-  "name",
-  "municipalityCount",
-  "completedMunicipalityCount",
-  "completionRate",
-  "totalBoardCount",
-]);
+const PREFECTURE_FIELDS = new Set<PrefectureField>(
+  PREFECTURE_FILTER_FIELDS as PrefectureField[]
+);
 
 function isPrefectureField(
   value: string | undefined
 ): value is PrefectureField {
   return Boolean(value && PREFECTURE_FIELDS.has(value as PrefectureField));
+}
+
+function normalizeOperator(
+  operator: string | undefined,
+  field: PrefectureFilter["field"]
+): PrefectureFilterOperator | undefined {
+  if (!operator) {
+    return undefined;
+  }
+
+  const stringOperators: PrefectureFilterOperator[] = [
+    "equals",
+    "=",
+    "notEqual",
+    "!=",
+    "contains",
+    "startsWith",
+    "endsWith",
+    "isEmpty",
+    "isNotEmpty",
+  ];
+
+  const numericOperators: PrefectureFilterOperator[] = [
+    "equals",
+    "=",
+    "notEqual",
+    "!=",
+    "greaterThan",
+    "gt",
+    ">",
+    "greaterThanOrEqual",
+    "gte",
+    ">=",
+    "lessThan",
+    "lt",
+    "<",
+    "lessThanOrEqual",
+    "lte",
+    "<=",
+    "isEmpty",
+    "isNotEmpty",
+  ];
+
+  const allowed =
+    field === "completionRate" || field === "totalBoardCount"
+      ? numericOperators
+      : stringOperators;
+
+  return allowed.includes(operator as PrefectureFilterOperator)
+    ? (operator as PrefectureFilterOperator)
+    : undefined;
 }
 
 function buildFilters(params: GetPrefecturesParams) {
@@ -47,10 +98,16 @@ function buildFilters(params: GetPrefecturesParams) {
     return undefined;
   }
 
-  const operator = params.filterOperator;
+  const operator = normalizeOperator(params.filterOperator, params.filterField);
   const value = params.filterValue ?? "";
 
-  if (!value && operator !== "isEmpty" && operator !== "isNotEmpty") {
+  if (!operator) {
+    return undefined;
+  }
+
+  const hasValue = value !== "";
+
+  if (!hasValue && operator !== "isEmpty" && operator !== "isNotEmpty") {
     return undefined;
   }
 
@@ -58,7 +115,7 @@ function buildFilters(params: GetPrefecturesParams) {
     {
       field: params.filterField,
       operator,
-      value,
+      value: hasValue ? value : undefined,
     },
   ];
 }
