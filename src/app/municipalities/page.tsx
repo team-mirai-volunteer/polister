@@ -1,0 +1,58 @@
+/**
+ * 自治体一覧ページ
+ *
+ * Server Componentで実装
+ */
+
+import { getMunicipalitiesAction } from "@/features/municipality/application/actions/getMunicipalitiesAction";
+import { MunicipalityDataGrid } from "@/features/municipality/ui/components/MunicipalityDataGrid";
+import { Container, Typography } from "@mui/material";
+
+interface PageProps {
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+    prefecture?: string;
+    search?: string;
+    status?: string;
+  }>;
+}
+
+export default async function MunicipalitiesPage({ searchParams }: PageProps) {
+  // searchParamsを解決
+  const params = await searchParams;
+
+  const page = parseInt(params.page || "1");
+  const limit = parseInt(params.limit || "50");
+  const prefecture = params.prefecture;
+  const search = params.search;
+  const status = params.status;
+
+  // Server Actionを呼び出してデータ取得
+  const data = await getMunicipalitiesAction({
+    page,
+    limit,
+    prefecture,
+    search,
+    status,
+  });
+
+  return (
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Typography variant="h4" sx={{ mb: 3 }}>
+        自治体一覧
+      </Typography>
+
+      <Typography variant="body2" sx={{ mb: 2 }}>
+        全 {data.total} 件
+      </Typography>
+
+      <MunicipalityDataGrid
+        municipalities={data.municipalities}
+        total={data.total}
+        page={page}
+        pageSize={limit}
+      />
+    </Container>
+  );
+}

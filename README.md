@@ -100,20 +100,43 @@ yarn docs:dev
 
 ## 🏗️ アーキテクチャ
 
-Clean Architectureに基づいた設計を採用：
+**Clean Architecture + Domain-Driven Design (DDD)** に基づいた設計を採用：
+
+### アーキテクチャ方針
+
+- **Clean Architecture**: ビジネスロジックを技術的詳細から分離
+- **DDD**: ドメインモデル中心の設計
+  - ユビキタス言語の徹底
+  - バウンデッドコンテキスト（`features/`配下）
+  - 集約、値オブジェクト、ドメインサービス
+  - ドメインイベントによる副作用の分離
+
+### ディレクトリ構造
 
 ```
 src/
-├── app/              # Next.js App Router
-├── features/         # 機能別モジュール（垂直分割）
-│   ├── board/
-│   ├── verification/
-│   └── import/
+├── app/              # Next.js App Router (Presentation層)
+├── features/         # 機能別モジュール（バウンデッドコンテキスト）
+│   ├── board/        # 掲示板管理コンテキスト
+│   │   ├── domain/           # ドメイン層（DDD Core）
+│   │   │   ├── aggregates/   # 集約ルート
+│   │   │   ├── value-objects/# 値オブジェクト
+│   │   │   ├── services/     # ドメインサービス
+│   │   │   └── repositories/ # リポジトリIF
+│   │   ├── application/      # ユースケース
+│   │   ├── infrastructure/   # リポジトリ実装
+│   │   └── ui/               # UIコンポーネント
+│   ├── verification/ # 検証管理コンテキスト
+│   └── import/       # インポートコンテキスト
 ├── shared/           # 共有リソース
-└── infrastructure/   # 共有インフラ
+└── infrastructure/   # 共有インフラ（DB、外部API）
 ```
 
-詳細は[クリーンアーキテクチャ実装ガイド](https://team-mirai-volunteer.github.io/polister/architecture/guidelines/clean-architecture-guide)を参照。
+詳細は以下のドキュメントを参照：
+
+- [アーキテクチャ概要](https://team-mirai-volunteer.github.io/polister/architecture/)
+- [Clean Architecture実装ガイド](https://team-mirai-volunteer.github.io/polister/architecture/guidelines/clean-architecture-guide)
+- [DDD導入ガイド](https://team-mirai-volunteer.github.io/polister/architecture/guidelines/ddd-guide)
 
 ## 🧪 テスト
 

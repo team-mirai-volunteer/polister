@@ -16,8 +16,9 @@
 
 システムアーキテクチャに関する設計文書
 
-- **[アーキテクチャ概要](./architecture/index.md)** - システム全体のアーキテクチャ説明
-- **[decisions/](./architecture/decisions/)** - Architecture Decision Records (ADR)
+- **[アーキテクチャ概要](./architecture/index.md)** - Clean Architecture + DDD統合方針
+- **[Clean Architecture実装ガイド](./architecture/guidelines/clean-architecture-guide.md)** - 実装パターンと例
+- **[DDD導入ガイド](./architecture/guidelines/ddd-guide.md)** - ドメイン駆動設計の実践
 
 ### 🛠️ development/ - 開発ドキュメント
 
@@ -42,7 +43,7 @@
 ### 👩‍💻 現役開発者
 
 - **開発フロー**: [開発ガイド](./development/index.md)
-- **技術決定**: [ADR一覧](./architecture/decisions/)
+- **アーキテクチャ**: [実装ガイドライン](./architecture/index.md)
 
 ### 👥 エンドユーザー
 
@@ -52,7 +53,7 @@
 ### 📊 プロジェクトマネージャー
 
 - **プロジェクト概要**: [要件定義](./requirements/project-overview.md)
-- **技術決定履歴**: [ADR一覧](./architecture/decisions/)
+- **アーキテクチャ方針**: [アーキテクチャ概要](./architecture/index.md)
 
 ## 技術スタック概要
 
@@ -65,33 +66,34 @@
 
 ### 更新ルール
 
-- **ADR**: 技術的な意思決定時に作成（変更不可、新規追加のみ）
-- **ガイドライン**: 実装パターン変更時に更新（定期的にレビュー）
+- **アーキテクチャガイド**: 設計方針変更時に更新（定期的にレビュー）
+- **実装ガイドライン**: 実装パターン変更時に更新
 - **要件定義**: 機能変更・追加時に更新
 - **アーカイブ**: 古いドキュメントは削除せずアーカイブへ移動
 
 ### 品質保証
 
 - ドキュメント更新時はPull Requestでレビュー
-- 技術的決定は必ずADRとして記録
+- 重要な設計判断はガイドラインに記録
 - 定期的なドキュメント整理・更新
 
 ### 命名規則
 
-- **ADR**: `NNN-title-in-kebab-case.md` (例: `001-architecture-choice.md`)
-- **ガイドライン**: `{topic}-guide.md` (例: `development-guide.md`)
+- **ガイドライン**: `{topic}-guide.md` (例: `clean-architecture-guide.md`)
 - **一般ドキュメント**: `descriptive-name.md`
 
 ## よく使用するドキュメントリンク
 
 ### 重要なドキュメント
 
-- [ADR テンプレート](./architecture/decisions/000-adr-template.md)
-- [アーキテクチャガイド](./architecture/index.md)
+- [アーキテクチャ概要](./architecture/index.md)
+- [Clean Architecture実装ガイド](./architecture/guidelines/clean-architecture-guide.md)
+- [DDD導入ガイド](./architecture/guidelines/ddd-guide.md)
 
 ### 開発者向けガイド
 
 - [開発ガイド](./development/index.md)
+- [コーディング規約](./architecture/guidelines/coding-conventions.md)
 
 ### トラブルシューティング
 

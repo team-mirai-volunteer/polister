@@ -2,6 +2,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
+  binaryTargets   = ["native"]
 }
 
 datasource db {
@@ -14,11 +15,13 @@ datasource db {
 model Board {
   id             String                                @id @default(uuid())
   boardNumber    Int                                   @map("board_number")
+  name           String?
   address        String
   location       Unsupported("geography(POINT, 4326)")
   municipalityId String                                @map("municipality_id")
   trustLevel     TrustLevel                            @default(LEVEL_3) @map("trust_level")
   status         BoardStatus                           @default(PENDING)
+  note           String?                               @db.Text
   createdAt      DateTime                              @default(now()) @map("created_at")
   updatedAt      DateTime                              @updatedAt @map("updated_at")
   deletedAt      DateTime?                             @map("deleted_at")
@@ -26,6 +29,7 @@ model Board {
   municipality  Municipality   @relation(fields: [municipalityId], references: [id])
   images        BoardImage[]
   verifications Verification[]
+  histories     BoardHistory[]
 
   @@index([location], type: Gist)
   @@index([municipalityId])
@@ -36,20 +40,32 @@ model Board {
 
 // 市区町村
 model Municipality {
-  id         String                                       @id @default(uuid())
+  // 基本属性（国土数値情報から取得）
+  id         String                                        @id @default(uuid())
   name       String
-  code       String                                       @unique
+  code       String                                        @unique
   prefecture String
   polygon    Unsupported("geography(MULTIPOLYGON, 4326)")?
-  source     String                                       @default("MLIT")
-  createdAt  DateTime                                     @default(now()) @map("created_at")
-  updatedAt  DateTime                                     @updatedAt @map("updated_at")
+  source     String                                        @default("MLIT")
+
+  // データ収集管理属性（Polister独自）
+  url           String?            @db.Text
+  boardCount    Int?               @map("board_count")
+  dataVersion   String?            @map("data_version")
+  status        MunicipalityStatus @default(NOT_STARTED)
+  contactStatus ContactStatus?     @map("contact_status")
+  notes         String?            @db.Text
+  folderId      String?            @map("folder_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   boards        Board[]
   userLocations UserLocation[]
 
   @@index([polygon], type: Gist)
   @@index([code])
+  @@index([status])
   @@map("municipalities")
 }
 
@@ -58,6 +74,7 @@ model User {
   id                String    @id @default(uuid())
   email             String    @unique
   name              String?
+  slackName         String?   @map("slack_name")
   image             String?
   role              UserRole  @default(VIEWER)
   trustScore        Float     @default(0.0) @map("trust_score")
@@ -67,11 +84,12 @@ model User {
   deletedAt         DateTime? @map("deleted_at")
   emailVerified     DateTime? @map("email_verified")
 
-  accounts      Account[]
-  sessions      Session[]
-  verifications Verification[]
-  boardImages   BoardImage[]
-  userLocations UserLocation[]
+  accounts       Account[]
+  sessions       Session[]
+  verifications  Verification[]
+  boardImages    BoardImage[]
+  userLocations  UserLocation[]
+  boardHistories BoardHistory[]
 
   @@index([email])
   @@index([role])
@@ -123,17 +141,17 @@ model VerificationToken {
 
 // 検証記録
 model Verification {
-  id          String    @id @default(uuid())
-  boardId     String    @map("board_id")
-  userId      String    @map("user_id")
+  id          String   @id @default(uuid())
+  boardId     String   @map("board_id")
+  userId      String   @map("user_id")
   result      Boolean
-  hasPhoto    Boolean   @default(false) @map("has_photo")
-  gpsAccuracy Float?    @map("gps_accuracy")
-  comment     String?   @db.Text
-  verifiedAt  DateTime  @default(now()) @map("verified_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  hasPhoto    Boolean  @default(false) @map("has_photo")
+  gpsAccuracy Float?   @map("gps_accuracy")
+  comment     String?  @db.Text
+  verifiedAt  DateTime @default(now()) @map("verified_at")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board Board @relation(fields: [boardId], references: [id], onDelete: Restrict)
   user  User  @relation(fields: [userId], references: [id])
 
   @@index([boardId])
@@ -173,6 +191,27 @@ model UserLocation {
   @@map("user_locations")
 }
 
+// 掲示板変更履歴
+model BoardHistory {
+  id           String       @id @default(uuid())
+  boardId      String       @map("board_id")
+  beforeData   Json?        @map("before_data")
+  afterData    Json         @map("after_data")
+  changeReason ChangeReason @map("change_reason")
+  userId       String?      @map("user_id")
+  comment      String?      @db.Text
+  changedAt    DateTime     @default(now()) @map("changed_at")
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Restrict)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([boardId])
+  @@index([userId])
+  @@index([changeReason])
+  @@index([changedAt])
+  @@map("board_histories")
+}
+
 // Enum定義
 enum TrustLevel {
   LEVEL_1 // 公式
@@ -182,14 +221,51 @@ enum TrustLevel {
 }
 
 enum BoardStatus {
-  PENDING  // 未検証
+  PENDING // 未検証
   VERIFIED // 検証済み
   REJECTED // 却下
 }
 
 enum UserRole {
-  VIEWER      // 閲覧者
-  EDITOR      // 編集者
+  VIEWER // 閲覧者
+  EDITOR // 編集者
   COORDINATOR // 地域コーディネーター
-  ADMIN       // 管理者
+  ADMIN // 管理者
+}
+
+// 自治体作業ステータス
+enum MunicipalityStatus {
+  NOT_STARTED // 未着手
+  IN_PROGRESS // 作業中
+  CONTACTING // 自治体へ問い合わせ中
+  DIGITIZING // 紙で入手したのでデジタル化中
+  PDF_COMPLETED // PDFを作ったので後はお願い
+  CSV_COMPLETED // CSVを作ったので後はお願い
+  COMPLETED // 完了(CSV正規化済み)
+  QUALITY_CHECK // データの不備を確認・調整中
+  URL_FOUND // URL見つけたので後はお願い
+  OTHER // その他
+  OUT_OF_SCOPE // 対象外地域
+}
+
+// 選管対応ステータス
+enum ContactStatus {
+  NOT_CONTACTED // 未問い合わせ
+  WAITING_RESPONSE // 回答待ち
+  RECEIVED // データ受領
+  DIRECT_TO_CANDIDATE // 候補者へ直接提供
+  STOPPED // 問い合わせ停止（北海道、福岡県等）
+}
+
+// 変更理由
+enum ChangeReason {
+  MANUAL_INPUT // 手動入力
+  DATA_SOURCE_IMPORT // 自治体データインポート
+  FIELD_VERIFICATION // 現地確認による修正
+  ERROR_CORRECTION // エラー修正
+  DATA_NORMALIZATION // データ正規化
+  GEOCODING_UPDATE // ジオコーディング更新
+  MIGRATION // データマイグレーション
+  SYSTEM_UPDATE // システムによる自動更新
+  OTHER // その他
 }

@@ -79,7 +79,7 @@ const config: Config = {
           label: "利用者向け",
         },
         {
-          href: "https://github.com/team-mirai/polister",
+          href: "https://github.com/team-mirai-volunteer/polister",
           label: "GitHub",
           position: "right",
         },
@@ -119,11 +119,11 @@ const config: Config = {
           items: [
             {
               label: "GitHub Issues",
-              href: "https://github.com/team-mirai/polister/issues",
+              href: "https://github.com/team-mirai-volunteer/polister/issues",
             },
             {
               label: "Discussions",
-              href: "https://github.com/team-mirai/polister/discussions",
+              href: "https://github.com/team-mirai-volunteer/polister/discussions",
             },
           ],
         },

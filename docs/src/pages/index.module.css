@@ -1,23 +1,201 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
+.hero {
+  background: linear-gradient(
+    135deg,
+    rgba(42, 166, 147, 0.1),
+    rgba(228, 0, 20, 0.08)
+  );
+  padding: 6rem 0;
+}
 
-.heroBanner {
-  padding: 4rem 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+.heroBadge {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  background-color: rgba(42, 166, 147, 0.15);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+}
+
+.heroTitle {
+  font-size: clamp(2.4rem, 3vw, 3rem);
+  line-height: 1.25;
+  margin-top: 1.5rem;
+}
+
+.heroSubtitle {
+  color: var(--ifm-color-content-secondary);
+  margin-top: 1.5rem;
+  max-width: 560px;
+  line-height: 1.75;
+}
+
+.heroActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.primaryAction {
+  background: linear-gradient(
+    135deg,
+    var(--polister-primary),
+    var(--polister-primary-light)
+  );
+  color: #fff;
+  padding: 0.85rem 1.8rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  box-shadow: 0 18px 36px rgba(42, 166, 147, 0.22);
+}
+
+.primaryAction:hover {
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(
+    135deg,
+    var(--polister-primary-dark),
+    var(--polister-primary)
+  );
+}
+
+.secondaryAction {
+  border: 1px solid var(--polister-border);
+  border-radius: 9999px;
+  padding: 0.85rem 1.8rem;
+  font-weight: 600;
+  color: var(--polister-text);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.secondaryAction:hover {
+  text-decoration: none;
+  color: var(--polister-primary);
+  border-color: var(--polister-primary);
+}
+
+.mainSection {
+  padding: 5rem 0 6rem;
+}
+
+.sectionHeader {
+  max-width: 580px;
+  margin-bottom: 2.5rem;
+}
+
+.sectionHeader h2 {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.sectionHeader p {
+  color: var(--polister-text-subtle);
+  line-height: 1.7;
+}
+
+.cardGrid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.cardItem {
+  border: 1px solid var(--polister-border);
+  border-radius: 12px;
+  padding: 1.8rem;
+  background-color: #fff;
+  box-shadow: 0 16px 30px rgba(29, 41, 61, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.cardItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(29, 41, 61, 0.12);
+  text-decoration: none;
+}
+
+.cardIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background-color: rgba(42, 166, 147, 0.12);
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.cardItem h3 {
+  margin-bottom: 0.75rem;
+}
+
+.cardItem p {
+  color: var(--polister-text-subtle);
+  line-height: 1.6;
+}
+
+.cardLink {
+  display: inline-block;
+  margin-top: 1.25rem;
+  font-weight: 600;
+  color: var(--polister-primary);
+}
+
+.cardLink:hover {
+  text-decoration: none;
+  color: var(--polister-primary-dark);
+}
+
+.secondarySection {
+  margin-top: 4rem;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.secondaryCard {
+  border: 1px solid var(--polister-border);
+  border-radius: 12px;
+  padding: 2rem;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.secondaryCard h2 {
+  margin-bottom: 0.5rem;
+}
+
+.secondaryCard p {
+  color: var(--polister-text-subtle);
+  line-height: 1.6;
+}
+
+.secondaryLink {
+  font-weight: 600;
+  color: var(--polister-primary);
+}
+
+.secondaryLink:hover {
+  text-decoration: none;
+  color: var(--polister-primary-dark);
 }
 
 @media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
+  .hero {
+    padding: 4rem 0;
   }
-}
 
-.buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  .heroSubtitle,
+  .sectionHeader,
+  .cardItem,
+  .secondaryCard {
+    max-width: none;
+  }
 }

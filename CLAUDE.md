@@ -220,6 +220,19 @@ EOF
 
 設計判断や要件変更があった場合は、Issueを更新して記録します。
 
+## Exec Plan運用
+
+- Issue開始時に `plan/plan.md` を作成し、目的・スコープ・タスク・検証方法を記載する。
+- 実装中にプランを更新した場合は変更点を PR やコミットメッセージで共有し、履歴管理を行う。
+- Plan 完了後も成果物と整合しているか確認し、必要なら後続 Issue へ TODO を引き継ぐ。
+- Exec Plan は以下のフォーマットに従う（作業中も最新状態を保つこと）：
+  1. **全体像**（目的・背景）
+  2. **進捗状況（チェックリスト）**
+  3. **発見と驚き**
+  4. **決定ログ（日時と理由）**
+  5. **To-Do**（次のアクション）
+- 実装時は常に該当 Plan を参照し、進捗・決定事項を反映させながら作業する。
+
 ## ドキュメント作成
 
 ### 標準構成
@@ -299,30 +312,69 @@ yarn validate
 
 型チェック、lint、フォーマットチェックを一括実行します。
 
-## プロジェクト構造
+## アーキテクチャ
+
+Polisterは**Clean Architecture**と**Domain-Driven Design (DDD)**を組み合わせた設計を採用しています。
+
+### 基本方針
+
+- **Clean Architecture**: 依存関係逆転の原則でビジネスロジックを技術的詳細から分離
+- **DDD（Domain-Driven Design）**: ドメインモデルを中心とした設計
+  - **ユビキタス言語**: ドメイン専門家と開発者が同じ語彙を使用
+  - **バウンデッドコンテキスト**: `features/`配下に独立したコンテキストを配置
+  - **集約**: 不変条件を守る責任境界
+  - **値オブジェクト**: イミュータブルな値型
+  - **ドメインサービス**: 複数集約にまたがるロジック
+  - **ドメインイベント**: 副作用の分離
+
+### プロジェクト構造
 
 ```
 polister/
 ├── src/
-│   └── app/            # Next.js App Router ディレクトリ
-│       ├── layout.tsx  # ルートレイアウトコンポーネント
-│       ├── page.tsx    # ホームページ
-│       ├── globals.css # グローバルスタイル
-│       └── page.module.css # ページ固有のスタイル
-├── public/             # 静的ファイル
-├── package.json        # 依存関係とスクリプト
-├── tsconfig.json       # TypeScript 設定
-├── next.config.ts      # Next.js 設定
-└── eslint.config.mjs   # ESLint 設定
+│   ├── app/                       # Next.js App Router (Presentation層)
+│   ├── features/                  # 機能別モジュール（バウンデッドコンテキスト）
+│   │   ├── board/                 # 掲示板管理コンテキスト
+│   │   │   ├── domain/            # ドメイン層（DDD Core）
+│   │   │   │   ├── aggregates/   # 集約ルート
+│   │   │   │   ├── entities/     # エンティティ
+│   │   │   │   ├── value-objects/# 値オブジェクト
+│   │   │   │   ├── services/     # ドメインサービス
+│   │   │   │   ├── events/       # ドメインイベント
+│   │   │   │   └── repositories/ # リポジトリIF
+│   │   │   ├── application/       # アプリケーション層
+│   │   │   │   ├── usecases/     # ユースケース
+│   │   │   │   └── services/     # アプリケーションサービス
+│   │   │   ├── infrastructure/    # インフラ層
+│   │   │   │   ├── repositories/ # リポジトリ実装
+│   │   │   │   └── mappers/      # マッパー
+│   │   │   └── ui/                # UIコンポーネント
+│   │   ├── verification/          # 検証管理コンテキスト
+│   │   ├── import/                # インポートコンテキスト
+│   │   └── municipality/          # 自治体管理コンテキスト
+│   ├── shared/                    # 共有リソース
+│   │   ├── ui/                    # 共通UIコンポーネント
+│   │   ├── lib/                   # ユーティリティ（DI、エラー等）
+│   │   └── types/                 # 共通型定義
+│   └── infrastructure/            # 共有インフラ層
+│       ├── database/              # Prisma設定
+│       └── external/              # 外部APIクライアント
+├── docs/                          # Docusaurusドキュメント
+├── public/                        # 静的ファイル
+└── .claude/                       # Claudeコマンド定義
 ```
 
-## アーキテクチャ
+詳細は[アーキテクチャドキュメント](https://team-mirai-volunteer.github.io/polister/architecture/)を参照してください。
+
+### 技術スタック
 
 - **フレームワーク**: Next.js 15 with App Router
 - **TypeScript**: Strict モード有効、パスマッピング設定 (`@/*` → `./src/*`)
-- **スタイリング**: CSS Modules + Global CSS
-- **フォント**: Geist Sans & Geist Mono (next/font/google 経由でロード)
-- **リンティング**: Next.js TypeScript 設定を使用した ESLint
+- **スタイリング**: Material UI 7 + Emotion
+- **地図**: Mapbox GL JS
+- **データベース**: PostgreSQL + PostGIS (Prisma 6)
+- **DI Container**: tsyringe
+- **リンティング**: ESLint + Prettier
 
 ## 主要な設定詳細
 

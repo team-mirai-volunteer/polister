@@ -14,6 +14,7 @@
 /coverage
 /test-results
 /playwright-report
+*.lcov
 
 # next.js
 /.next/
@@ -48,3 +49,12 @@ next-env.d.ts
 
 # prisma
 /src/generated/prisma
+
+plan/
+tmp/
+
+# scripts data
+/scripts/data/
+
+# poster-board data
+data/poster-board
