@@ -38,9 +38,9 @@ export class BoardRepository implements IBoardRepository {
       max: BOARD_LOCATION_FETCH_LIMIT_MAX,
     });
 
-    const limitClause = normalizedLimit
-      ? Prisma.sql`LIMIT ${normalizedLimit}`
-      : Prisma.empty;
+    const effectiveLimit = normalizedLimit ?? BOARD_LOCATION_FETCH_LIMIT_MAX;
+
+    const limitClause = Prisma.sql`LIMIT ${effectiveLimit}`;
 
     const rows = await this.prisma.$queryRaw<
       Array<{

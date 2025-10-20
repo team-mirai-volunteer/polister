@@ -45,7 +45,20 @@ export class PrefectureRepository implements IPrefectureRepository {
     const grouped = new Map<string, { name: string; items: Municipality[] }>();
 
     for (const municipality of municipalities) {
-      const prefectureCode = this.extractPrefectureCode(municipality.code);
+      let prefectureCode: string;
+
+      try {
+        prefectureCode = this.extractPrefectureCode(municipality.code);
+      } catch (error) {
+        this.logger.warn(
+          "[PrefectureRepository] Skip municipality: invalid code",
+          {
+            municipalityCode: municipality.code,
+            error: error instanceof Error ? error.message : String(error),
+          }
+        );
+        continue;
+      }
       const existing = grouped.get(prefectureCode);
 
       if (!existing) {
