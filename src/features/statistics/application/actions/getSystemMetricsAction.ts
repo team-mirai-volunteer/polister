@@ -9,7 +9,13 @@ import { container } from "tsyringe";
 
 import { GetSystemMetricsUseCase } from "../usecases/GetSystemMetricsUseCase";
 
-export async function getSystemMetricsAction() {
+interface SystemMetricsResult {
+  municipalities: number;
+  boards: number;
+  isFallback: boolean;
+}
+
+export async function getSystemMetricsAction(): Promise<SystemMetricsResult> {
   try {
     setupDI(container);
 
@@ -19,9 +25,14 @@ export async function getSystemMetricsAction() {
     return {
       municipalities: metrics.totalMunicipalities,
       boards: metrics.totalBoards,
+      isFallback: false,
     };
   } catch (error) {
     console.error("Error in getSystemMetricsAction:", error);
-    throw new Error("統計情報の取得に失敗しました", { cause: error });
+    return {
+      municipalities: 0,
+      boards: 0,
+      isFallback: true,
+    };
   }
 }

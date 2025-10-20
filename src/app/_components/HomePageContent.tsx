@@ -23,6 +23,7 @@ export interface HomePageContentProps {
   metrics: {
     municipalities: number;
     boards: number;
+    isFallback?: boolean;
   };
 }
 
@@ -49,6 +50,11 @@ export function HomePageContent({ metrics }: HomePageContentProps) {
         <Typography variant="body1">
           PolisterのUIを掲示板管理チーム向けにリデザインしました。柔らかなトーンと落ち着いたレイアウトで、掲示板ロケーションや自治体情報をスムーズに確認できます。
         </Typography>
+        {metrics.isFallback && (
+          <Typography variant="body2" color="text.secondary">
+            ※ 統計情報は現在参照できないため、表示値は0件となっています。
+          </Typography>
+        )}
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>
           <Button
             component={Link}
