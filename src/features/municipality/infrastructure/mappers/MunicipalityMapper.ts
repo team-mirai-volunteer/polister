@@ -15,11 +15,15 @@ export class MunicipalityMapper {
   static toDomain(
     prisma: PrismaMunicipality & {
       _count?: {
-        boards?: number | null;
+        boards?: number;
       };
     }
   ): Municipality {
-    const boardCount = prisma.boardCount ?? prisma._count?.boards ?? null;
+    const aggregatedBoardCount = prisma._count?.boards;
+    const boardCount =
+      aggregatedBoardCount !== undefined
+        ? aggregatedBoardCount
+        : prisma.boardCount;
 
     return new Municipality(
       prisma.id,
@@ -29,7 +33,7 @@ export class MunicipalityMapper {
       null, // polygonはUnsupported型なのでnullを設定
       prisma.source,
       prisma.url,
-      boardCount,
+      boardCount ?? null,
       prisma.dataVersion,
       prisma.status,
       prisma.contactStatus,

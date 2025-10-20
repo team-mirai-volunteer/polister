@@ -45,14 +45,14 @@ function normalizeOperator(
   field: PrefectureFilter["field"]
 ): PrefectureFilterOperator | undefined {
   if (!operator) {
-    return undefined;
+    return PREFECTURE_FIELD_OPERATORS[field][0];
   }
 
   const allowed = PREFECTURE_FIELD_OPERATORS[field];
 
   return allowed.includes(operator as PrefectureFilterOperator)
     ? (operator as PrefectureFilterOperator)
-    : undefined;
+    : PREFECTURE_FIELD_OPERATORS[field][0];
 }
 
 function buildFilters(params: GetPrefecturesParams) {
@@ -65,7 +65,7 @@ function buildFilters(params: GetPrefecturesParams) {
   }
 
   const operator = normalizeOperator(params.filterOperator, params.filterField);
-  const value = params.filterValue ?? "";
+  const value = (params.filterValue ?? "").trim();
 
   if (!operator) {
     return undefined;

@@ -3,6 +3,12 @@
  */
 
 import { getPrefecturesAction } from "@/features/prefecture/application/actions/getPrefecturesAction";
+import {
+  PREFECTURE_FIELD_OPERATORS,
+  PREFECTURE_FILTER_FIELDS,
+  type PrefectureFilter,
+  type PrefectureFilterOperator,
+} from "@/features/prefecture/domain/repositories/IPrefectureRepository";
 import { PrefectureDataGrid } from "@/features/prefecture/ui/components/PrefectureDataGrid";
 import { Container, Typography } from "@mui/material";
 
@@ -22,6 +28,15 @@ export default async function PrefecturesPage({
   try {
     const params = await searchParams;
 
+    const toPrefectureField = (
+      value?: string
+    ): PrefectureFilter["field"] | undefined =>
+      value &&
+      PREFECTURE_FILTER_FIELDS.includes(value as PrefectureFilter["field"])
+        ? (value as PrefectureFilter["field"])
+        : undefined;
+
+    const normalizedSortField = toPrefectureField(params.sortField);
     const sortField = params.sortField;
     const sortOrder =
       params.sortOrder === "desc"
@@ -30,7 +45,16 @@ export default async function PrefecturesPage({
           ? "asc"
           : undefined;
     const filterField = params.filterField;
+    const normalizedFilterField = toPrefectureField(filterField);
     const filterOperator = params.filterOperator;
+    const normalizedFilterOperator: PrefectureFilterOperator | undefined =
+      normalizedFilterField && filterOperator
+        ? PREFECTURE_FIELD_OPERATORS[normalizedFilterField].includes(
+            filterOperator as PrefectureFilterOperator
+          )
+          ? (filterOperator as PrefectureFilterOperator)
+          : undefined
+        : undefined;
     const filterValue = params.filterValue ?? "";
 
     const prefectures = await getPrefecturesAction({
@@ -53,10 +77,10 @@ export default async function PrefecturesPage({
 
         <PrefectureDataGrid
           prefectures={prefectures}
-          sortField={sortField}
+          sortField={normalizedSortField}
           sortOrder={sortOrder}
-          filterField={filterField}
-          filterOperator={filterOperator}
+          filterField={normalizedFilterField}
+          filterOperator={normalizedFilterOperator}
           filterValue={filterValue}
         />
       </Container>

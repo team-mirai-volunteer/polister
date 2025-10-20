@@ -38,6 +38,10 @@ export const MUNICIPALITY_FILTER_FIELDS: ReadonlyArray<
   MunicipalityFilter["field"]
 > = ["code", "name", "prefecture", "status", "boardCount"] as const;
 
+export const MUNICIPALITY_NUMERIC_FIELDS: ReadonlyArray<
+  MunicipalityFilter["field"]
+> = ["boardCount"] as const;
+
 export const MUNICIPALITY_NO_VALUE_OPERATORS: ReadonlySet<MunicipalityFilterOperator> =
   new Set(["isEmpty", "isNotEmpty"]);
 
@@ -78,7 +82,7 @@ export const MUNICIPALITY_FIELD_OPERATORS: Record<
     "isEmpty",
     "isNotEmpty",
   ],
-  status: ["equals", "="],
+  status: ["equals", "=", "notEqual", "!=", "isEmpty", "isNotEmpty"],
   boardCount: [
     "equals",
     "=",
@@ -107,6 +111,16 @@ export interface MunicipalityFilter {
   value?: string;
 }
 
+/**
+ * 市区町村一覧取得時に利用できるソート／フィルタ条件。
+ *
+ * - `orderBy.field` と `filters[].field` は `MUNICIPALITY_FILTER_FIELDS` のいずれか。
+ * - フィールドごとの許可演算子は `MUNICIPALITY_FIELD_OPERATORS` を参照。
+ *   - `code`/`name`/`prefecture`: 部分一致（contains/startsWith/endsWith）と等価、空判定をサポート。
+ *   - `status`: 等価 (`equals`/`=`)、不等 (`notEqual`/`!=`)、空判定のみ。
+ *   - `boardCount`: 比較系 (`>`/`>=`/`<`/`<=`) と等価・不等、空判定をサポート。
+ * - `filters[].value` は演算子が値を必要とする場合のみ指定し、空文字は無視されます。
+ */
 export interface FindMunicipalitiesOptions {
   skip?: number;
   take?: number;

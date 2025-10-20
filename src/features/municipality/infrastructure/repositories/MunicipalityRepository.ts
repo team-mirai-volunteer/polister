@@ -96,10 +96,12 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       return [];
     }
 
+    const take = Math.min(Math.max(options?.take ?? 50, 1), 200);
+
     const municipalities = await this.prisma.municipality.findMany({
       where: effectiveWhere,
       skip: options?.skip,
-      take: options?.take || 50,
+      take,
       orderBy,
       include: {
         _count: {
@@ -391,14 +393,17 @@ export class MunicipalityRepository implements IMunicipalityRepository {
 
     const target = Number(filter.value);
 
+    if (!Number.isFinite(target)) {
+      return [];
+    }
+
     const normalizedTarget = Math.floor(target);
 
-    if (
-      !Number.isFinite(target) ||
-      (!Number.isFinite(normalizedTarget) &&
-        operator !== "notEqual" &&
-        operator !== "!=")
-    ) {
+    if (normalizedTarget < 0) {
+      if (operator === "notEqual" || operator === "!=") {
+        return this.getMunicipalityIds(baseWhere);
+      }
+
       return [];
     }
 
@@ -520,7 +525,17 @@ export class MunicipalityRepository implements IMunicipalityRepository {
         return false;
       }
 
-      return Number.isFinite(Number(trimmedValue));
+      const numericValue = Number(trimmedValue);
+
+      if (!Number.isFinite(numericValue)) {
+        return false;
+      }
+
+      if (numericValue < 0) {
+        return operator === "notEqual" || operator === "!=";
+      }
+
+      return true;
     }
 
     return trimmedValue !== "";
@@ -592,10 +607,10 @@ export class MunicipalityRepository implements IMunicipalityRepository {
     switch (normalized) {
       case "equals":
       case "=":
-        return { equals: target };
+        return { equals: target, mode: "insensitive" };
       case "notEqual":
       case "!=":
-        return { not: target };
+        return { not: target, mode: "insensitive" };
       case "startsWith":
         return { startsWith: target, mode: "insensitive" };
       case "endsWith":
@@ -607,54 +622,6 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       case "contains":
       default:
         return { contains: target, mode: "insensitive" };
-    }
-  }
-
-  private buildNumberFilter(
-    operator: string | undefined,
-    value?: string
-  ): Prisma.IntNullableFilter | undefined {
-    if (operator === "isEmpty") {
-      return { equals: null };
-    }
-
-    if (operator === "isNotEmpty") {
-      return { not: null };
-    }
-
-    const numericValue = Number(value);
-
-    if (!Number.isFinite(numericValue)) {
-      return undefined;
-    }
-
-    const normalized = operator ?? "equals";
-
-    switch (normalized) {
-      case "equals":
-      case "=":
-        return { equals: numericValue };
-      case "notEqual":
-      case "!=":
-        return { not: numericValue };
-      case "greaterThan":
-      case "gt":
-      case ">":
-        return { gt: numericValue };
-      case "greaterThanOrEqual":
-      case "gte":
-      case ">=":
-        return { gte: numericValue };
-      case "lessThan":
-      case "lt":
-      case "<":
-        return { lt: numericValue };
-      case "lessThanOrEqual":
-      case "lte":
-      case "<=":
-        return { lte: numericValue };
-      default:
-        return { equals: numericValue };
     }
   }
 }

@@ -47,19 +47,23 @@ export async function getMunicipalitiesAction(
         : undefined;
     };
 
+    const defaultOperatorFor = (
+      field: MunicipalityFilter["field"]
+    ): MunicipalityFilterOperator => MUNICIPALITY_FIELD_OPERATORS[field][0];
+
     const normalizeOperator = (
       value: string | undefined,
       field: MunicipalityFilter["field"] | undefined
     ): MunicipalityFilterOperator | undefined => {
       if (!value || !field) {
-        return undefined;
+        return field ? defaultOperatorFor(field) : undefined;
       }
 
       const allowedOperators = MUNICIPALITY_FIELD_OPERATORS[field];
 
       return allowedOperators.includes(value as MunicipalityFilterOperator)
         ? (value as MunicipalityFilterOperator)
-        : undefined;
+        : defaultOperatorFor(field);
     };
 
     const sortField = normalizeField(params.sortField);
@@ -84,7 +88,7 @@ export async function getMunicipalitiesAction(
             : undefined,
       filterField,
       filterOperator,
-      filterValue: params.filterValue ?? "",
+      filterValue: params.filterValue,
     });
 
     // DTOに変換して返す

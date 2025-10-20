@@ -5,6 +5,12 @@
  */
 
 import { getMunicipalitiesAction } from "@/features/municipality/application/actions/getMunicipalitiesAction";
+import {
+  MUNICIPALITY_FIELD_OPERATORS,
+  MUNICIPALITY_FILTER_FIELDS,
+  type MunicipalityFilter,
+  type MunicipalityFilterOperator,
+} from "@/features/municipality/domain/repositories/IMunicipalityRepository";
 import { MunicipalityDataGrid } from "@/features/municipality/ui/components/MunicipalityDataGrid";
 import { Container, Typography } from "@mui/material";
 
@@ -43,6 +49,25 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
   const filterOperator = params.filterOperator;
   const filterValue = params.filterValue ?? "";
 
+  const toMunicipalityField = (
+    value?: string
+  ): MunicipalityFilter["field"] | undefined =>
+    value &&
+    MUNICIPALITY_FILTER_FIELDS.includes(value as MunicipalityFilter["field"])
+      ? (value as MunicipalityFilter["field"])
+      : undefined;
+
+  const normalizedSortField = toMunicipalityField(sortField);
+  const normalizedFilterField = toMunicipalityField(filterField);
+  const normalizedFilterOperator: MunicipalityFilterOperator | undefined =
+    normalizedFilterField && filterOperator
+      ? MUNICIPALITY_FIELD_OPERATORS[normalizedFilterField].includes(
+          filterOperator as MunicipalityFilterOperator
+        )
+        ? (filterOperator as MunicipalityFilterOperator)
+        : undefined
+      : undefined;
+
   // Server Actionを呼び出してデータ取得
   const data = await getMunicipalitiesAction({
     page,
@@ -72,10 +97,10 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
         total={data.total}
         page={page}
         pageSize={limit}
-        sortField={sortField}
+        sortField={normalizedSortField}
         sortOrder={sortOrder}
-        filterField={filterField}
-        filterOperator={filterOperator}
+        filterField={normalizedFilterField}
+        filterOperator={normalizedFilterOperator}
         filterValue={filterValue}
       />
     </Container>

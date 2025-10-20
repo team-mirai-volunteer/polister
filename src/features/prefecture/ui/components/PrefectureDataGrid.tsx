@@ -23,12 +23,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+type PrefectureField = PrefectureFilter["field"];
+type PrefectureOperator = PrefectureFilterOperator;
+
 export interface PrefectureDataGridProps {
   prefectures: PrefectureDTO[];
-  sortField?: string;
+  sortField?: PrefectureField;
   sortOrder?: "asc" | "desc";
-  filterField?: string;
-  filterOperator?: string;
+  filterField?: PrefectureField;
+  filterOperator?: PrefectureOperator;
   filterValue?: string;
 }
 
@@ -143,20 +146,16 @@ export function PrefectureDataGrid({
       headerName: "進捗率",
       width: 120,
       type: "number",
-      valueFormatter: (params) => {
-        const value = (params as { value?: number | null })?.value;
-        return typeof value === "number" ? formatCompletionRate(value) : "-";
-      },
+      valueFormatter: (value: number | null | undefined) =>
+        typeof value === "number" ? formatCompletionRate(value) : "-",
     },
     {
       field: "totalBoardCount",
       headerName: "掲示板数合計",
       width: 140,
       type: "number",
-      valueFormatter: (params) => {
-        const value = (params as { value?: number | null })?.value;
-        return typeof value === "number" ? value.toLocaleString() : "-";
-      },
+      valueFormatter: (value: number | null | undefined) =>
+        typeof value === "number" ? value.toLocaleString() : "-",
     },
   ];
 

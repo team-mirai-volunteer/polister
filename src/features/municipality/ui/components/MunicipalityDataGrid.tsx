@@ -47,10 +47,10 @@ interface MunicipalityDataGridProps {
   total: number;
   page: number;
   pageSize: number;
-  sortField?: string;
+  sortField?: MunicipalityFilter["field"];
   sortOrder?: "asc" | "desc";
-  filterField?: string;
-  filterOperator?: string;
+  filterField?: MunicipalityFilter["field"];
+  filterOperator?: MunicipalityFilterOperator;
   filterValue?: string;
 }
 
@@ -77,7 +77,7 @@ const sanitizeOperator = (
     ? (operator as MunicipalityFilterOperator)
     : defaultOperatorFor(field);
 
-const STATUS_OPERATORS = ["equals", "="] as const;
+const STATUS_OPERATORS = MUNICIPALITY_FIELD_OPERATORS.status;
 
 type PendingFilter = {
   field: MunicipalityFilter["field"];
@@ -171,12 +171,8 @@ export function MunicipalityDataGrid({
       align: "right",
       headerAlign: "right",
       type: "number",
-      valueFormatter: (params) => {
-        const value = (params as { value?: number | null })?.value;
-        return value !== null && value !== undefined
-          ? Number(value).toLocaleString()
-          : "-";
-      },
+      valueFormatter: (value: number | null | undefined) =>
+        value == null ? "-" : value.toLocaleString(),
     },
     {
       field: "status",
@@ -244,7 +240,7 @@ export function MunicipalityDataGrid({
             sortField: null,
             sortOrder: null,
           },
-          false
+          true
         )
       );
       return;
@@ -256,7 +252,7 @@ export function MunicipalityDataGrid({
           sortField: sort.field,
           sortOrder: sort.sort,
         },
-        false
+        true
       )
     );
   };
@@ -355,9 +351,7 @@ export function MunicipalityDataGrid({
     if (
       item.field === "status" &&
       nextFilter.operator &&
-      !STATUS_OPERATORS.includes(
-        nextFilter.operator as (typeof STATUS_OPERATORS)[number]
-      )
+      !STATUS_OPERATORS.includes(nextFilter.operator)
     ) {
       nextFilter.operator = "equals";
     }
@@ -436,9 +430,7 @@ export function MunicipalityDataGrid({
 
     const operator =
       resolvedFilter.field === "status"
-        ? STATUS_OPERATORS.includes(
-            resolvedFilter.operator as (typeof STATUS_OPERATORS)[number]
-          )
+        ? STATUS_OPERATORS.includes(resolvedFilter.operator)
           ? resolvedFilter.operator
           : "equals"
         : resolvedFilter.operator;

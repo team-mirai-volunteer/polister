@@ -30,7 +30,10 @@ import type {
   PrefectureFilter,
   PrefectureFilterOperator,
 } from "../../domain/repositories/IPrefectureRepository";
-import { PREFECTURE_FIELD_OPERATORS } from "../../domain/repositories/IPrefectureRepository";
+import {
+  PREFECTURE_FIELD_OPERATORS,
+  PREFECTURE_NUMERIC_FIELDS,
+} from "../../domain/repositories/IPrefectureRepository";
 import {
   normalizePrefectureCode,
   sanitizePrefectureCode,
@@ -38,6 +41,11 @@ import {
 
 @injectable()
 export class PrefectureRepository implements IPrefectureRepository {
+  private static readonly collator = new Intl.Collator("ja", {
+    numeric: true,
+    sensitivity: "base",
+  });
+
   constructor(
     @inject(TOKENS.PrismaClient) private readonly prisma: PrismaClient,
     @inject(TOKENS.Logger) private readonly logger: AppLogger
@@ -383,10 +391,13 @@ export class PrefectureRepository implements IPrefectureRepository {
       }
 
       if (typeof left === "number" && typeof right === "number") {
-        return left < right ? -1 * order : left > right ? order : 0;
+        return (left - right) * order;
       }
 
-      return String(left).localeCompare(String(right), "ja") * order;
+      return (
+        PrefectureRepository.collator.compare(String(left), String(right)) *
+        order
+      );
     });
 
     return sorted;
@@ -405,15 +416,20 @@ export class PrefectureRepository implements IPrefectureRepository {
     const value = this.getFieldValue(prefecture, filter.field);
     const operator = filter.operator ?? this.defaultOperator(filter.field);
 
-    if (typeof value === "number" || value === null) {
+    if (PREFECTURE_NUMERIC_FIELDS.includes(filter.field)) {
       const normalizedValue = this.normalizeNumericFilter(
         filter.field,
         filter.value
       );
-      return this.compareNumber(value, operator, normalizedValue, filter.field);
+      return this.compareNumber(
+        (value as number | null) ?? null,
+        operator,
+        normalizedValue,
+        filter.field
+      );
     }
 
-    return this.compareString(value, operator, filter.value);
+    return this.compareString(String(value ?? ""), operator, filter.value);
   }
 
   private normalizeNumericFilter(
@@ -513,11 +529,11 @@ export class PrefectureRepository implements IPrefectureRepository {
     const target = (rawValue ?? "").trim();
 
     if (!target) {
-      return true;
+      return false;
     }
 
-    const source = value.toLowerCase();
-    const compared = target.toLowerCase();
+    const source = this.normalizeText(value);
+    const compared = this.normalizeText(target);
 
     switch (operator) {
       case "equals":
@@ -559,6 +575,12 @@ export class PrefectureRepository implements IPrefectureRepository {
   }
 
   private sortByCode(prefectures: Prefecture[]): Prefecture[] {
-    return [...prefectures].sort((a, b) => a.code.localeCompare(b.code));
+    return [...prefectures].sort((a, b) =>
+      PrefectureRepository.collator.compare(a.code, b.code)
+    );
+  }
+
+  private normalizeText(value: string): string {
+    return value.normalize("NFKC").toLocaleLowerCase("ja");
   }
 }

@@ -14,6 +14,12 @@ import type {
   PrefectureFilter,
 } from "../../domain/repositories/IPrefectureRepository";
 
+/**
+ * Server Action などの前段で正規化済みの一覧取得パラメータ。
+ *
+ * フィールド／オペレータのホワイトリストチェックは呼び出し元で行い、
+ * このユースケースには検証済みの値のみを渡す想定です。
+ */
 export interface GetPrefecturesInput {
   filters?: PrefectureFilter[];
   sortField?: FindPrefecturesOptions["sortField"];
