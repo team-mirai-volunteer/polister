@@ -380,9 +380,7 @@ export class MunicipalityRepository implements IMunicipalityRepository {
   ): Promise<string[]> {
     const operator = filter.operator ?? "equals";
 
-    const resolveComparator = (
-      comparator: Prisma.NestedIntFilter<"Board">
-    ) =>
+    const resolveComparator = (comparator: Prisma.NestedIntFilter<"Board">) =>
       this.groupBoardCounts(baseWhere, comparator).then((rows) =>
         rows.map((row) => row.municipalityId)
       );
@@ -397,7 +395,9 @@ export class MunicipalityRepository implements IMunicipalityRepository {
 
     if (
       !Number.isFinite(target) ||
-      (!Number.isFinite(normalizedTarget) && operator !== "notEqual" && operator !== "!=")
+      (!Number.isFinite(normalizedTarget) &&
+        operator !== "notEqual" &&
+        operator !== "!=")
     ) {
       return [];
     }

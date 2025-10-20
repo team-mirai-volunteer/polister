@@ -30,6 +30,7 @@ import type {
   PrefectureFilter,
   PrefectureFilterOperator,
 } from "../../domain/repositories/IPrefectureRepository";
+import { PREFECTURE_FIELD_OPERATORS } from "../../domain/repositories/IPrefectureRepository";
 import {
   normalizePrefectureCode,
   sanitizePrefectureCode,
@@ -65,7 +66,10 @@ export class PrefectureRepository implements IPrefectureRepository {
     });
 
     const boardCountMap = new Map(
-      boardCounts.map((row) => [row.municipalityId, Number(row._count.municipalityId ?? 0)])
+      boardCounts.map((row) => [
+        row.municipalityId,
+        Number(row._count.municipalityId ?? 0),
+      ])
     );
 
     type MunicipalityWithCount = {
@@ -130,13 +134,7 @@ export class PrefectureRepository implements IPrefectureRepository {
 
     let prefectures = Array.from(grouped.entries()).map(
       ([code, { name, items }]) =>
-        new Prefecture(
-          this.buildPrefectureProps(
-            code,
-            name,
-            items
-          )
-        )
+        new Prefecture(this.buildPrefectureProps(code, name, items))
     );
 
     prefectures = this.applyFilters(prefectures, options.filters);
@@ -397,13 +395,7 @@ export class PrefectureRepository implements IPrefectureRepository {
   private defaultOperator(
     field: PrefectureFilter["field"]
   ): PrefectureFilterOperator {
-    switch (field) {
-      case "code":
-      case "name":
-        return "contains";
-      default:
-        return "equals";
-    }
+    return PREFECTURE_FIELD_OPERATORS[field][0];
   }
 
   private matchesFilter(

@@ -10,6 +10,13 @@ import {
   STATUS_COLORS,
   STATUS_LABELS,
 } from "@/features/municipality/constants";
+import {
+  MUNICIPALITY_FIELD_OPERATORS,
+  MUNICIPALITY_FILTER_FIELDS,
+  MUNICIPALITY_NO_VALUE_OPERATORS,
+  type MunicipalityFilter,
+  type MunicipalityFilterOperator,
+} from "@/features/municipality/domain/repositories/IMunicipalityRepository";
 import { Chip, Link } from "@mui/material";
 import {
   DataGrid,
@@ -47,30 +54,38 @@ interface MunicipalityDataGridProps {
   filterValue?: string;
 }
 
-const defaultOperatorFor = (field: string): string => {
-  switch (field) {
-    case "code":
-    case "name":
-    case "prefecture":
-      return "contains";
-    case "status":
-      return "equals";
-    case "boardCount":
-      return "equals";
-    default:
-      return "contains";
-  }
-};
+const sanitizeField = (
+  value: string | undefined
+): MunicipalityFilter["field"] | undefined =>
+  value &&
+  MUNICIPALITY_FILTER_FIELDS.includes(value as MunicipalityFilter["field"])
+    ? (value as MunicipalityFilter["field"])
+    : undefined;
+
+const defaultOperatorFor = (
+  field: MunicipalityFilter["field"]
+): MunicipalityFilterOperator => MUNICIPALITY_FIELD_OPERATORS[field][0];
+
+const sanitizeOperator = (
+  field: MunicipalityFilter["field"],
+  operator: string | undefined
+): MunicipalityFilterOperator =>
+  operator &&
+  MUNICIPALITY_FIELD_OPERATORS[field].includes(
+    operator as MunicipalityFilterOperator
+  )
+    ? (operator as MunicipalityFilterOperator)
+    : defaultOperatorFor(field);
 
 const STATUS_OPERATORS = ["equals", "="] as const;
 
 type PendingFilter = {
-  field: string;
-  operator: string;
+  field: MunicipalityFilter["field"];
+  operator: MunicipalityFilterOperator;
   value: string;
 };
 
-const NO_VALUE_OPERATORS = new Set(["isEmpty", "isNotEmpty"]);
+const NO_VALUE_OPERATORS = MUNICIPALITY_NO_VALUE_OPERATORS;
 
 export function MunicipalityDataGrid({
   municipalities,
@@ -92,15 +107,17 @@ export function MunicipalityDataGrid({
       operator?: string,
       value?: string | null
     ): PendingFilter | null => {
-      if (!field) {
+      const sanitizedField = sanitizeField(field);
+
+      if (!sanitizedField) {
         return null;
       }
 
       return {
-        field,
-        operator: operator ?? defaultOperatorFor(field),
+        field: sanitizedField,
+        operator: sanitizeOperator(sanitizedField, operator),
         value: value ?? "",
-      };
+      } satisfies PendingFilter;
     },
     []
   );
@@ -261,7 +278,7 @@ export function MunicipalityDataGrid({
         return;
       }
 
-      const operator = filter.operator ?? defaultOperatorFor(filter.field);
+      const operator = sanitizeOperator(filter.field, filter.operator);
       const trimmedValue = filter.value?.trim() ?? "";
       const requiresValue = !NO_VALUE_OPERATORS.has(operator);
 
@@ -317,9 +334,18 @@ export function MunicipalityDataGrid({
       return;
     }
 
+    const field = sanitizeField(item.field);
+
+    if (!field) {
+      setPendingFilter(null);
+      return;
+    }
+
+    const operator = sanitizeOperator(field, item.operator);
+
     const nextFilter: PendingFilter = {
-      field: item.field,
-      operator: item.operator ?? defaultOperatorFor(item.field),
+      field,
+      operator,
       value:
         item.value !== undefined && item.value !== null
           ? String(item.value)
@@ -375,13 +401,15 @@ export function MunicipalityDataGrid({
   );
 
   const sortModel = useMemo<GridSortModel>(() => {
-    if (!sortField || !sortOrder) {
+    const field = sanitizeField(sortField);
+
+    if (!field || !sortOrder) {
       return [];
     }
 
     return [
       {
-        field: sortField,
+        field,
         sort: sortOrder,
       },
     ];

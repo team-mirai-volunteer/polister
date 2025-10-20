@@ -7,16 +7,18 @@
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 
+import {
+  PREFECTURE_FIELD_OPERATORS,
+  PREFECTURE_FILTER_FIELDS,
+  PREFECTURE_NO_VALUE_OPERATORS,
+  type PrefectureFilter,
+  type PrefectureFilterOperator,
+} from "../../domain/repositories/IPrefectureRepository";
 import { PrefectureMapper } from "../../infrastructure/mappers/PrefectureMapper";
 import {
   GetPrefecturesUseCase,
   type GetPrefecturesInput,
 } from "../usecases/GetPrefecturesUseCase";
-import {
-  PREFECTURE_FILTER_FIELDS,
-  type PrefectureFilterOperator,
-} from "../../domain/repositories/IPrefectureRepository";
-import type { PrefectureFilter } from "../../domain/repositories/IPrefectureRepository";
 
 export interface GetPrefecturesParams {
   sortField?: string;
@@ -46,43 +48,7 @@ function normalizeOperator(
     return undefined;
   }
 
-  const stringOperators: PrefectureFilterOperator[] = [
-    "equals",
-    "=",
-    "notEqual",
-    "!=",
-    "contains",
-    "startsWith",
-    "endsWith",
-    "isEmpty",
-    "isNotEmpty",
-  ];
-
-  const numericOperators: PrefectureFilterOperator[] = [
-    "equals",
-    "=",
-    "notEqual",
-    "!=",
-    "greaterThan",
-    "gt",
-    ">",
-    "greaterThanOrEqual",
-    "gte",
-    ">=",
-    "lessThan",
-    "lt",
-    "<",
-    "lessThanOrEqual",
-    "lte",
-    "<=",
-    "isEmpty",
-    "isNotEmpty",
-  ];
-
-  const allowed =
-    field === "completionRate" || field === "totalBoardCount"
-      ? numericOperators
-      : stringOperators;
+  const allowed = PREFECTURE_FIELD_OPERATORS[field];
 
   return allowed.includes(operator as PrefectureFilterOperator)
     ? (operator as PrefectureFilterOperator)
@@ -107,7 +73,7 @@ function buildFilters(params: GetPrefecturesParams) {
 
   const hasValue = value !== "";
 
-  if (!hasValue && operator !== "isEmpty" && operator !== "isNotEmpty") {
+  if (!hasValue && !PREFECTURE_NO_VALUE_OPERATORS.has(operator)) {
     return undefined;
   }
 

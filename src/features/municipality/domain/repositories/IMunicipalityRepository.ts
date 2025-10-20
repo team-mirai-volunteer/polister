@@ -38,6 +38,69 @@ export const MUNICIPALITY_FILTER_FIELDS: ReadonlyArray<
   MunicipalityFilter["field"]
 > = ["code", "name", "prefecture", "status", "boardCount"] as const;
 
+export const MUNICIPALITY_NO_VALUE_OPERATORS: ReadonlySet<MunicipalityFilterOperator> =
+  new Set(["isEmpty", "isNotEmpty"]);
+
+export const MUNICIPALITY_FIELD_OPERATORS: Record<
+  MunicipalityFilter["field"],
+  ReadonlyArray<MunicipalityFilterOperator>
+> = {
+  code: [
+    "contains",
+    "equals",
+    "=",
+    "notEqual",
+    "!=",
+    "startsWith",
+    "endsWith",
+    "isEmpty",
+    "isNotEmpty",
+  ],
+  name: [
+    "contains",
+    "equals",
+    "=",
+    "notEqual",
+    "!=",
+    "startsWith",
+    "endsWith",
+    "isEmpty",
+    "isNotEmpty",
+  ],
+  prefecture: [
+    "contains",
+    "equals",
+    "=",
+    "notEqual",
+    "!=",
+    "startsWith",
+    "endsWith",
+    "isEmpty",
+    "isNotEmpty",
+  ],
+  status: ["equals", "="],
+  boardCount: [
+    "equals",
+    "=",
+    "notEqual",
+    "!=",
+    "greaterThan",
+    "gt",
+    ">",
+    "greaterThanOrEqual",
+    "gte",
+    ">=",
+    "lessThan",
+    "lt",
+    "<",
+    "lessThanOrEqual",
+    "lte",
+    "<=",
+    "isEmpty",
+    "isNotEmpty",
+  ],
+};
+
 export interface MunicipalityFilter {
   field: "code" | "name" | "prefecture" | "status" | "boardCount";
   operator?: MunicipalityFilterOperator;

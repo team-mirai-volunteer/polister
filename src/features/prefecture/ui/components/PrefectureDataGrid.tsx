@@ -4,6 +4,13 @@
 
 "use client";
 
+import {
+  PREFECTURE_FIELD_OPERATORS,
+  PREFECTURE_FILTER_FIELDS,
+  PREFECTURE_NO_VALUE_OPERATORS,
+  type PrefectureFilter,
+  type PrefectureFilterOperator,
+} from "@/features/prefecture/domain/repositories/IPrefectureRepository";
 import type { PrefectureDTO } from "@/features/prefecture/infrastructure/mappers/PrefectureMapper";
 import {
   DataGrid,
@@ -35,22 +42,35 @@ type PrefectureRow = PrefectureDTO & {
   id: string;
 };
 
-const DEFAULT_FILTER_OPERATOR: Record<string, string> = {
-  code: "contains",
-  name: "contains",
-  municipalityCount: "equals",
-  completedMunicipalityCount: "equals",
-  completionRate: "equals",
-  totalBoardCount: "equals",
-};
+const sanitizeField = (
+  value: string | undefined
+): PrefectureFilter["field"] | undefined =>
+  value && PREFECTURE_FILTER_FIELDS.includes(value as PrefectureFilter["field"])
+    ? (value as PrefectureFilter["field"])
+    : undefined;
+
+const defaultOperatorFor = (
+  field: PrefectureFilter["field"]
+): PrefectureFilterOperator => PREFECTURE_FIELD_OPERATORS[field][0];
+
+const sanitizeOperator = (
+  field: PrefectureFilter["field"],
+  operator: string | undefined
+): PrefectureFilterOperator =>
+  operator &&
+  PREFECTURE_FIELD_OPERATORS[field].includes(
+    operator as PrefectureFilterOperator
+  )
+    ? (operator as PrefectureFilterOperator)
+    : defaultOperatorFor(field);
 
 type PendingFilter = {
-  field: string;
-  operator: string;
+  field: PrefectureFilter["field"];
+  operator: PrefectureFilterOperator;
   value: string;
 };
 
-const NO_VALUE_OPERATORS = new Set(["isEmpty", "isNotEmpty"]);
+const NO_VALUE_OPERATORS = PREFECTURE_NO_VALUE_OPERATORS;
 
 export function PrefectureDataGrid({
   prefectures,
@@ -69,18 +89,17 @@ export function PrefectureDataGrid({
       operator?: string,
       value?: string | null
     ): PendingFilter | null => {
-      if (!field) {
+      const sanitizedField = sanitizeField(field);
+
+      if (!sanitizedField) {
         return null;
       }
 
-      const fallbackOperator =
-        operator ?? DEFAULT_FILTER_OPERATOR[field] ?? "contains";
-
       return {
-        field,
-        operator: fallbackOperator,
+        field: sanitizedField,
+        operator: sanitizeOperator(sanitizedField, operator),
         value: value ?? "",
-      };
+      } satisfies PendingFilter;
     },
     []
   );
@@ -203,7 +222,7 @@ export function PrefectureDataGrid({
         return;
       }
 
-      const operator = filter.operator ?? "contains";
+      const operator = sanitizeOperator(filter.field, filter.operator);
       const trimmedValue = filter.value?.trim() ?? "";
       const requiresValue = !NO_VALUE_OPERATORS.has(operator);
 
@@ -253,10 +272,16 @@ export function PrefectureDataGrid({
       return;
     }
 
+    const field = sanitizeField(item.field);
+
+    if (!field) {
+      setPendingFilter(null);
+      return;
+    }
+
     const nextFilter: PendingFilter = {
-      field: item.field,
-      operator:
-        item.operator ?? DEFAULT_FILTER_OPERATOR[item.field] ?? "contains",
+      field,
+      operator: sanitizeOperator(field, item.operator),
       value:
         item.value !== undefined && item.value !== null
           ? String(item.value)
@@ -302,13 +327,15 @@ export function PrefectureDataGrid({
   );
 
   const sortModel = useMemo<GridSortModel>(() => {
-    if (!sortField || !sortOrder) {
+    const field = sanitizeField(sortField);
+
+    if (!field || !sortOrder) {
       return [];
     }
 
     return [
       {
-        field: sortField,
+        field,
         sort: sortOrder,
       },
     ];

@@ -6,13 +6,14 @@
 
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
+import {
+  MUNICIPALITY_FIELD_OPERATORS,
+  MUNICIPALITY_FILTER_FIELDS,
+  type MunicipalityFilter,
+  type MunicipalityFilterOperator,
+} from "../../domain/repositories/IMunicipalityRepository";
 import { MunicipalityMapper } from "../../infrastructure/mappers/MunicipalityMapper";
 import { GetMunicipalitiesUseCase } from "../usecases/GetMunicipalitiesUseCase";
-import type {
-  MunicipalityFilter,
-  MunicipalityFilterOperator,
-} from "../../domain/repositories/IMunicipalityRepository";
-import { MUNICIPALITY_FILTER_FIELDS } from "../../domain/repositories/IMunicipalityRepository";
 
 export interface GetMunicipalitiesParams {
   page?: number;
@@ -54,41 +55,7 @@ export async function getMunicipalitiesAction(
         return undefined;
       }
 
-      const common: MunicipalityFilterOperator[] = [
-        "equals",
-        "=",
-        "notEqual",
-        "!=",
-        "contains",
-        "startsWith",
-        "endsWith",
-        "isEmpty",
-        "isNotEmpty",
-      ];
-
-      const numeric: MunicipalityFilterOperator[] = [
-        "equals",
-        "=",
-        "notEqual",
-        "!=",
-        "greaterThan",
-        "gt",
-        ">",
-        "greaterThanOrEqual",
-        "gte",
-        ">=",
-        "lessThan",
-        "lt",
-        "<",
-        "lessThanOrEqual",
-        "lte",
-        "<=",
-        "isEmpty",
-        "isNotEmpty",
-      ];
-
-      const allowedOperators =
-        field === "boardCount" ? numeric : common;
+      const allowedOperators = MUNICIPALITY_FIELD_OPERATORS[field];
 
       return allowedOperators.includes(value as MunicipalityFilterOperator)
         ? (value as MunicipalityFilterOperator)
@@ -97,7 +64,10 @@ export async function getMunicipalitiesAction(
 
     const sortField = normalizeField(params.sortField);
     const filterField = normalizeField(params.filterField);
-    const filterOperator = normalizeOperator(params.filterOperator, filterField);
+    const filterOperator = normalizeOperator(
+      params.filterOperator,
+      filterField
+    );
 
     const result = await useCase.execute({
       page: params.page,
