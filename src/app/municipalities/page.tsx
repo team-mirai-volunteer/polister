@@ -15,6 +15,11 @@ interface PageProps {
     prefecture?: string;
     search?: string;
     status?: string;
+    sortField?: string;
+    sortOrder?: string;
+    filterField?: string;
+    filterOperator?: string;
+    filterValue?: string;
   }>;
 }
 
@@ -27,6 +32,16 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
   const prefecture = params.prefecture;
   const search = params.search;
   const status = params.status;
+  const sortField = params.sortField;
+  const sortOrder =
+    params.sortOrder === "desc"
+      ? "desc"
+      : params.sortOrder === "asc"
+        ? "asc"
+        : undefined;
+  const filterField = params.filterField;
+  const filterOperator = params.filterOperator;
+  const filterValue = params.filterValue ?? "";
 
   // Server Actionを呼び出してデータ取得
   const data = await getMunicipalitiesAction({
@@ -35,10 +50,15 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
     prefecture,
     search,
     status,
+    sortField,
+    sortOrder,
+    filterField,
+    filterOperator,
+    filterValue,
   });
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         自治体一覧
       </Typography>
@@ -52,6 +72,11 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
         total={data.total}
         page={page}
         pageSize={limit}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        filterField={filterField}
+        filterOperator={filterOperator}
+        filterValue={filterValue}
       />
     </Container>
   );

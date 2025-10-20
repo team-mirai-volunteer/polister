@@ -7,18 +7,30 @@
 import type { Municipality } from "../entities/Municipality";
 import type { BoardStatus, TrustLevel } from "../value-objects/BoardAttributes";
 
+export interface MunicipalityFilter {
+  field: "code" | "name" | "prefecture" | "status" | "boardCount";
+  operator?: string;
+  value: string;
+}
+
 export interface FindMunicipalitiesOptions {
   skip?: number;
   take?: number;
   prefecture?: string;
   search?: string;
   status?: string;
+  filters?: MunicipalityFilter[];
+  orderBy?: {
+    field: MunicipalityFilter["field"];
+    direction: "asc" | "desc";
+  };
 }
 
 export interface CountMunicipalitiesOptions {
   prefecture?: string;
   search?: string;
   status?: string;
+  filters?: MunicipalityFilter[];
 }
 
 export interface GeoJSONFeature {

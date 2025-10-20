@@ -12,7 +12,15 @@ export class MunicipalityMapper {
   /**
    * PrismaモデルからDomainモデルに変換
    */
-  static toDomain(prisma: PrismaMunicipality): Municipality {
+  static toDomain(
+    prisma: PrismaMunicipality & {
+      _count?: {
+        boards?: number | null;
+      };
+    }
+  ): Municipality {
+    const boardCount = prisma.boardCount ?? prisma._count?.boards ?? null;
+
     return new Municipality(
       prisma.id,
       prisma.name,
@@ -21,7 +29,7 @@ export class MunicipalityMapper {
       null, // polygonはUnsupported型なのでnullを設定
       prisma.source,
       prisma.url,
-      prisma.boardCount,
+      boardCount,
       prisma.dataVersion,
       prisma.status,
       prisma.contactStatus,

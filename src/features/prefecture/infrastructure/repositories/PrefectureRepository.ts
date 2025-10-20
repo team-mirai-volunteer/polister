@@ -24,7 +24,11 @@ import type { MunicipalityBoardRecord } from "@/features/municipality/domain/rep
 import type { PrefectureProps } from "../../domain/entities/Prefecture";
 import { Prefecture } from "../../domain/entities/Prefecture";
 import { PrefectureDetail } from "../../domain/entities/PrefectureDetail";
-import type { IPrefectureRepository } from "../../domain/repositories/IPrefectureRepository";
+import type {
+  FindPrefecturesOptions,
+  IPrefectureRepository,
+  PrefectureFilter,
+} from "../../domain/repositories/IPrefectureRepository";
 import {
   normalizePrefectureCode,
   sanitizePrefectureCode,
@@ -37,12 +41,32 @@ export class PrefectureRepository implements IPrefectureRepository {
     @inject(TOKENS.Logger) private readonly logger: AppLogger
   ) {}
 
-  async findAll(): Promise<Prefecture[]> {
+  async findAll(options: FindPrefecturesOptions = {}): Promise<Prefecture[]> {
     const municipalities = await this.prisma.municipality.findMany({
       orderBy: { code: "asc" },
+      include: {
+        _count: {
+          select: {
+            boards: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        },
+      },
     });
 
-    const grouped = new Map<string, { name: string; items: Municipality[] }>();
+    type MunicipalityWithCount = Municipality & {
+      _count: {
+        boards: number;
+      };
+    };
+
+    const grouped = new Map<
+      string,
+      { name: string; items: MunicipalityWithCount[] }
+    >();
 
     for (const municipality of municipalities) {
       let prefectureCode: string;
@@ -64,7 +88,7 @@ export class PrefectureRepository implements IPrefectureRepository {
       if (!existing) {
         grouped.set(prefectureCode, {
           name: municipality.prefecture,
-          items: [municipality],
+          items: [municipality as MunicipalityWithCount],
         });
         continue;
       }
@@ -80,15 +104,28 @@ export class PrefectureRepository implements IPrefectureRepository {
         );
       }
 
-      existing.items.push(municipality);
+      existing.items.push(municipality as MunicipalityWithCount);
     }
 
-    return Array.from(grouped.entries())
-      .map(
-        ([code, { name, items }]) =>
-          new Prefecture(this.buildPrefectureProps(code, name, items))
-      )
-      .sort((a, b) => a.code.localeCompare(b.code));
+    let prefectures = Array.from(grouped.entries()).map(
+      ([code, { name, items }]) =>
+        new Prefecture(
+          this.buildPrefectureProps(
+            code,
+            name,
+            items as MunicipalityWithCount[]
+          )
+        )
+    );
+
+    prefectures = this.applyFilters(prefectures, options.filters);
+    prefectures = this.applySort(
+      prefectures,
+      options.sortField,
+      options.sortOrder
+    );
+
+    return prefectures;
   }
 
   async findByCode(code: string): Promise<PrefectureDetail | null> {
@@ -101,6 +138,17 @@ export class PrefectureRepository implements IPrefectureRepository {
         },
       },
       orderBy: { code: "asc" },
+      include: {
+        _count: {
+          select: {
+            boards: {
+              where: {
+                deletedAt: null,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (municipalities.length === 0) {
@@ -168,27 +216,26 @@ export class PrefectureRepository implements IPrefectureRepository {
   private buildPrefectureProps(
     code: string,
     name: string,
-    municipalities: Municipality[]
+    municipalities: Array<Municipality & { _count: { boards: number } }>
   ): PrefectureProps {
     const statusCounts: Partial<Record<MunicipalityStatus, number>> = {};
     let totalBoardCount = 0;
-    let hasBoardCount = false;
 
     for (const municipality of municipalities) {
       const status = municipality.status as MunicipalityStatus;
       statusCounts[status] = (statusCounts[status] ?? 0) + 1;
 
-      if (municipality.boardCount !== null) {
-        totalBoardCount += municipality.boardCount;
-        hasBoardCount = true;
-      }
+      const boardCount =
+        municipality.boardCount ?? municipality._count?.boards ?? 0;
+
+      totalBoardCount += boardCount;
     }
 
     return {
       code,
       name,
       municipalityCount: municipalities.length,
-      totalBoardCount: hasBoardCount ? totalBoardCount : null,
+      totalBoardCount,
       statusCounts,
     };
   }
@@ -252,5 +299,234 @@ export class PrefectureRepository implements IPrefectureRepository {
         } satisfies MunicipalityBoardRecord;
       })
       .filter((item): item is MunicipalityBoardRecord => item !== null);
+  }
+
+  private applyFilters(
+    prefectures: Prefecture[],
+    filters: PrefectureFilter[] | undefined
+  ): Prefecture[] {
+    if (!filters || filters.length === 0) {
+      return this.sortByCode(prefectures);
+    }
+
+    const filtered = filters.reduce((items, filter) => {
+      const normalizedOperator =
+        filter.operator ?? this.defaultOperator(filter.field);
+
+      return items.filter((prefecture) =>
+        this.matchesFilter(prefecture, {
+          ...filter,
+          operator: normalizedOperator,
+        })
+      );
+    }, prefectures);
+
+    return this.sortByCode(filtered);
+  }
+
+  private applySort(
+    prefectures: Prefecture[],
+    sortField: FindPrefecturesOptions["sortField"],
+    sortOrder: FindPrefecturesOptions["sortOrder"]
+  ): Prefecture[] {
+    const sorted = [...prefectures];
+
+    if (!sortField) {
+      return this.sortByCode(sorted);
+    }
+
+    const order = sortOrder === "desc" ? -1 : 1;
+
+    sorted.sort((a, b) => {
+      const left = this.getFieldValue(a, sortField);
+      const right = this.getFieldValue(b, sortField);
+
+      if (left === right) {
+        return 0;
+      }
+
+      if (left === null || left === undefined) {
+        return -1 * order;
+      }
+
+      if (right === null || right === undefined) {
+        return order;
+      }
+
+      if (typeof left === "number" && typeof right === "number") {
+        return left < right ? -1 * order : left > right ? order : 0;
+      }
+
+      return String(left).localeCompare(String(right), "ja") * order;
+    });
+
+    return sorted;
+  }
+
+  private defaultOperator(field: PrefectureFilter["field"]): string {
+    switch (field) {
+      case "code":
+      case "name":
+        return "contains";
+      default:
+        return "equals";
+    }
+  }
+
+  private matchesFilter(
+    prefecture: Prefecture,
+    filter: PrefectureFilter
+  ): boolean {
+    const value = this.getFieldValue(prefecture, filter.field);
+    const operator = filter.operator ?? this.defaultOperator(filter.field);
+
+    if (typeof value === "number" || value === null) {
+      const normalizedValue = this.normalizeNumericFilter(
+        filter.field,
+        filter.value
+      );
+      return this.compareNumber(value, operator, normalizedValue, filter.field);
+    }
+
+    return this.compareString(value, operator, filter.value);
+  }
+
+  private normalizeNumericFilter(
+    field: PrefectureFilter["field"],
+    rawValue: string
+  ): string {
+    if (field === "completionRate") {
+      const parsed = Number(rawValue);
+
+      if (Number.isFinite(parsed) && Math.abs(parsed) > 1) {
+        return String(parsed / 100);
+      }
+    }
+
+    return rawValue;
+  }
+
+  private compareNumber(
+    value: number | null,
+    operator: string,
+    rawValue: string,
+    field?: PrefectureFilter["field"]
+  ): boolean {
+    if (operator === "isEmpty") {
+      return value === null;
+    }
+
+    if (operator === "isNotEmpty") {
+      return value !== null;
+    }
+
+    const target = Number(rawValue);
+
+    if (!Number.isFinite(target)) {
+      return false;
+    }
+
+    if (value === null) {
+      return false;
+    }
+
+    switch (operator) {
+      case "equals":
+      case "=":
+        return this.equalsNumber(value, target, field);
+      case "notEqual":
+      case "!=":
+        return !this.equalsNumber(value, target, field);
+      case "greaterThan":
+      case ">":
+        return value > target;
+      case "greaterThanOrEqual":
+      case ">=":
+        return value >= target;
+      case "lessThan":
+      case "<":
+        return value < target;
+      case "lessThanOrEqual":
+      case "<=":
+        return value <= target;
+      default:
+        return this.equalsNumber(value, target, field);
+    }
+  }
+
+  private equalsNumber(
+    value: number,
+    target: number,
+    field?: PrefectureFilter["field"]
+  ): boolean {
+    if (field === "completionRate") {
+      const displayedValue = Math.round(value * 1000) / 10;
+      const displayedTarget = Math.round(target * 1000) / 10;
+      return displayedValue === displayedTarget;
+    }
+
+    return value === target;
+  }
+
+  private compareString(
+    value: string,
+    operator: string,
+    rawValue: string
+  ): boolean {
+    if (operator === "isEmpty") {
+      return value.length === 0;
+    }
+
+    if (operator === "isNotEmpty") {
+      return value.length > 0;
+    }
+
+    const target = rawValue.trim();
+
+    if (!target) {
+      return true;
+    }
+
+    const source = value.toLowerCase();
+    const compared = target.toLowerCase();
+
+    switch (operator) {
+      case "equals":
+      case "=":
+        return source === compared;
+      case "startsWith":
+        return source.startsWith(compared);
+      case "endsWith":
+        return source.endsWith(compared);
+      case "contains":
+      default:
+        return source.includes(compared);
+    }
+  }
+
+  private getFieldValue(
+    prefecture: Prefecture,
+    field: PrefectureFilter["field"]
+  ): string | number | null {
+    switch (field) {
+      case "code":
+        return prefecture.code;
+      case "name":
+        return prefecture.name;
+      case "municipalityCount":
+        return prefecture.municipalityCount;
+      case "completedMunicipalityCount":
+        return prefecture.completedMunicipalityCount;
+      case "completionRate":
+        return prefecture.completionRate;
+      case "totalBoardCount":
+        return prefecture.totalBoardCount;
+      default:
+        return null;
+    }
+  }
+
+  private sortByCode(prefectures: Prefecture[]): Prefecture[] {
+    return [...prefectures].sort((a, b) => a.code.localeCompare(b.code));
   }
 }

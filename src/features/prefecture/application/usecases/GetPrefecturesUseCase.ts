@@ -8,7 +8,17 @@ import { TOKENS } from "@/shared/lib/di/tokens";
 import { inject, injectable } from "tsyringe";
 
 import type { Prefecture } from "../../domain/entities/Prefecture";
-import type { IPrefectureRepository } from "../../domain/repositories/IPrefectureRepository";
+import type {
+  FindPrefecturesOptions,
+  IPrefectureRepository,
+  PrefectureFilter,
+} from "../../domain/repositories/IPrefectureRepository";
+
+export interface GetPrefecturesInput {
+  filters?: PrefectureFilter[];
+  sortField?: FindPrefecturesOptions["sortField"];
+  sortOrder?: FindPrefecturesOptions["sortOrder"];
+}
 
 @injectable()
 export class GetPrefecturesUseCase {
@@ -17,7 +27,13 @@ export class GetPrefecturesUseCase {
     private readonly repository: IPrefectureRepository
   ) {}
 
-  async execute(): Promise<Prefecture[]> {
-    return this.repository.findAll();
+  async execute(input: GetPrefecturesInput = {}): Promise<Prefecture[]> {
+    const options: FindPrefecturesOptions = {
+      filters: input.filters,
+      sortField: input.sortField,
+      sortOrder: input.sortOrder,
+    };
+
+    return this.repository.findAll(options);
   }
 }

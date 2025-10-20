@@ -8,11 +8,29 @@ import type { MunicipalityBoardRecord } from "@/features/municipality/domain/rep
 import type { Prefecture } from "../entities/Prefecture";
 import type { PrefectureDetail } from "../entities/PrefectureDetail";
 
+export interface PrefectureFilter {
+  field:
+    | "code"
+    | "name"
+    | "municipalityCount"
+    | "completedMunicipalityCount"
+    | "completionRate"
+    | "totalBoardCount";
+  operator?: string;
+  value: string;
+}
+
+export interface FindPrefecturesOptions {
+  filters?: PrefectureFilter[];
+  sortField?: PrefectureFilter["field"];
+  sortOrder?: "asc" | "desc";
+}
+
 export interface IPrefectureRepository {
   /**
    * 都道府県の一覧を集計情報付きで取得
    */
-  findAll(): Promise<Prefecture[]>;
+  findAll(options?: FindPrefecturesOptions): Promise<Prefecture[]>;
 
   /**
    * 都道府県コードから詳細情報を取得

@@ -15,6 +15,11 @@ export interface GetMunicipalitiesParams {
   prefecture?: string;
   search?: string;
   status?: string;
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  filterField?: string;
+  filterOperator?: string;
+  filterValue?: string;
 }
 
 export async function getMunicipalitiesAction(
@@ -25,7 +30,37 @@ export async function getMunicipalitiesAction(
     setupDI(container);
 
     const useCase = container.resolve(GetMunicipalitiesUseCase);
-    const result = await useCase.execute(params);
+    const normalizeField = (value: string | undefined) => {
+      const allowed = new Set([
+        "code",
+        "name",
+        "prefecture",
+        "status",
+        "boardCount",
+      ]);
+      return value && allowed.has(value) ? value : undefined;
+    };
+
+    const sortField = normalizeField(params.sortField);
+    const filterField = normalizeField(params.filterField);
+
+    const result = await useCase.execute({
+      page: params.page,
+      limit: params.limit,
+      prefecture: params.prefecture,
+      search: params.search,
+      status: params.status,
+      sortField,
+      sortOrder:
+        params.sortOrder === "desc"
+          ? "desc"
+          : params.sortOrder === "asc"
+            ? "asc"
+            : undefined,
+      filterField,
+      filterOperator: params.filterOperator,
+      filterValue: params.filterValue ?? "",
+    });
 
     // DTOに変換して返す
     return {
