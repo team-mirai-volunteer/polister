@@ -4,7 +4,10 @@
  * PrismaモデルとDomainモデルの相互変換を行うマッパー
  */
 
-import type { Municipality as PrismaMunicipality } from "@prisma/client";
+import type {
+  Prisma,
+  Municipality as PrismaMunicipality,
+} from "@prisma/client";
 import { Municipality } from "../../domain/entities/Municipality";
 import { MunicipalityCode } from "../../domain/value-objects/MunicipalityCode";
 
@@ -12,7 +15,19 @@ export class MunicipalityMapper {
   /**
    * PrismaモデルからDomainモデルに変換
    */
-  static toDomain(prisma: PrismaMunicipality): Municipality {
+  static toDomain(
+    prisma: PrismaMunicipality & {
+      _count?: {
+        boards?: number;
+      };
+    }
+  ): Municipality {
+    const aggregatedBoardCount = prisma._count?.boards;
+    const boardCount =
+      aggregatedBoardCount !== undefined
+        ? aggregatedBoardCount
+        : prisma.boardCount;
+
     return new Municipality(
       prisma.id,
       prisma.name,
@@ -21,7 +36,7 @@ export class MunicipalityMapper {
       null, // polygonはUnsupported型なのでnullを設定
       prisma.source,
       prisma.url,
-      prisma.boardCount,
+      boardCount ?? null,
       prisma.dataVersion,
       prisma.status,
       prisma.contactStatus,
@@ -35,22 +50,21 @@ export class MunicipalityMapper {
   /**
    * DomainモデルからPrisma更新データに変換
    */
-  static toPrisma(
-    municipality: Municipality
-  ): Omit<PrismaMunicipality, "id" | "createdAt" | "updatedAt" | "polygon"> {
-    return {
+  static toPrisma(municipality: Municipality): Prisma.MunicipalityUpdateInput {
+    const prismaData: Prisma.MunicipalityUpdateInput = {
       name: municipality.name,
       code: municipality.code.toString(),
       prefecture: municipality.prefecture,
       source: municipality.source,
       url: municipality.url,
-      boardCount: municipality.boardCount,
       dataVersion: municipality.dataVersion,
       status: municipality.status,
       contactStatus: municipality.contactStatus,
       notes: municipality.notes,
       folderId: municipality.folderId,
     };
+
+    return prismaData;
   }
 
   /**

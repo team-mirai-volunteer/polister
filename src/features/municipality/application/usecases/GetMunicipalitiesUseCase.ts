@@ -7,7 +7,16 @@
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { inject, injectable } from "tsyringe";
 import type { Municipality } from "../../domain/entities/Municipality";
-import type { IMunicipalityRepository } from "../../domain/repositories/IMunicipalityRepository";
+import type {
+  IMunicipalityRepository,
+  MunicipalityFilter,
+  MunicipalityFilterOperator,
+} from "../../domain/repositories/IMunicipalityRepository";
+import {
+  MUNICIPALITY_FIELD_OPERATORS,
+  MUNICIPALITY_FILTER_FIELDS,
+  MUNICIPALITY_NO_VALUE_OPERATORS,
+} from "../../domain/repositories/IMunicipalityRepository";
 
 export interface GetMunicipalitiesInput {
   page?: number;
@@ -15,6 +24,11 @@ export interface GetMunicipalitiesInput {
   prefecture?: string;
   search?: string;
   status?: string;
+  sortField?: MunicipalityFilter["field"];
+  sortOrder?: "asc" | "desc";
+  filterField?: MunicipalityFilter["field"];
+  filterOperator?: MunicipalityFilterOperator;
+  filterValue?: string;
 }
 
 export interface GetMunicipalitiesOutput {
@@ -45,18 +59,31 @@ export class GetMunicipalitiesUseCase {
       : 50;
     const skip = (page - 1) * limit;
 
+    const filters = this.buildFilters(input);
+    const orderBy = this.buildOrderBy(input);
+
+    const shouldOmitPrefecture = filters.some(
+      (filter) => filter.field === "prefecture"
+    );
+    const shouldOmitStatus = filters.some(
+      (filter) => filter.field === "status"
+    );
+
     const [municipalities, total] = await Promise.all([
       this.repository.findAll({
         skip,
         take: limit,
-        prefecture: input.prefecture,
+        prefecture: shouldOmitPrefecture ? undefined : input.prefecture,
         search: input.search,
-        status: input.status,
+        status: shouldOmitStatus ? undefined : input.status,
+        filters: filters.length > 0 ? filters : undefined,
+        orderBy,
       }),
       this.repository.count({
-        prefecture: input.prefecture,
+        prefecture: shouldOmitPrefecture ? undefined : input.prefecture,
         search: input.search,
-        status: input.status,
+        status: shouldOmitStatus ? undefined : input.status,
+        filters: filters.length > 0 ? filters : undefined,
       }),
     ]);
 
@@ -68,4 +95,76 @@ export class GetMunicipalitiesUseCase {
       limit,
     };
   }
+
+  private buildFilters(input: GetMunicipalitiesInput): MunicipalityFilter[] {
+    const filters: MunicipalityFilter[] = [];
+
+    const field = this.normalizeField(input.filterField);
+
+    if (field) {
+      const operator = this.normalizeOperator(input.filterOperator, field);
+      const rawValue = input.filterValue ?? "";
+      const trimmedValue = rawValue.trim();
+      const hasValue = trimmedValue !== "";
+
+      if (
+        operator &&
+        (hasValue || MUNICIPALITY_NO_VALUE_OPERATORS.has(operator))
+      ) {
+        filters.push({
+          field,
+          operator,
+          value: hasValue ? trimmedValue : undefined,
+        });
+      }
+    }
+
+    return filters;
+  }
+
+  private buildOrderBy(input: GetMunicipalitiesInput): FindOrderBy | undefined {
+    const field = this.normalizeField(input.sortField);
+
+    if (!field) {
+      return undefined;
+    }
+
+    const direction = input.sortOrder === "desc" ? "desc" : "asc";
+
+    return { field, direction };
+  }
+
+  private normalizeField(
+    value: string | undefined
+  ): MunicipalityFilter["field"] | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    return MUNICIPALITY_FILTER_FIELDS.includes(
+      value as MunicipalityFilter["field"]
+    )
+      ? (value as MunicipalityFilter["field"])
+      : undefined;
+  }
+
+  private normalizeOperator(
+    operator: string | undefined,
+    field: MunicipalityFilter["field"]
+  ): MunicipalityFilterOperator | undefined {
+    if (!operator) {
+      return undefined;
+    }
+
+    const allowed = MUNICIPALITY_FIELD_OPERATORS[field];
+
+    return allowed.includes(operator as MunicipalityFilterOperator)
+      ? (operator as MunicipalityFilterOperator)
+      : undefined;
+  }
+}
+
+interface FindOrderBy {
+  field: MunicipalityFilter["field"];
+  direction: "asc" | "desc";
 }

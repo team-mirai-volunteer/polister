@@ -6,6 +6,13 @@
 
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
+import {
+  MUNICIPALITY_FIELD_OPERATORS,
+  MUNICIPALITY_FILTER_FIELDS,
+  MUNICIPALITY_NO_VALUE_OPERATORS,
+  type MunicipalityFilter,
+  type MunicipalityFilterOperator,
+} from "../../domain/repositories/IMunicipalityRepository";
 import { MunicipalityMapper } from "../../infrastructure/mappers/MunicipalityMapper";
 import { GetMunicipalitiesUseCase } from "../usecases/GetMunicipalitiesUseCase";
 
@@ -15,6 +22,11 @@ export interface GetMunicipalitiesParams {
   prefecture?: string;
   search?: string;
   status?: string;
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  filterField?: string;
+  filterOperator?: string;
+  filterValue?: string;
 }
 
 export async function getMunicipalitiesAction(
@@ -25,7 +37,73 @@ export async function getMunicipalitiesAction(
     setupDI(container);
 
     const useCase = container.resolve(GetMunicipalitiesUseCase);
-    const result = await useCase.execute(params);
+    const normalizeField = (
+      value: string | undefined
+    ): MunicipalityFilter["field"] | undefined => {
+      const allowed = new Set<MunicipalityFilter["field"]>(
+        MUNICIPALITY_FILTER_FIELDS
+      );
+      return value && allowed.has(value as MunicipalityFilter["field"])
+        ? (value as MunicipalityFilter["field"])
+        : undefined;
+    };
+
+    const defaultOperatorFor = (
+      field: MunicipalityFilter["field"]
+    ): MunicipalityFilterOperator => MUNICIPALITY_FIELD_OPERATORS[field][0];
+
+    const normalizeOperator = (
+      value: string | undefined,
+      field: MunicipalityFilter["field"] | undefined
+    ): MunicipalityFilterOperator | undefined => {
+      if (!value || !field) {
+        return field ? defaultOperatorFor(field) : undefined;
+      }
+
+      const allowedOperators = MUNICIPALITY_FIELD_OPERATORS[field];
+
+      return allowedOperators.includes(value as MunicipalityFilterOperator)
+        ? (value as MunicipalityFilterOperator)
+        : defaultOperatorFor(field);
+    };
+
+    const sortField = normalizeField(params.sortField);
+    const filterField = normalizeField(params.filterField);
+    const filterOperator = normalizeOperator(
+      params.filterOperator,
+      filterField
+    );
+
+    const rawFilterValue = params.filterValue ?? "";
+    const trimmedFilterValue = rawFilterValue.trim();
+    const operatorRequiresValue =
+      filterOperator && MUNICIPALITY_NO_VALUE_OPERATORS.has(filterOperator)
+        ? false
+        : true;
+    const filterValue =
+      filterField && operatorRequiresValue
+        ? trimmedFilterValue.length > 0
+          ? trimmedFilterValue
+          : undefined
+        : undefined;
+
+    const result = await useCase.execute({
+      page: params.page,
+      limit: params.limit,
+      prefecture: params.prefecture,
+      search: params.search,
+      status: params.status,
+      sortField,
+      sortOrder:
+        params.sortOrder === "desc"
+          ? "desc"
+          : params.sortOrder === "asc"
+            ? "asc"
+            : undefined,
+      filterField,
+      filterOperator,
+      filterValue,
+    });
 
     // DTOに変換して返す
     return {

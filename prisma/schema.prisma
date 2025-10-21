@@ -33,6 +33,7 @@ model Board {
 
   @@index([location], type: Gist)
   @@index([municipalityId])
+  @@index([municipalityId, deletedAt])
   @@index([trustLevel])
   @@index([status])
   @@map("boards")
