@@ -1,6 +1,6 @@
 # Polister
 
-**Politics + Poster = Polister**
+## Politics + Poster = Polister
 
 選挙ポスター掲示板の位置情報をデジタル化し、オープンデータとして提供するWebサービス
 
@@ -48,19 +48,19 @@ yarn install
 # Next.jsアプリケーション
 yarn dev
 
-# ドキュメントサイト
-yarn docs:dev
+# ドキュメントサイト（Next.jsとポート競合を避けるため3100番を使用）
+PORT=3100 yarn docs:dev
 ```
 
-- アプリケーション: http://localhost:3000
-- ドキュメント: http://localhost:3000（docsディレクトリ内で起動）
+- アプリケーション: <http://localhost:3000>
+- ドキュメント: <http://localhost:3100（`PORT=3100> yarn docs:dev` で起動）
 
 ## 📚 ドキュメント
 
 詳細なドキュメントは以下で公開しています：
 
-- **オンライン**: https://team-mirai-volunteer.github.io/polister/
-- **ローカル**: `yarn docs:dev`で起動
+- **オンライン**: <https://team-mirai-volunteer.github.io/polister/>
+- **ローカル**: `PORT=3100 yarn docs:dev` で起動
 
 ### 主要ドキュメント
 
@@ -113,7 +113,7 @@ yarn docs:dev
 
 ### ディレクトリ構造
 
-```
+```text
 src/
 ├── app/              # Next.js App Router (Presentation層)
 ├── features/         # 機能別モジュール（バウンデッドコンテキスト）
@@ -193,7 +193,7 @@ yarn format       # フォーマット実行
 yarn validate     # 全チェック実行
 ```
 
-### ドキュメント
+### ドキュメントコマンド
 
 ```bash
 yarn docs:dev     # ドキュメントサーバー起動
@@ -207,6 +207,6 @@ yarn docs:serve   # ビルド済みドキュメント配信
 
 ## 🔗 リンク
 
-- **ドキュメント**: https://team-mirai-volunteer.github.io/polister/
-- **Issues**: https://github.com/team-mirai-volunteer/polister/issues
-- **Pull Requests**: https://github.com/team-mirai-volunteer/polister/pulls
+- **ドキュメント**: <https://team-mirai-volunteer.github.io/polister/>
+- **Issues**: <https://github.com/team-mirai-volunteer/polister/issues>
+- **Pull Requests**: <https://github.com/team-mirai-volunteer/polister/pulls>

@@ -1,5 +1,7 @@
 # Clean Architecture実装ガイド
 
+<!-- markdownlint-disable MD013 -->
+
 このドキュメントは、Polisterプロジェクトでのクリーンアーキテクチャ実装のガイドラインです。
 
 ## 概要
@@ -303,7 +305,7 @@ src/
 #### Repositoryインターフェース例
 
 ```typescript
-// src/features/board/infrastructure/repositories/IBoardRepository.ts
+// src/features/board/domain/repositories/IBoardRepository.ts
 import type { Board, BoardStatus, TrustLevel } from "@prisma/client";
 
 export interface CreateBoardData {
@@ -431,7 +433,7 @@ export class BoardRepository implements IBoardRepository {
 import { inject, injectable } from "tsyringe";
 
 import { TOKENS } from "@/shared/lib/di/tokens";
-import type { IBoardRepository } from "../../infrastructure/repositories/IBoardRepository";
+import type { IBoardRepository } from "../../domain/repositories/IBoardRepository";
 import type { IGeocodingService } from "@/infrastructure/external/geocoding/IGeocodingService";
 import {
   ValidationError,
@@ -941,5 +943,7 @@ async createBoard(data: BoardData): Promise<OperationResult<Board>> {
 - ポイント連携機能
 
 ---
+
+<!-- markdownlint-restore -->
 
 最終更新: 2025年9月27日

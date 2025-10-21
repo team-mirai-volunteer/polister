@@ -1,5 +1,7 @@
 # Polisterアーキテクチャドキュメント
 
+<!-- markdownlint-disable MD013 -->
+
 ## 概要
 
 Polisterは、**Clean Architecture**と**Domain-Driven Design (DDD)**を組み合わせた設計アプローチを採用しています。このドキュメントでは、プロジェクト全体のアーキテクチャ方針と実装ガイドラインを提供します。
@@ -173,7 +175,7 @@ Polisterは以下の主要なバウンデッドコンテキストで構成され
 
 ## ディレクトリ構造の概要
 
-```
+```text
 src/
 ├── app/                              # Next.js App Router
 │   ├── (auth)/                       # 認証が必要なルート
@@ -233,8 +235,10 @@ src/
 - **外部リソース**
   - [Clean Architecture (Uncle Bob)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
   - [Domain-Driven Design Reference](https://www.domainlanguage.com/ddd/reference/)
-  - [Next.js App Router](https://nextjs.org/docs/app)
+- [Next.js App Router](https://nextjs.org/docs/app)
 
 ---
+
+<!-- markdownlint-restore -->
 
 最終更新: 2025年10月
