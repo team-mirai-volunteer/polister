@@ -91,9 +91,7 @@ const registerPrismaShutdownHook = (client: PrismaClient): void => {
   const terminationSignals: NodeJS.Signals[] = ["SIGINT", "SIGTERM"];
   terminationSignals.forEach((signal) => {
     process.once(signal, () => {
-      void disconnect().finally(() => {
-        process.exit(0);
-      });
+      void disconnect();
     });
   });
 
@@ -114,7 +112,7 @@ const getPrismaClient = (): PrismaClient => {
       if (error instanceof Error) {
         error.message = [
           error.message,
-          "Prisma Client の生成に失敗しました。`prisma.schema` のパスが正しいか確認し、`yarn db:generate` を実行してください。",
+          "Prisma Client の生成に失敗しました。`schema.prisma` のパスが正しいか確認し、`yarn db:generate` を実行してください。",
         ].join("\n");
       }
 
