@@ -1,20 +1,69 @@
 "use client";
 
+import type { PaletteMode, ThemeOptions } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 
 const primaryMain = "#2AA693";
 const primaryLight = "#5BC6AD";
 const primaryDark = "#1F7F6F";
 const accentRed = "#E40014";
-const backgroundBase = "#F7F4F0";
-const bodyBackground = "#EEEEEE";
-const textPrimary = "#1D293D";
-const textSecondary = "#45556C";
 
-const theme = createTheme({
-  cssVariables: true,
-  palette: {
-    mode: "light",
+const surfaceTokens = {
+  light: {
+    backgroundDefault: "#F7F4F0",
+    backgroundPaper: "#FFFFFF",
+    bodyGradientStart: "#EEEEEE",
+    bodyGradientEnd: "#F7F4F0",
+    textPrimary: "#1D293D",
+    textSecondary: "#45556C",
+    appBarBackground: "rgba(255, 255, 255, 0.96)",
+    appBarShadow: "0 6px 18px rgba(29, 41, 61, 0.08)",
+    outlineBorder: "rgba(29, 41, 61, 0.12)",
+    buttonOutlinedBg: "rgba(255, 255, 255, 0.6)",
+    iconButtonBg: "rgba(29, 41, 61, 0.04)",
+    iconButtonHoverBg: "rgba(42, 166, 147, 0.16)",
+    iconButtonHoverColor: primaryMain,
+    switchTrack: "rgba(29, 41, 61, 0.18)",
+    toggleSelectedBg: "rgba(42, 166, 147, 0.14)",
+    toggleSelectedBorder: "rgba(42, 166, 147, 0.42)",
+    tooltipBg: "rgba(29, 41, 61, 0.92)",
+    tooltipText: "#FFFFFF",
+    containerPadding: {
+      sm: 28,
+      md: 32,
+    },
+  },
+  dark: {
+    backgroundDefault: "#0F172A",
+    backgroundPaper: "#16223B",
+    bodyGradientStart: "#0B1120",
+    bodyGradientEnd: "#0F172A",
+    textPrimary: "#E2E8F0",
+    textSecondary: "#A3B4D3",
+    appBarBackground: "rgba(15, 23, 42, 0.9)",
+    appBarShadow: "0 6px 18px rgba(8, 15, 27, 0.6)",
+    outlineBorder: "rgba(148, 163, 184, 0.3)",
+    buttonOutlinedBg: "rgba(148, 163, 184, 0.14)",
+    iconButtonBg: "rgba(148, 163, 184, 0.1)",
+    iconButtonHoverBg: "rgba(42, 166, 147, 0.3)",
+    iconButtonHoverColor: "#7EEADF",
+    switchTrack: "rgba(148, 163, 184, 0.3)",
+    toggleSelectedBg: "rgba(42, 166, 147, 0.32)",
+    toggleSelectedBorder: "rgba(42, 166, 147, 0.64)",
+    tooltipBg: "rgba(12, 19, 35, 0.92)",
+    tooltipText: "#E2E8F0",
+    containerPadding: {
+      sm: 24,
+      md: 28,
+    },
+  },
+} as const;
+
+const buildPalette = (mode: PaletteMode): ThemeOptions["palette"] => {
+  const surface = surfaceTokens[mode];
+
+  return {
+    mode,
     primary: {
       main: primaryMain,
       light: primaryLight,
@@ -28,120 +77,128 @@ const theme = createTheme({
       contrastText: "#FFFFFF",
     },
     background: {
-      default: backgroundBase,
-      paper: "#FFFFFF",
+      default: surface.backgroundDefault,
+      paper: surface.backgroundPaper,
     },
     text: {
-      primary: textPrimary,
-      secondary: textSecondary,
-      disabled: "rgba(69, 85, 108, 0.4)",
+      primary: surface.textPrimary,
+      secondary: surface.textSecondary,
+      disabled:
+        mode === "dark" ? "rgba(148, 163, 184, 0.4)" : "rgba(69, 85, 108, 0.4)",
     },
-    grey: {
-      100: "#F2F2F2",
-      200: "#E6E7EA",
-      300: "#CBD3DD",
-      500: "#9AA3B3",
-      700: "#5E6A7D",
-      900: textPrimary,
-    },
+    grey:
+      mode === "dark"
+        ? {
+            100: "#1F2B3C",
+            200: "#223248",
+            300: "#314364",
+            500: "#5E7396",
+            700: "#94A3B8",
+            900: surface.textPrimary,
+          }
+        : {
+            100: "#F2F2F2",
+            200: "#E6E7EA",
+            300: "#CBD3DD",
+            500: "#9AA3B3",
+            700: "#5E6A7D",
+            900: surface.textPrimary,
+          },
+  };
+};
+
+const baseTypography: ThemeOptions["typography"] = {
+  fontFamily: "var(--font-noto-sans-jp)",
+  fontSize: 16,
+  h1: {
+    fontSize: "2.5rem",
+    fontWeight: 700,
+    letterSpacing: "-0.02em",
+    lineHeight: 1.25,
   },
-  shape: {
-    borderRadius: 8,
+  h2: {
+    fontSize: "2rem",
+    fontWeight: 700,
+    letterSpacing: "-0.015em",
+    lineHeight: 1.3,
   },
-  typography: {
-    fontFamily: "var(--font-noto-sans-jp)",
-    fontSize: 16,
-    h1: {
-      fontSize: "2.5rem",
-      fontWeight: 700,
-      letterSpacing: "-0.02em",
-      lineHeight: 1.25,
-      color: textPrimary,
-    },
-    h2: {
-      fontSize: "2rem",
-      fontWeight: 700,
-      letterSpacing: "-0.015em",
-      lineHeight: 1.3,
-      color: textPrimary,
-    },
-    h3: {
-      fontSize: "1.75rem",
-      fontWeight: 700,
-      letterSpacing: "-0.01em",
-      lineHeight: 1.35,
-      color: textPrimary,
-    },
-    h4: {
-      fontSize: "1.5rem",
-      fontWeight: 700,
-      lineHeight: 1.35,
-      color: textPrimary,
-    },
-    h5: {
-      fontSize: "1.375rem",
-      fontWeight: 600,
-      lineHeight: 1.4,
-      color: textPrimary,
-    },
-    h6: {
-      fontSize: "1.125rem",
-      fontWeight: 600,
-      lineHeight: 1.45,
-      color: textPrimary,
-    },
-    subtitle1: {
-      fontWeight: 600,
-      fontSize: "1.125rem",
-      letterSpacing: "0.01em",
-      color: textSecondary,
-    },
-    subtitle2: {
-      fontWeight: 600,
-      fontSize: "0.95rem",
-      letterSpacing: "0.05em",
-      textTransform: "uppercase",
-      color: textSecondary,
-    },
-    body1: {
-      fontSize: "1rem",
-      lineHeight: 1.75,
-      color: textSecondary,
-    },
-    body2: {
-      fontSize: "0.95rem",
-      lineHeight: 1.6,
-      color: textSecondary,
-    },
-    button: {
-      fontSize: "1rem",
-      fontWeight: 600,
-      letterSpacing: "0.025em",
-      textTransform: "none",
-    },
-    overline: {
-      fontSize: "0.75rem",
-      fontWeight: 700,
-      letterSpacing: "0.1em",
-      textTransform: "uppercase",
-      color: textSecondary,
-    },
+  h3: {
+    fontSize: "1.75rem",
+    fontWeight: 700,
+    letterSpacing: "-0.01em",
+    lineHeight: 1.35,
   },
-  components: {
+  h4: {
+    fontSize: "1.5rem",
+    fontWeight: 700,
+    lineHeight: 1.35,
+  },
+  h5: {
+    fontSize: "1.375rem",
+    fontWeight: 600,
+    lineHeight: 1.4,
+  },
+  h6: {
+    fontSize: "1.125rem",
+    fontWeight: 600,
+    lineHeight: 1.45,
+  },
+  subtitle1: {
+    fontWeight: 600,
+    fontSize: "1.125rem",
+    letterSpacing: "0.01em",
+  },
+  subtitle2: {
+    fontWeight: 600,
+    fontSize: "0.95rem",
+    letterSpacing: "0.05em",
+    textTransform: "uppercase",
+  },
+  body1: {
+    fontSize: "1rem",
+    lineHeight: 1.75,
+  },
+  body2: {
+    fontSize: "0.95rem",
+    lineHeight: 1.6,
+  },
+  button: {
+    fontSize: "1rem",
+    fontWeight: 600,
+    letterSpacing: "0.025em",
+    textTransform: "none",
+  },
+  overline: {
+    fontSize: "0.75rem",
+    fontWeight: 700,
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+  },
+};
+
+const baseShape: ThemeOptions["shape"] = {
+  borderRadius: 8,
+};
+
+const buildComponents = (mode: PaletteMode): ThemeOptions["components"] => {
+  const surface = surfaceTokens[mode];
+
+  return {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          background: `linear-gradient(180deg, ${bodyBackground} 0%, ${backgroundBase} 60%)`,
-          color: textPrimary,
+          background: `linear-gradient(180deg, ${surface.bodyGradientStart} 0%, ${surface.bodyGradientEnd} 60%)`,
+          color: surface.textPrimary,
+          transition: "background 0.3s ease",
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: "rgba(255, 255, 255, 0.96)",
-          color: textPrimary,
-          boxShadow: "0 6px 18px rgba(29, 41, 61, 0.08)",
+          backgroundColor: surface.appBarBackground,
+          color: surface.textPrimary,
+          boxShadow: surface.appBarShadow,
           backdropFilter: "blur(6px)",
           borderRadius: 0,
           width: "100%",
@@ -183,27 +240,39 @@ const theme = createTheme({
         },
         containedPrimary: {
           backgroundImage: `linear-gradient(135deg, ${primaryMain} 0%, ${primaryLight} 100%)`,
-          boxShadow: "0 16px 32px rgba(42, 166, 147, 0.22)",
+          boxShadow:
+            mode === "dark"
+              ? "0 16px 32px rgba(34, 211, 185, 0.35)"
+              : "0 16px 32px rgba(42, 166, 147, 0.22)",
           color: "#FFFFFF",
           "&:hover": {
             backgroundImage: `linear-gradient(135deg, ${primaryDark} 0%, ${primaryMain} 100%)`,
-            boxShadow: "0 18px 38px rgba(42, 166, 147, 0.28)",
+            boxShadow:
+              mode === "dark"
+                ? "0 18px 38px rgba(34, 211, 185, 0.42)"
+                : "0 18px 38px rgba(42, 166, 147, 0.28)",
           },
         },
         outlined: {
-          borderColor: "rgba(29, 41, 61, 0.18)",
-          color: textPrimary,
-          backgroundColor: "rgba(255, 255, 255, 0.6)",
+          borderColor: surface.outlineBorder,
+          color: surface.textPrimary,
+          backgroundColor: surface.buttonOutlinedBg,
           "&:hover": {
             borderColor: primaryMain,
             color: primaryMain,
-            backgroundColor: "rgba(42, 166, 147, 0.08)",
+            backgroundColor:
+              mode === "dark"
+                ? "rgba(42, 166, 147, 0.24)"
+                : "rgba(42, 166, 147, 0.08)",
           },
         },
         text: {
-          color: textPrimary,
+          color: surface.textPrimary,
           "&:hover": {
-            backgroundColor: "rgba(42, 166, 147, 0.06)",
+            backgroundColor:
+              mode === "dark"
+                ? "rgba(148, 163, 184, 0.12)"
+                : "rgba(42, 166, 147, 0.06)",
           },
         },
       },
@@ -213,6 +282,7 @@ const theme = createTheme({
         root: {
           borderRadius: 10,
           backgroundImage: "none",
+          backgroundColor: surface.backgroundPaper,
         },
       },
       defaultProps: {
@@ -223,8 +293,8 @@ const theme = createTheme({
           props: { variant: "outlined" },
           style: {
             padding: "24px",
-            border: "1px solid rgba(29, 41, 61, 0.12)",
-            backgroundColor: "#FFFFFF",
+            border: `1px solid ${surface.outlineBorder}`,
+            backgroundColor: surface.backgroundPaper,
           },
         },
       ],
@@ -233,8 +303,12 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
-          boxShadow: "0 18px 32px rgba(29, 41, 61, 0.08)",
+          boxShadow:
+            mode === "dark"
+              ? "0 18px 32px rgba(8, 15, 27, 0.5)"
+              : "0 18px 32px rgba(29, 41, 61, 0.08)",
           padding: 8,
+          backgroundColor: surface.backgroundPaper,
         },
       },
     },
@@ -246,7 +320,10 @@ const theme = createTheme({
           letterSpacing: "0.04em",
         },
         colorSecondary: {
-          backgroundColor: "rgba(228, 0, 20, 0.12)",
+          backgroundColor:
+            mode === "dark"
+              ? "rgba(228, 0, 20, 0.32)"
+              : "rgba(228, 0, 20, 0.12)",
           color: accentRed,
         },
       },
@@ -255,12 +332,12 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
-          backgroundColor: "rgba(29, 41, 61, 0.04)",
-          color: textSecondary,
+          backgroundColor: surface.iconButtonBg,
+          color: surface.textSecondary,
           transition: "all 0.22s ease",
           "&:hover": {
-            backgroundColor: "rgba(42, 166, 147, 0.16)",
-            color: primaryMain,
+            backgroundColor: surface.iconButtonHoverBg,
+            color: surface.iconButtonHoverColor,
           },
         },
       },
@@ -293,7 +370,7 @@ const theme = createTheme({
           letterSpacing: "0.02em",
           minHeight: 48,
           paddingInline: 18,
-          color: textSecondary,
+          color: surface.textSecondary,
           "&.Mui-selected": {
             color: primaryMain,
           },
@@ -304,14 +381,14 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
-          border: "1px solid rgba(29, 41, 61, 0.1)",
+          border: `1px solid ${surface.outlineBorder}`,
           textTransform: "none",
           fontWeight: 600,
           letterSpacing: "0.02em",
-          color: textSecondary,
+          color: surface.textSecondary,
           "&.Mui-selected": {
-            backgroundColor: "rgba(42, 166, 147, 0.14)",
-            borderColor: "rgba(42, 166, 147, 0.42)",
+            backgroundColor: surface.toggleSelectedBg,
+            borderColor: surface.toggleSelectedBorder,
             color: primaryDark,
           },
         },
@@ -339,11 +416,14 @@ const theme = createTheme({
         thumb: {
           width: 24,
           height: 24,
-          boxShadow: "0 6px 14px rgba(29, 41, 61, 0.18)",
+          boxShadow:
+            mode === "dark"
+              ? "0 6px 14px rgba(8, 15, 27, 0.6)"
+              : "0 6px 14px rgba(29, 41, 61, 0.18)",
         },
         track: {
           borderRadius: 32,
-          backgroundColor: "rgba(29, 41, 61, 0.18)",
+          backgroundColor: surface.switchTrack,
           opacity: 1,
         },
       },
@@ -353,12 +433,13 @@ const theme = createTheme({
         tooltip: {
           borderRadius: 8,
           padding: "10px 14px",
-          backgroundColor: "rgba(29, 41, 61, 0.92)",
+          backgroundColor: surface.tooltipBg,
           fontSize: "0.85rem",
           letterSpacing: "0.015em",
+          color: surface.tooltipText,
         },
         arrow: {
-          color: "rgba(29, 41, 61, 0.92)",
+          color: surface.tooltipBg,
         },
       },
     },
@@ -369,7 +450,10 @@ const theme = createTheme({
           fontWeight: 500,
           letterSpacing: "0.01em",
           "&:hover": {
-            backgroundColor: "rgba(42, 166, 147, 0.12)",
+            backgroundColor:
+              mode === "dark"
+                ? "rgba(42, 166, 147, 0.22)"
+                : "rgba(42, 166, 147, 0.12)",
           },
         },
       },
@@ -380,10 +464,16 @@ const theme = createTheme({
           borderRadius: 10,
           paddingInline: 16,
           "&.Mui-selected": {
-            backgroundColor: "rgba(42, 166, 147, 0.18)",
+            backgroundColor:
+              mode === "dark"
+                ? "rgba(42, 166, 147, 0.32)"
+                : "rgba(42, 166, 147, 0.18)",
             color: primaryDark,
             "&:hover": {
-              backgroundColor: "rgba(42, 166, 147, 0.24)",
+              backgroundColor:
+                mode === "dark"
+                  ? "rgba(42, 166, 147, 0.4)"
+                  : "rgba(42, 166, 147, 0.24)",
             },
           },
         },
@@ -393,9 +483,12 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
-          backgroundColor: "rgba(255, 255, 255, 0.7)",
+          backgroundColor:
+            mode === "dark"
+              ? "rgba(15, 23, 42, 0.6)"
+              : "rgba(255, 255, 255, 0.7)",
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "rgba(29, 41, 61, 0.12)",
+            borderColor: surface.outlineBorder,
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
             borderColor: primaryMain,
@@ -417,17 +510,55 @@ const theme = createTheme({
           paddingLeft: 16,
           paddingRight: 16,
           "@media (min-width:600px)": {
-            paddingLeft: 28,
-            paddingRight: 28,
+            paddingLeft: surface.containerPadding.sm,
+            paddingRight: surface.containerPadding.sm,
           },
           "@media (min-width:900px)": {
-            paddingLeft: 32,
-            paddingRight: 32,
+            paddingLeft: surface.containerPadding.md,
+            paddingRight: surface.containerPadding.md,
           },
         },
       },
     },
-  },
-});
+  };
+};
 
+export const createAppTheme = (mode: PaletteMode) =>
+  createTheme({
+    cssVariables: true,
+    palette: buildPalette(mode),
+    shape: baseShape,
+    typography: {
+      ...baseTypography,
+      h1: { ...baseTypography.h1, color: surfaceTokens[mode].textPrimary },
+      h2: { ...baseTypography.h2, color: surfaceTokens[mode].textPrimary },
+      h3: { ...baseTypography.h3, color: surfaceTokens[mode].textPrimary },
+      h4: { ...baseTypography.h4, color: surfaceTokens[mode].textPrimary },
+      h5: { ...baseTypography.h5, color: surfaceTokens[mode].textPrimary },
+      h6: { ...baseTypography.h6, color: surfaceTokens[mode].textPrimary },
+      subtitle1: {
+        ...baseTypography.subtitle1,
+        color: surfaceTokens[mode].textSecondary,
+      },
+      subtitle2: {
+        ...baseTypography.subtitle2,
+        color: surfaceTokens[mode].textSecondary,
+      },
+      body1: {
+        ...baseTypography.body1,
+        color: surfaceTokens[mode].textSecondary,
+      },
+      body2: {
+        ...baseTypography.body2,
+        color: surfaceTokens[mode].textSecondary,
+      },
+      overline: {
+        ...baseTypography.overline,
+        color: surfaceTokens[mode].textSecondary,
+      },
+    },
+    components: buildComponents(mode),
+  });
+
+const theme = createAppTheme("light");
 export default theme;

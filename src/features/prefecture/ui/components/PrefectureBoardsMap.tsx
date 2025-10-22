@@ -12,5 +12,11 @@ interface PrefectureBoardsMapProps {
 }
 
 export function PrefectureBoardsMap({ boards }: PrefectureBoardsMapProps) {
-  return <BoardsClusterMap boards={boards} minHeight={320} />;
+  return (
+    <BoardsClusterMap
+      boards={boards}
+      minHeight={320}
+      sx={{ flex: 1, minHeight: 320 }}
+    />
+  );
 }

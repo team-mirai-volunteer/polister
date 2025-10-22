@@ -51,6 +51,7 @@ export function BoardsClusterMap({
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const mapRef = useRef<MapboxMapRef | null>(null);
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const primaryMain = theme.palette.primary.main;
   const primaryLight = theme.palette.primary.light;
@@ -308,6 +309,40 @@ export function BoardsClusterMap({
     }
   }, []);
 
+  useEffect(() => {
+    if (!mapInstance) {
+      return;
+    }
+
+    const resize = () => {
+      mapInstance.resize();
+    };
+
+    resize();
+
+    const target = containerRef.current;
+    const supportsObserver =
+      typeof window !== "undefined" && typeof ResizeObserver !== "undefined";
+
+    if (supportsObserver && target) {
+      const observer = new ResizeObserver(() => {
+        resize();
+      });
+      observer.observe(target);
+
+      return () => {
+        observer.disconnect();
+      };
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", resize);
+      return () => {
+        window.removeEventListener("resize", resize);
+      };
+    }
+  }, [mapInstance]);
+
   if (!mapboxToken) {
     return (
       <Alert severity="warning">
@@ -318,9 +353,11 @@ export function BoardsClusterMap({
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         position: "relative",
         width: "100%",
+        height: "100%",
         minHeight,
         ...sx,
       }}

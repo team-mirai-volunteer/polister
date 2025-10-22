@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --background: #f7f4f0;
   --foreground: #1d293d;
 }
@@ -12,7 +12,6 @@ body {
 
 body {
   color: var(--foreground);
-  background: linear-gradient(180deg, #eeeeee 0%, #f7f4f0 60%);
   font-family:
     var(--font-noto-sans-jp),
     "Noto Sans JP",

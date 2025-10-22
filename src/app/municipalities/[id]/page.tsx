@@ -16,7 +16,6 @@ import {
   Box,
   Chip,
   Container,
-  Grid,
   Link,
   Paper,
   Stack,
@@ -32,10 +31,8 @@ interface PageProps {
 }
 
 export default async function MunicipalityDetailPage({ params }: PageProps) {
-  // paramsを解決
   const { id } = await params;
 
-  // Server Actionsを並列実行
   const [municipalityResult, geojsonResult, boardsResult] =
     await Promise.allSettled([
       getMunicipalityByIdAction(id),
@@ -60,7 +57,6 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   }
 
   const geojson = geojsonResult.value;
-
   const boards = boardsResult.status === "fulfilled" ? boardsResult.value : [];
 
   if (boardsResult.status === "rejected") {
@@ -72,14 +68,23 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        {municipality.fullName}
-      </Typography>
+      <Stack spacing={3}>
+        <Typography variant="h4">{municipality.fullName}</Typography>
 
-      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
-        {/* 基本情報 */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Stack spacing={3} sx={{ height: "100%" }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={3}
+          sx={{ alignItems: "stretch" }}
+        >
+          <Stack
+            spacing={3}
+            sx={{
+              flexShrink: 0,
+              width: { xs: "100%", md: "fit-content" },
+              minWidth: { md: 240 },
+              maxWidth: { md: 360 },
+            }}
+          >
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 基本情報
@@ -120,7 +125,6 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
               </Stack>
             </Paper>
 
-            {/* データ収集情報 */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 データ収集状況
@@ -183,30 +187,31 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
               </Stack>
             </Paper>
           </Stack>
-        </Grid>
 
-        {/* 掲示板一覧 / 地図 */}
-        <Grid size={{ xs: 12, md: 8 }}>
           <Paper
             sx={{
               p: 3,
-              height: "100%",
               display: "flex",
               flexDirection: "column",
               gap: 2,
+              flex: 1,
+              minHeight: 360,
+              minWidth: 0,
             }}
           >
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              掲示板一覧
+            <Typography variant="h6" sx={{ mb: 1 }}>
+              掲示板マップ / 一覧
             </Typography>
 
-            <MunicipalityBoardsSection
-              boards={boards}
-              geojson={geojson ?? undefined}
-            />
+            <Box sx={{ flex: 1, minHeight: 360 }}>
+              <MunicipalityBoardsSection
+                boards={boards}
+                geojson={geojson ?? undefined}
+              />
+            </Box>
           </Paper>
-        </Grid>
-      </Grid>
+        </Stack>
+      </Stack>
     </Container>
   );
 }

@@ -1,18 +1,15 @@
 import "reflect-metadata";
 
-import { Box } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider } from "@mui/material/styles";
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
 
 import { setupDI } from "@/shared/lib/di";
-import { AppBar } from "@/shared/ui/components/layout/AppBar";
+import { AppShell } from "@/shared/ui/components/layout/AppShell";
+import { ColorModeProvider } from "@/shared/ui/providers/ColorModeProvider";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import theme from "../theme";
 import "./globals.css";
 
 setupDI();
@@ -48,27 +45,9 @@ export default function RootLayout({
     <html lang="ja" className={notoSansJP.variable}>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                minHeight: "100vh",
-              }}
-            >
-              <AppBar />
-              <Box
-                component="main"
-                sx={{
-                  flexGrow: 1,
-                  pt: { xs: 7, md: 9 },
-                }}
-              >
-                {children}
-              </Box>
-            </Box>
-          </ThemeProvider>
+          <ColorModeProvider>
+            <AppShell>{children}</AppShell>
+          </ColorModeProvider>
         </AppRouterCacheProvider>
       </body>
     </html>

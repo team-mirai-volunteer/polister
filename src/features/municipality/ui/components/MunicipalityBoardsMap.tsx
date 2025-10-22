@@ -67,6 +67,7 @@ export const MunicipalityBoardsMap = ({
   const appliedStyleRef = useRef<MapStyleKey>("poster");
   const [mapStyle, setMapStyle] = useState<MapStyleKey>("poster");
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const coordinates = useMemo(
     () =>
@@ -314,6 +315,40 @@ export const MunicipalityBoardsMap = ({
     });
   }, [mapInstance, coordinates, focusedBoardId]);
 
+  useEffect(() => {
+    if (!mapInstance) {
+      return;
+    }
+
+    const resize = () => {
+      mapInstance.resize();
+    };
+
+    resize();
+
+    const target = containerRef.current;
+    const supportsObserver =
+      typeof window !== "undefined" && typeof ResizeObserver !== "undefined";
+
+    if (supportsObserver && target) {
+      const observer = new ResizeObserver(() => {
+        resize();
+      });
+      observer.observe(target);
+
+      return () => {
+        observer.disconnect();
+      };
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", resize);
+      return () => {
+        window.removeEventListener("resize", resize);
+      };
+    }
+  }, [mapInstance]);
+
   if (!mapboxToken) {
     return (
       <Alert severity="warning">
@@ -336,11 +371,17 @@ export const MunicipalityBoardsMap = ({
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         position: "relative",
         width: "100%",
-        height: "100%",
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
         minHeight: 360,
+        "& .mapboxgl-map": {
+          flex: 1,
+        },
       }}
     >
       <MapboxMap
@@ -349,6 +390,7 @@ export const MunicipalityBoardsMap = ({
         initialViewState={initialViewState}
         mapStyle={MAP_STYLE_URLS[mapStyle]}
         onLoad={handleMapLoad}
+        style={{ flex: 1 }}
       >
         {hasGeoJSON ? null : (
           <Typography

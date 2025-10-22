@@ -2,6 +2,8 @@
  * 都道府県一覧ページ
  */
 
+export const dynamic = "force-dynamic";
+
 import { getPrefecturesAction } from "@/features/prefecture/application/actions/getPrefecturesAction";
 import {
   PREFECTURE_FIELD_OPERATORS,
