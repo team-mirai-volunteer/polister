@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { STATUS_LABELS } from "@/features/municipality/constants";
 
@@ -54,6 +54,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     searchParams?.get("search") ?? ""
   );
   const [status, setStatus] = useState(searchParams?.get("status") ?? "");
+
+  useEffect(() => {
+    setMunicipalitySearch(searchParams?.get("search") ?? "");
+    setStatus(searchParams?.get("status") ?? "");
+  }, [searchParams]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -130,6 +135,8 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
             size="small"
             value={municipalitySearch}
             onChange={(event) => setMunicipalitySearch(event.target.value)}
+            name="search"
+            type="search"
           />
           <FormControl size="small">
             <InputLabel id="sidebar-status-filter">ステータス</InputLabel>
@@ -138,6 +145,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
               label="ステータス"
               value={status}
               onChange={handleStatusChange}
+              name="status"
             >
               <MenuItem value="">
                 <em>すべて</em>

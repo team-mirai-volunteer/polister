@@ -42,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={notoSansJP.variable}>
+    <html lang="ja" className={notoSansJP.variable} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppRouterCacheProvider>
           <ColorModeProvider>

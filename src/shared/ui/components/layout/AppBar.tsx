@@ -135,27 +135,21 @@ export function AppBar() {
                         py: { xs: 0.5, md: 0.75 },
                         fontSize: { xs: "0.82rem", md: "0.9rem" },
                         whiteSpace: "nowrap",
-                        fontWeight: 600,
+                        fontWeight: isActive ? 700 : 600,
                         ...(isActive
                           ? {
                               color: (theme) => theme.palette.primary.main,
                               backgroundColor: (theme) =>
-                                theme.palette.primary.contrastText,
+                                theme.palette.action.selected,
                               "&:hover": {
                                 backgroundColor: (theme) =>
-                                  alpha(
-                                    theme.palette.primary.contrastText,
-                                    0.9
-                                  ),
+                                  theme.palette.action.selected,
                               },
                             }
                           : {
                               "&:hover": {
                                 backgroundColor: (theme) =>
-                                  alpha(
-                                    theme.palette.primary.contrastText,
-                                    0.12
-                                  ),
+                                  theme.palette.action.hover,
                               },
                             }),
                       }}

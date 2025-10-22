@@ -314,8 +314,12 @@ export function BoardsClusterMap({
       return;
     }
 
+    let raf = 0;
     const resize = () => {
-      mapInstance.resize();
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        mapInstance.resize();
+      });
     };
 
     resize();
@@ -332,6 +336,7 @@ export function BoardsClusterMap({
 
       return () => {
         observer.disconnect();
+        cancelAnimationFrame(raf);
       };
     }
 
@@ -339,8 +344,13 @@ export function BoardsClusterMap({
       window.addEventListener("resize", resize);
       return () => {
         window.removeEventListener("resize", resize);
+        cancelAnimationFrame(raf);
       };
     }
+
+    return () => {
+      cancelAnimationFrame(raf);
+    };
   }, [mapInstance]);
 
   if (!mapboxToken) {

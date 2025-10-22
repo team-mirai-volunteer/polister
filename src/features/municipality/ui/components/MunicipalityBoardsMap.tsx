@@ -320,8 +320,12 @@ export const MunicipalityBoardsMap = ({
       return;
     }
 
+    let raf = 0;
     const resize = () => {
-      mapInstance.resize();
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        mapInstance.resize();
+      });
     };
 
     resize();
@@ -338,6 +342,7 @@ export const MunicipalityBoardsMap = ({
 
       return () => {
         observer.disconnect();
+        cancelAnimationFrame(raf);
       };
     }
 
@@ -345,8 +350,13 @@ export const MunicipalityBoardsMap = ({
       window.addEventListener("resize", resize);
       return () => {
         window.removeEventListener("resize", resize);
+        cancelAnimationFrame(raf);
       };
     }
+
+    return () => {
+      cancelAnimationFrame(raf);
+    };
   }, [mapInstance]);
 
   if (!mapboxToken) {
