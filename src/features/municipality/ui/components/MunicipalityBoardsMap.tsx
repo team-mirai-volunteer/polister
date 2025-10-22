@@ -34,6 +34,7 @@ import {
   applyPosterStyling,
 } from "@/components/map/mapStyleConfig";
 import { setMapLanguageToJapanese } from "@/components/map/useJapaneseLabels";
+import { useMapResize } from "@/shared/ui/hooks/useMapResize";
 
 import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 
@@ -315,49 +316,7 @@ export const MunicipalityBoardsMap = ({
     });
   }, [mapInstance, coordinates, focusedBoardId]);
 
-  useEffect(() => {
-    if (!mapInstance) {
-      return;
-    }
-
-    let raf = 0;
-    const resize = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        mapInstance.resize();
-      });
-    };
-
-    resize();
-
-    const target = containerRef.current;
-    const supportsObserver =
-      typeof window !== "undefined" && typeof ResizeObserver !== "undefined";
-
-    if (supportsObserver && target) {
-      const observer = new ResizeObserver(() => {
-        resize();
-      });
-      observer.observe(target);
-
-      return () => {
-        observer.disconnect();
-        cancelAnimationFrame(raf);
-      };
-    }
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("resize", resize);
-      return () => {
-        window.removeEventListener("resize", resize);
-        cancelAnimationFrame(raf);
-      };
-    }
-
-    return () => {
-      cancelAnimationFrame(raf);
-    };
-  }, [mapInstance]);
+  useMapResize(mapInstance, containerRef);
 
   if (!mapboxToken) {
     return (
