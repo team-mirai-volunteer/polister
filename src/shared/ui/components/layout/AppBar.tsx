@@ -23,6 +23,7 @@ export function AppBar() {
   const navItems = [
     { label: "ホーム", path: "/" },
     { label: "自治体一覧", path: "/municipalities" },
+    { label: "都道府県一覧", path: "/prefectures" },
   ];
 
   const docsUrl =
@@ -31,7 +32,13 @@ export function AppBar() {
 
   return (
     <MuiAppBar position="fixed">
-      <Toolbar disableGutters>
+      <Toolbar
+        disableGutters
+        sx={{
+          minHeight: { xs: 56, md: 72 },
+          px: { xs: 2, md: 0 },
+        }}
+      >
         <Container
           maxWidth="lg"
           sx={{
@@ -44,20 +51,20 @@ export function AppBar() {
           <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
             <Stack
               direction="row"
-              spacing={1.5}
+              spacing={1}
               alignItems="center"
               sx={{ cursor: "pointer" }}
             >
               <Box
                 aria-hidden="true"
                 sx={{
-                  width: 32,
-                  height: 32,
+                  width: 28,
+                  height: 28,
                   borderRadius: 1,
                   display: "grid",
                   placeItems: "center",
                   fontWeight: 700,
-                  fontSize: "0.85rem",
+                  fontSize: "0.75rem",
                   backgroundColor: (theme) =>
                     alpha(theme.palette.primary.main, 0.12),
                   color: "secondary.main",
@@ -65,24 +72,17 @@ export function AppBar() {
               >
                 P
               </Box>
-              <Box>
-                <Typography variant="h6" sx={{ letterSpacing: "0.08em" }}>
-                  POLISTER
-                </Typography>
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    // デザイン仕様により、subtitle2のデフォルトサイズをオーバーライド
-                    fontSize: "1rem",
-                  }}
-                >
-                  ポスター掲示板データ基盤
-                </Typography>
-              </Box>
+              <Typography
+                variant="h6"
+                component="span"
+                sx={{ letterSpacing: "0.12em", fontSize: "1.1rem" }}
+              >
+                POLISTER
+              </Typography>
             </Stack>
           </Link>
 
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={0.5} alignItems="center">
             {navItems.map((item) => {
               const isActive =
                 item.path === "/"
@@ -94,10 +94,29 @@ export function AppBar() {
                   key={item.path}
                   component={Link}
                   href={item.path}
-                  variant={isActive ? "contained" : "text"}
-                  color={isActive ? "secondary" : "inherit"}
+                  variant="text"
+                  color="inherit"
                   aria-current={isActive ? "page" : undefined}
-                  sx={{ fontWeight: 600 }}
+                  size="small"
+                  sx={{
+                    fontWeight: 600,
+                    ...(isActive
+                      ? {
+                          color: (theme) => theme.palette.primary.main,
+                          backgroundColor: (theme) =>
+                            theme.palette.primary.contrastText,
+                          "&:hover": {
+                            backgroundColor: (theme) =>
+                              alpha(theme.palette.primary.contrastText, 0.9),
+                          },
+                        }
+                      : {
+                          "&:hover": {
+                            backgroundColor: (theme) =>
+                              alpha(theme.palette.primary.contrastText, 0.12),
+                          },
+                        }),
+                  }}
                 >
                   {item.label}
                 </Button>

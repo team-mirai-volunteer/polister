@@ -10,7 +10,7 @@ import {
   type PrefectureFilterOperator,
 } from "@/features/prefecture/domain/repositories/IPrefectureRepository";
 import { PrefectureDataGrid } from "@/features/prefecture/ui/components/PrefectureDataGrid";
-import { Container, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 
 interface PrefecturesPageProps {
   searchParams: Promise<{
@@ -66,23 +66,52 @@ export default async function PrefecturesPage({
     });
 
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          都道府県一覧
-        </Typography>
-
-        <Typography variant="body2" sx={{ mb: 2 }}>
-          全 {prefectures.length} 件
-        </Typography>
-
-        <PrefectureDataGrid
-          prefectures={prefectures}
-          sortField={normalizedSortField}
-          sortOrder={sortOrder}
-          filterField={normalizedFilterField}
-          filterOperator={normalizedFilterOperator}
-          filterValue={filterValue}
-        />
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: 3,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          overflow: "hidden",
+          height: {
+            xs: "calc(100vh - 56px)",
+            md: "calc(100vh - 72px)",
+          },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            flexWrap: { xs: "wrap", sm: "nowrap" },
+            gap: 1,
+          }}
+        >
+          <Typography variant="h4">都道府県一覧</Typography>
+          <Typography variant="body2" color="text.secondary">
+            全 {prefectures.length} 件
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            width: "100%",
+            overflow: "hidden",
+          }}
+        >
+          <PrefectureDataGrid
+            prefectures={prefectures}
+            sortField={normalizedSortField}
+            sortOrder={sortOrder}
+            filterField={normalizedFilterField}
+            filterOperator={normalizedFilterOperator}
+            filterValue={filterValue}
+          />
+        </Box>
       </Container>
     );
   } catch (error) {

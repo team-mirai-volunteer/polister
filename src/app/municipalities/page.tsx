@@ -12,7 +12,7 @@ import {
   type MunicipalityFilterOperator,
 } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
 import { MunicipalityDataGrid } from "@/features/municipality/ui/components/MunicipalityDataGrid";
-import { Container, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 
 interface PageProps {
   searchParams: Promise<{
@@ -83,26 +83,56 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
   });
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        自治体一覧
-      </Typography>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 3,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        overflow: "hidden",
+        height: {
+          xs: "calc(100vh - 56px)",
+          md: "calc(100vh - 72px)",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          flexWrap: { xs: "wrap", sm: "nowrap" },
+          gap: 1,
+        }}
+      >
+        <Typography variant="h4">自治体一覧</Typography>
+        <Typography variant="body2" color="text.secondary">
+          全 {data.total} 件
+        </Typography>
+      </Box>
 
-      <Typography variant="body2" sx={{ mb: 2 }}>
-        全 {data.total} 件
-      </Typography>
-
-      <MunicipalityDataGrid
-        municipalities={data.municipalities}
-        total={data.total}
-        page={page}
-        pageSize={limit}
-        sortField={normalizedSortField}
-        sortOrder={sortOrder}
-        filterField={normalizedFilterField}
-        filterOperator={normalizedFilterOperator}
-        filterValue={filterValue}
-      />
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <MunicipalityDataGrid
+          municipalities={data.municipalities}
+          total={data.total}
+          page={page}
+          pageSize={limit}
+          sortField={normalizedSortField}
+          sortOrder={sortOrder}
+          filterField={normalizedFilterField}
+          filterOperator={normalizedFilterOperator}
+          filterValue={filterValue}
+        />
+      </Box>
     </Container>
   );
 }
