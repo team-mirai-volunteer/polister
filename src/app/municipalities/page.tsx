@@ -12,7 +12,7 @@ import {
   type MunicipalityFilterOperator,
 } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
 import { MunicipalityDataGrid } from "@/features/municipality/ui/components/MunicipalityDataGrid";
-import { Container, Typography } from "@mui/material";
+import { ListPageLayout } from "@/shared/ui/components/layout/ListPageLayout";
 
 interface PageProps {
   searchParams: Promise<{
@@ -83,15 +83,7 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
   });
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        自治体一覧
-      </Typography>
-
-      <Typography variant="body2" sx={{ mb: 2 }}>
-        全 {data.total} 件
-      </Typography>
-
+    <ListPageLayout title="自治体一覧" total={data.total}>
       <MunicipalityDataGrid
         municipalities={data.municipalities}
         total={data.total}
@@ -103,6 +95,6 @@ export default async function MunicipalitiesPage({ searchParams }: PageProps) {
         filterOperator={normalizedFilterOperator}
         filterValue={filterValue}
       />
-    </Container>
+    </ListPageLayout>
   );
 }

@@ -379,7 +379,6 @@ export function PrefectureDataGrid({
       filterMode="server"
       sortModel={sortModel}
       filterModel={filterModel}
-      autoHeight
       pageSizeOptions={[10, 25, 50]}
       initialState={{
         pagination: {
@@ -405,6 +404,9 @@ export function PrefectureDataGrid({
         },
       }}
       sx={{
+        flex: 1,
+        height: "100%",
+        width: "100%",
         "& .MuiDataGrid-row": {
           cursor: "pointer",
         },

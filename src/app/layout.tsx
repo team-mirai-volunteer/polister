@@ -62,7 +62,7 @@ export default function RootLayout({
                 component="main"
                 sx={{
                   flexGrow: 1,
-                  pt: { xs: 10, md: 12 },
+                  pt: { xs: 7, md: 9 },
                 }}
               >
                 {children}

@@ -10,6 +10,7 @@ import {
   type PrefectureFilterOperator,
 } from "@/features/prefecture/domain/repositories/IPrefectureRepository";
 import { PrefectureDataGrid } from "@/features/prefecture/ui/components/PrefectureDataGrid";
+import { ListPageLayout } from "@/shared/ui/components/layout/ListPageLayout";
 import { Container, Typography } from "@mui/material";
 
 interface PrefecturesPageProps {
@@ -66,15 +67,7 @@ export default async function PrefecturesPage({
     });
 
     return (
-      <Container maxWidth="lg" sx={{ py: 3 }}>
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          都道府県一覧
-        </Typography>
-
-        <Typography variant="body2" sx={{ mb: 2 }}>
-          全 {prefectures.length} 件
-        </Typography>
-
+      <ListPageLayout title="都道府県一覧" total={prefectures.length}>
         <PrefectureDataGrid
           prefectures={prefectures}
           sortField={normalizedSortField}
@@ -83,7 +76,7 @@ export default async function PrefecturesPage({
           filterOperator={normalizedFilterOperator}
           filterValue={filterValue}
         />
-      </Container>
+      </ListPageLayout>
     );
   } catch (error) {
     console.error("failed to load prefectures", error);

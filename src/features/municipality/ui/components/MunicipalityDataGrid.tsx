@@ -483,6 +483,9 @@ export function MunicipalityDataGrid({
       pageSizeOptions={[10, 25, 50, 100]}
       disableRowSelectionOnClick
       sx={{
+        flex: 1,
+        height: "100%",
+        width: "100%",
         "& .MuiDataGrid-row": {
           cursor: "pointer",
         },
