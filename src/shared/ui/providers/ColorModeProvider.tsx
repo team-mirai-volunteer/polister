@@ -62,7 +62,7 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
     }
 
     const nextMode = resolveInitialMode();
-    setMode((prev) => (prev === nextMode ? prev : nextMode));
+    setMode(nextMode);
     setIsMounted(true);
   }, []);
 
@@ -76,7 +76,7 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
 
     const listener = (event: MediaQueryListEvent) => {
       const preferred = event.matches ? "dark" : "light";
-      setMode((prev) => (prev === preferred ? prev : preferred));
+      setMode(preferred);
     };
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -116,7 +116,7 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
       setMode,
       toggleMode,
     }),
-    [mode, setMode, toggleMode]
+    [mode, toggleMode]
   );
 
   const theme = useMemo(() => createAppTheme(mode), [mode]);

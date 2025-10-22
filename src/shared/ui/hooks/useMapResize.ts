@@ -15,6 +15,7 @@ export function useMapResize(
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         mapInstance.resize();
+        raf = 0;
       });
     };
 
