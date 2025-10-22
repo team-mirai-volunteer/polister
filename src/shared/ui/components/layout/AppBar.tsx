@@ -17,6 +17,8 @@ import { alpha } from "@mui/material/styles";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { APP_BAR_HEIGHT } from "@/shared/constants/layout";
+
 export function AppBar() {
   const pathname = usePathname();
 
@@ -35,7 +37,7 @@ export function AppBar() {
       <Toolbar
         disableGutters
         sx={{
-          minHeight: { xs: 56, md: 72 },
+          minHeight: { xs: APP_BAR_HEIGHT.xs, md: APP_BAR_HEIGHT.md },
           px: { xs: 2, md: 0 },
         }}
       >
