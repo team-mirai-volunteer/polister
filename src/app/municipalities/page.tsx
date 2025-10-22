@@ -4,6 +4,8 @@
  * Server Componentで実装
  */
 
+export const dynamic = "force-dynamic";
+
 import { getMunicipalitiesAction } from "@/features/municipality/application/actions/getMunicipalitiesAction";
 import {
   MUNICIPALITY_FIELD_OPERATORS,

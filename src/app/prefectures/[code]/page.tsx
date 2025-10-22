@@ -9,27 +9,19 @@ import {
 import { getPrefectureByCodeAction } from "@/features/prefecture/application/actions/getPrefectureByCodeAction";
 import { PrefectureBoardsMap } from "@/features/prefecture/ui/components/PrefectureBoardsMap";
 import { PrefectureMunicipalityTable } from "@/features/prefecture/ui/components/PrefectureMunicipalityTable";
-import {
-  Box,
-  Chip,
-  Container,
-  Grid,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Container, Paper, Stack, Typography } from "@mui/material";
 import { notFound } from "next/navigation";
+
+const formatCompletionRate = (rate: number): string => {
+  const safe = Number.isFinite(rate) ? Math.max(0, Math.min(1, rate)) : 0;
+  return `${(safe * 100).toFixed(1)}%`;
+};
 
 interface PageProps {
   params: Promise<{
     code: string;
   }>;
 }
-
-const formatCompletionRate = (rate: number): string => {
-  const safe = Number.isFinite(rate) ? Math.max(0, Math.min(1, rate)) : 0;
-  return `${(safe * 100).toFixed(1)}%`;
-};
 
 export default async function PrefectureDetailPage({ params }: PageProps) {
   const { code } = await params;
@@ -42,13 +34,24 @@ export default async function PrefectureDetailPage({ params }: PageProps) {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        {prefecture.name}
-      </Typography>
+      <Stack spacing={3} sx={{ minHeight: 0 }}>
+        <Typography variant="h4">{prefecture.name}</Typography>
 
-      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Stack spacing={3} sx={{ height: "100%" }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={3}
+          sx={{ alignItems: "stretch", minHeight: 0 }}
+        >
+          <Stack
+            spacing={3}
+            sx={{
+              flexShrink: 0,
+              width: { xs: "100%", md: "clamp(260px, 28vw, 360px)" },
+              flexBasis: { md: "clamp(260px, 28vw, 360px)" },
+              minWidth: { md: 240 },
+              maxWidth: { md: 360 },
+            }}
+          >
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 基本情報
@@ -138,38 +141,48 @@ export default async function PrefectureDetailPage({ params }: PageProps) {
               </Stack>
             </Paper>
           </Stack>
-        </Grid>
 
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Stack spacing={3} sx={{ height: "100%" }}>
+          <Stack spacing={3} sx={{ flex: 1, minWidth: 0, minHeight: 0 }}>
             <Paper
               sx={{
                 p: 3,
                 display: "flex",
                 flexDirection: "column",
                 gap: 2,
-                flexGrow: 1,
+                flex: 1,
+                minHeight: 360,
               }}
             >
               <Typography variant="h6" sx={{ mb: 1 }}>
                 掲示板マップ
               </Typography>
 
-              <PrefectureBoardsMap boards={prefecture.boards} />
+              <Box
+                sx={{
+                  flex: 1,
+                  minHeight: 360,
+                  display: "flex",
+                  alignItems: "stretch",
+                }}
+              >
+                <PrefectureBoardsMap boards={prefecture.boards} />
+              </Box>
             </Paper>
 
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: 3, flexShrink: 0 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 自治体一覧
               </Typography>
 
-              <PrefectureMunicipalityTable
-                municipalities={prefecture.municipalities}
-              />
+              <Box sx={{ maxHeight: 320, overflow: "auto" }}>
+                <PrefectureMunicipalityTable
+                  municipalities={prefecture.municipalities}
+                />
+              </Box>
             </Paper>
           </Stack>
-        </Grid>
-      </Grid>
+        </Stack>
+      </Stack>
     </Container>
   );
 }

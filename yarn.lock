@@ -1188,6 +1188,13 @@
   resolved "https://registry.yarnpkg.com/@mui/core-downloads-tracker/-/core-downloads-tracker-7.3.2.tgz#896a7890864d619093dc79541ec1ecfa3b507ad2"
   integrity sha512-AOyfHjyDKVPGJJFtxOlept3EYEdLoar/RvssBTWVAvDJGIE676dLi2oT/Kx+FoVXFoA/JdV7DEMq/BVWV3KHRw==
 
+"@mui/icons-material@^7.3.2":
+  version "7.3.4"
+  resolved "https://registry.yarnpkg.com/@mui/icons-material/-/icons-material-7.3.4.tgz#a273879765c369a1865a2eeb1240d71db3e6da19"
+  integrity sha512-9n6Xcq7molXWYb680N2Qx+FRW8oT6j/LXF5PZFH3ph9X/Rct0B/BlLAsFI7iL9ySI6LVLuQIVtrLiPT82R7OZw==
+  dependencies:
+    "@babel/runtime" "^7.28.4"
+
 "@mui/material-nextjs@^7.3.2":
   version "7.3.2"
   resolved "https://registry.yarnpkg.com/@mui/material-nextjs/-/material-nextjs-7.3.2.tgz#7556f94a0265318635e3cb89d6b1508ceedb6cf2"

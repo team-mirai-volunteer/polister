@@ -54,7 +54,14 @@ export const MunicipalityBoardsSection = ({
         minHeight: 360,
       }}
     >
-      <Box sx={{ flexGrow: 1, minHeight: 360 }}>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 360,
+          display: "flex",
+          alignItems: "stretch",
+        }}
+      >
         <MunicipalityBoardsMap
           boards={boards}
           geojson={geojson ?? undefined}
