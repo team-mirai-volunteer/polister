@@ -25,32 +25,38 @@ export function Footer() {
         <Typography variant="body2" color="text.secondary">
           © {year} Team Mirai Volunteer. All rights reserved.
         </Typography>
-        <Stack direction="row" spacing={2} flexWrap="wrap">
-          <MuiLink
-            component={Link}
-            href="https://team-mirai-volunteer.github.io/polister/"
-            underline="hover"
-            color="inherit"
-          >
-            ドキュメント
-          </MuiLink>
-          <MuiLink
-            component={Link}
-            href="https://github.com/team-mirai-volunteer/polister"
-            underline="hover"
-            color="inherit"
-          >
-            GitHub
-          </MuiLink>
-          <MuiLink
-            component={Link}
-            href="/municipalities"
-            underline="hover"
-            color="inherit"
-          >
-            自治体一覧
-          </MuiLink>
-        </Stack>
+        <Box component="nav" aria-label="フッターナビゲーション">
+          <Stack direction="row" spacing={2} flexWrap="wrap">
+            <MuiLink
+              component={Link}
+              href="https://team-mirai-volunteer.github.io/polister/"
+              underline="hover"
+              color="inherit"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ドキュメント
+            </MuiLink>
+            <MuiLink
+              component={Link}
+              href="https://github.com/team-mirai-volunteer/polister"
+              underline="hover"
+              color="inherit"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </MuiLink>
+            <MuiLink
+              component={Link}
+              href="/municipalities"
+              underline="hover"
+              color="inherit"
+            >
+              自治体一覧
+            </MuiLink>
+          </Stack>
+        </Box>
       </Stack>
     </Box>
   );

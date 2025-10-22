@@ -38,9 +38,13 @@ const resolveInitialMode = (): PaletteMode => {
     return stored;
   }
 
-  const prefersDark = window.matchMedia(
-    "(prefers-color-scheme: dark)"
-  )?.matches;
+  if (typeof window.matchMedia !== "function") {
+    return "light";
+  }
+
+  const prefersDark = window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .matches;
   return prefersDark ? "dark" : "light";
 };
 
@@ -59,7 +63,7 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
       return;
     }
 

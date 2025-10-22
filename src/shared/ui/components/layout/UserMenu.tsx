@@ -59,6 +59,7 @@ export function UserMenu({ user }: UserMenuProps) {
           onClick={handleOpen}
           size="small"
           sx={{ ml: 0.5 }}
+          aria-label="ユーザーメニュー"
           aria-haspopup="true"
           aria-controls={open ? "user-menu" : undefined}
           aria-expanded={open ? "true" : undefined}

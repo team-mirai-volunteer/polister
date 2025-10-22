@@ -65,7 +65,11 @@ export function AppBar() {
             alignItems="center"
             sx={{ flex: 1, minWidth: 0 }}
           >
-            <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
+            <Link
+              href="/"
+              aria-label="POLISTER ホーム"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
               <Stack
                 direction="row"
                 spacing={1.25}
@@ -99,61 +103,69 @@ export function AppBar() {
               </Stack>
             </Link>
 
-            <Stack
-              direction="row"
-              spacing={0.5}
-              alignItems="center"
-              sx={{
-                display: "flex",
-                flexWrap: { xs: "wrap", md: "nowrap" },
-                rowGap: { xs: 0.75, md: 0 },
-                ml: { xs: 0.5, md: 0 },
-              }}
-            >
-              {NAV_ITEMS.map((item) => {
-                const isActive =
-                  item.path === "/"
-                    ? pathname === "/"
-                    : pathname === item.path ||
-                      pathname.startsWith(`${item.path}/`);
-                return (
-                  <Button
-                    key={item.path}
-                    component={Link}
-                    href={item.path}
-                    variant="text"
-                    color="inherit"
-                    aria-current={isActive ? "page" : undefined}
-                    size="small"
-                    sx={{
-                      px: { xs: 1.4, md: 1.6 },
-                      py: { xs: 0.5, md: 0.75 },
-                      fontSize: { xs: "0.82rem", md: "0.9rem" },
-                      whiteSpace: "nowrap",
-                      fontWeight: 600,
-                      ...(isActive
-                        ? {
-                            color: (theme) => theme.palette.primary.main,
-                            backgroundColor: (theme) =>
-                              theme.palette.primary.contrastText,
-                            "&:hover": {
+            <Box component="nav" aria-label="グローバルナビゲーション">
+              <Stack
+                direction="row"
+                spacing={0.5}
+                alignItems="center"
+                sx={{
+                  display: "flex",
+                  flexWrap: { xs: "wrap", md: "nowrap" },
+                  rowGap: { xs: 0.75, md: 0 },
+                  ml: { xs: 0.5, md: 0 },
+                }}
+              >
+                {NAV_ITEMS.map((item) => {
+                  const isActive =
+                    item.path === "/"
+                      ? pathname === "/"
+                      : pathname === item.path ||
+                        pathname.startsWith(`${item.path}/`);
+                  return (
+                    <Button
+                      key={item.path}
+                      component={Link}
+                      href={item.path}
+                      variant="text"
+                      color="inherit"
+                      aria-current={isActive ? "page" : undefined}
+                      size="small"
+                      sx={{
+                        px: { xs: 1.4, md: 1.6 },
+                        py: { xs: 0.5, md: 0.75 },
+                        fontSize: { xs: "0.82rem", md: "0.9rem" },
+                        whiteSpace: "nowrap",
+                        fontWeight: 600,
+                        ...(isActive
+                          ? {
+                              color: (theme) => theme.palette.primary.main,
                               backgroundColor: (theme) =>
-                                alpha(theme.palette.primary.contrastText, 0.9),
-                            },
-                          }
-                        : {
-                            "&:hover": {
-                              backgroundColor: (theme) =>
-                                alpha(theme.palette.primary.contrastText, 0.12),
-                            },
-                          }),
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </Stack>
+                                theme.palette.primary.contrastText,
+                              "&:hover": {
+                                backgroundColor: (theme) =>
+                                  alpha(
+                                    theme.palette.primary.contrastText,
+                                    0.9
+                                  ),
+                              },
+                            }
+                          : {
+                              "&:hover": {
+                                backgroundColor: (theme) =>
+                                  alpha(
+                                    theme.palette.primary.contrastText,
+                                    0.12
+                                  ),
+                              },
+                            }),
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  );
+                })}
+              </Stack>
+            </Box>
           </Stack>
 
           <Stack
