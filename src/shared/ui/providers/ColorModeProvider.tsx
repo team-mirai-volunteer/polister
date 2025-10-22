@@ -33,7 +33,13 @@ const resolveInitialMode = (): PaletteMode => {
     return "light";
   }
 
-  const stored = window.localStorage.getItem(STORAGE_KEY) as PaletteMode | null;
+  let stored: PaletteMode | null = null;
+  try {
+    stored = window.localStorage.getItem(STORAGE_KEY) as PaletteMode | null;
+  } catch {
+    stored = null;
+  }
+
   if (stored === "light" || stored === "dark") {
     return stored;
   }
@@ -93,7 +99,11 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    window.localStorage.setItem(STORAGE_KEY, mode);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, mode);
+    } catch {
+      // Safari プライベートモード等では storage が無効化されている場合があるため、例外は握りつぶす
+    }
   }, [mode, isMounted]);
 
   const toggleMode = useCallback(() => {
