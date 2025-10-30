@@ -256,30 +256,24 @@ export function BoardImportReviewTable({
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {Number.isFinite(row.latitude)
-                        ? row.latitude.toFixed(6)
-                        : "-"}
+                      {row.latitude != null ? row.latitude.toFixed(6) : "-"}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {Number.isFinite(row.longitude)
-                        ? row.longitude.toFixed(6)
-                        : "-"}
+                      {row.longitude != null ? row.longitude.toFixed(6) : "-"}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {matched?.latitude !== null &&
-                      matched?.latitude !== undefined
+                      {matched?.latitude != null
                         ? matched.latitude.toFixed(6)
                         : "-"}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {matched?.longitude !== null &&
-                      matched?.longitude !== undefined
+                      {matched?.longitude != null
                         ? matched.longitude.toFixed(6)
                         : "-"}
                     </Typography>

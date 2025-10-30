@@ -75,7 +75,10 @@ export class GetBoardImportBatchDetailUseCase {
 
     const batchDTO = toBoardImportBatchDTO(batch, downloadUrl);
     const rowDTOs = rows.map((row) =>
-      toBoardImportRowDTO(row, matchedMap.get(row.matchedBoardId ?? ""))
+      toBoardImportRowDTO(
+        row,
+        row.matchedBoardId ? matchedMap.get(row.matchedBoardId) : undefined
+      )
     );
     const missingDTOs = missing.map((item) => toBoardImportMissingDTO(item));
 
