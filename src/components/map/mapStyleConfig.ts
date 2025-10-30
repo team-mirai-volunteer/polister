@@ -1,16 +1,17 @@
 import mapboxgl from "mapbox-gl";
 
-export type MapStyleKey = "poster" | "satellite";
+export type MapStyleKey = "standard" | "simple" | "satellite";
 
 export const MAP_STYLE_URLS: Record<MapStyleKey, string> = {
-  poster: "mapbox://styles/mapbox/light-v11",
+  standard: "mapbox://styles/mapbox/streets-v12",
+  simple: "mapbox://styles/mapbox/light-v11",
   satellite: "mapbox://styles/mapbox/satellite-streets-v12",
 };
 
 export const DEFAULT_CENTER: mapboxgl.LngLatLike = [137.0, 38.0];
 export const DEFAULT_ZOOM = 4.5;
 
-const POSTER_LAYER_CUSTOMIZATIONS: LayerCustomization[] = [
+const SIMPLE_LAYER_CUSTOMIZATIONS: LayerCustomization[] = [
   {
     layerId: "road-primary",
     paint: [
@@ -87,13 +88,13 @@ type LayerCustomization = {
   layout?: LayoutSetting[];
 };
 
-export const applyPosterStyling = (map: mapboxgl.Map) => {
+export const applySimpleStyling = (map: mapboxgl.Map) => {
   if (!map.isStyleLoaded()) {
-    map.once("styledata", () => applyPosterStyling(map));
+    map.once("styledata", () => applySimpleStyling(map));
     return;
   }
 
-  POSTER_LAYER_CUSTOMIZATIONS.forEach(({ layerId, paint, layout }) => {
+  SIMPLE_LAYER_CUSTOMIZATIONS.forEach(({ layerId, paint, layout }) => {
     if (!map.getLayer(layerId)) {
       return;
     }

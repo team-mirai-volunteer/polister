@@ -1,14 +1,18 @@
-/**
- * BoardsClusterMap コンポーネント
- *
- * 掲示板の位置情報をクラスタ表示する汎用マップ
- */
-
 "use client";
 
-import { Alert, Box, type SxProps, type Theme } from "@mui/material";
+import { MapStyleToggle } from "@/components/map/MapStyleToggle";
+import {
+  DEFAULT_CENTER,
+  DEFAULT_ZOOM,
+  MAP_STYLE_URLS,
+  applySimpleStyling,
+  type MapStyleKey,
+} from "@/components/map/mapStyleConfig";
+import { setMapLanguageToJapanese } from "@/components/map/useJapaneseLabels";
+import { useMapResize } from "@/shared/ui/hooks/useMapResize";
+import { Alert, Box, useTheme, type SxProps, type Theme } from "@mui/material";
 import bbox from "@turf/bbox";
-import mapboxgl, { type MapLayerMouseEvent } from "mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MapboxMap, {
   Layer,
@@ -16,15 +20,6 @@ import MapboxMap, {
   Source,
 } from "react-map-gl/mapbox";
 
-import {
-  DEFAULT_CENTER,
-  DEFAULT_ZOOM,
-  MAP_STYLE_URLS,
-  applyPosterStyling,
-} from "@/components/map/mapStyleConfig";
-import { setMapLanguageToJapanese } from "@/components/map/useJapaneseLabels";
-import { useMapResize } from "@/shared/ui/hooks/useMapResize";
-import theme from "@/theme";
 import type { BoardLocationDTO } from "../../application/dto/BoardLocationDTO";
 
 const SOURCE_ID = "boards-cluster-source";
@@ -49,15 +44,12 @@ export function BoardsClusterMap({
   sx,
   minHeight = 360,
 }: BoardsClusterMapProps) {
+  const theme = useTheme();
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const mapRef = useRef<MapboxMapRef | null>(null);
+  const [mapStyle, setMapStyle] = useState<MapStyleKey>("standard");
   const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-  const primaryMain = theme.palette.primary.main;
-  const primaryLight = theme.palette.primary.light;
-  const primaryDark = theme.palette.primary.dark;
-  const primaryContrast = theme.palette.primary.contrastText;
 
   const featureCollection = useMemo<GeoJSON.FeatureCollection<
     GeoJSON.Point,
@@ -205,26 +197,15 @@ export function BoardsClusterMap({
       return;
     }
 
-    const setPointer = () => {
-      mapInstance.getCanvas().style.cursor = "pointer";
-    };
-    const unsetPointer = () => {
-      mapInstance.getCanvas().style.cursor = "";
-    };
-
-    const enhanceStyle = () => {
+    const applyStyle = () => {
       setMapLanguageToJapanese(mapInstance);
-      applyPosterStyling(mapInstance);
+      if (mapStyle === "simple") {
+        applySimpleStyling(mapInstance);
+      }
     };
 
-    enhanceStyle();
-    mapInstance.on("styledata", enhanceStyle);
-    mapInstance.on("mouseenter", CLUSTER_LAYER_ID, setPointer);
-    mapInstance.on("mouseleave", CLUSTER_LAYER_ID, unsetPointer);
-    mapInstance.on("mouseenter", CLUSTER_COUNT_LAYER_ID, setPointer);
-    mapInstance.on("mouseleave", CLUSTER_COUNT_LAYER_ID, unsetPointer);
-    mapInstance.on("mouseenter", UNCLUSTERED_LAYER_ID, setPointer);
-    mapInstance.on("mouseleave", UNCLUSTERED_LAYER_ID, unsetPointer);
+    applyStyle();
+    mapInstance.on("styledata", applyStyle);
 
     const navControl = new mapboxgl.NavigationControl({
       visualizePitch: true,
@@ -234,18 +215,12 @@ export function BoardsClusterMap({
     mapInstance.addControl(navControl, "top-right");
 
     return () => {
-      mapInstance.off("styledata", enhanceStyle);
-      mapInstance.off("mouseenter", CLUSTER_LAYER_ID, setPointer);
-      mapInstance.off("mouseleave", CLUSTER_LAYER_ID, unsetPointer);
-      mapInstance.off("mouseenter", CLUSTER_COUNT_LAYER_ID, setPointer);
-      mapInstance.off("mouseleave", CLUSTER_COUNT_LAYER_ID, unsetPointer);
-      mapInstance.off("mouseenter", UNCLUSTERED_LAYER_ID, setPointer);
-      mapInstance.off("mouseleave", UNCLUSTERED_LAYER_ID, unsetPointer);
+      mapInstance.off("styledata", applyStyle);
       mapInstance.removeControl(navControl);
     };
-  }, [mapInstance]);
+  }, [mapInstance, mapStyle]);
 
-  const handleMapClick = useCallback((event: MapLayerMouseEvent) => {
+  const handleMapClick = useCallback((event: mapboxgl.MapLayerMouseEvent) => {
     const map = mapRef.current?.getMap();
     if (!map || !event.features?.length) {
       return;
@@ -334,7 +309,7 @@ export function BoardsClusterMap({
       <MapboxMap
         ref={mapRef}
         mapboxAccessToken={mapboxToken}
-        mapStyle={MAP_STYLE_URLS.poster}
+        mapStyle={MAP_STYLE_URLS[mapStyle]}
         initialViewState={initialViewState}
         interactiveLayerIds={[
           CLUSTER_LAYER_ID,
@@ -362,11 +337,11 @@ export function BoardsClusterMap({
               "circle-color": [
                 "step",
                 ["get", "point_count"],
-                primaryLight,
+                theme.palette.primary.light,
                 50,
-                primaryMain,
+                theme.palette.primary.main,
                 100,
-                primaryDark,
+                theme.palette.primary.dark,
               ],
               "circle-radius": [
                 "step",
@@ -393,7 +368,7 @@ export function BoardsClusterMap({
               "text-size": 12,
             }}
             paint={{
-              "text-color": primaryContrast,
+              "text-color": theme.palette.primary.contrastText,
             }}
           />
           <Layer
@@ -401,7 +376,7 @@ export function BoardsClusterMap({
             type="circle"
             filter={["!", ["has", "point_count"]]}
             paint={{
-              "circle-color": primaryMain,
+              "circle-color": theme.palette.primary.main,
               "circle-radius": 7,
               "circle-stroke-width": 2,
               "circle-stroke-color": "#ffffff",
@@ -410,6 +385,13 @@ export function BoardsClusterMap({
           />
         </Source>
       </MapboxMap>
+
+      <MapStyleToggle
+        value={mapStyle}
+        onChange={(value) => setMapStyle(value)}
+      />
     </Box>
   );
 }
+
+export default BoardsClusterMap;

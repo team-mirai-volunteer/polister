@@ -1,3 +1,5 @@
+import type { BoardImportStorage } from "@/features/board-import/application/services/BoardImportStorage";
+import type { IBoardImportRepository } from "@/features/board-import/domain/repositories/IBoardImportRepository";
 import type { IBoardRepository } from "@/features/board/domain/repositories/IBoardRepository";
 import type { IMunicipalityRepository } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
 import type { IPrefectureRepository } from "@/features/prefecture/domain/repositories/IPrefectureRepository";
@@ -22,6 +24,8 @@ export const TOKENS = {
   MunicipalityRepository: "di.municipalityRepository",
   PrefectureRepository: "di.prefectureRepository",
   BoardRepository: "di.boardRepository",
+  BoardImportRepository: "di.boardImportRepository",
+  BoardImportStorage: "di.boardImportStorage",
   StatisticsRepository: "di.statisticsRepository",
 } as const;
 
@@ -34,6 +38,8 @@ export type TokenMap = {
   [TOKENS.MunicipalityRepository]: IMunicipalityRepository;
   [TOKENS.PrefectureRepository]: IPrefectureRepository;
   [TOKENS.BoardRepository]: IBoardRepository;
+  [TOKENS.BoardImportRepository]: IBoardImportRepository;
+  [TOKENS.BoardImportStorage]: BoardImportStorage;
   [TOKENS.StatisticsRepository]: IStatisticsRepository;
 };
 

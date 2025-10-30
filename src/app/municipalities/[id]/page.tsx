@@ -12,8 +12,10 @@ import {
   STATUS_LABELS,
 } from "@/features/municipality/constants";
 import { MunicipalityBoardsSection } from "@/features/municipality/ui/components/MunicipalityBoardsSection";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
   Box,
+  Button,
   Chip,
   Container,
   Link,
@@ -51,6 +53,9 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   }
 
   const prefectureCode = municipality.code.slice(0, 2);
+  const importUrl = `/board-imports?municipalityId=${encodeURIComponent(
+    municipality.id
+  )}&municipalityName=${encodeURIComponent(municipality.fullName)}`;
 
   if (geojsonResult.status === "rejected") {
     throw geojsonResult.reason;
@@ -69,7 +74,21 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Stack spacing={3}>
-        <Typography variant="h4">{municipality.fullName}</Typography>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems={{ xs: "flex-start", sm: "center" }}
+        >
+          <Typography variant="h4">{municipality.fullName}</Typography>
+          <Button
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+            component={NextLink}
+            href={importUrl}
+          >
+            インポート
+          </Button>
+        </Stack>
 
         <Stack
           direction={{ xs: "column", md: "row" }}

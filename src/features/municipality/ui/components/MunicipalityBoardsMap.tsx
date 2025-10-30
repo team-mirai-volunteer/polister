@@ -1,48 +1,38 @@
 "use client";
 
-import {
-  Alert,
-  Box,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import MapboxMap from "@/components/map/MapboxMap";
+import { DEFAULT_CENTER, DEFAULT_ZOOM } from "@/components/map/mapStyleConfig";
+import { useMapResize } from "@/shared/ui/hooks/useMapResize";
+import { Box, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import bbox from "@turf/bbox";
 import mapboxgl from "mapbox-gl";
-import {
-  SyntheticEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import MapboxMap, {
-  Layer,
-  MapRef as MapboxMapRef,
-  Marker,
-  Source,
-} from "react-map-gl/mapbox";
-
-import type { MapStyleKey } from "@/components/map/mapStyleConfig";
-import {
-  DEFAULT_CENTER,
-  DEFAULT_ZOOM,
-  MAP_STYLE_URLS,
-  applyPosterStyling,
-} from "@/components/map/mapStyleConfig";
-import { setMapLanguageToJapanese } from "@/components/map/useJapaneseLabels";
-import { useMapResize } from "@/shared/ui/hooks/useMapResize";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
+
+const POLYGON_SOURCE_ID = "municipality-polygon";
+const POLYGON_LAYER_ID = "municipality-outline";
 
 interface MunicipalityBoardsMapProps {
   boards: MunicipalityBoardDTO[];
   geojson?: GeoJSON.Feature | null;
   focusedBoardId?: string | null;
   onBoardFocused?: (boardId: string | null) => void;
+}
+
+interface CoordinatePoint {
+  id: string;
+  longitude: number;
+  latitude: number;
+  name: string;
+  boardNumber: number | null;
+}
+
+interface MarkerEntry {
+  marker: mapboxgl.Marker;
+  element: HTMLButtonElement;
+  cleanup: () => void;
 }
 
 const [DEFAULT_LONGITUDE, DEFAULT_LATITUDE] = DEFAULT_CENTER as [
@@ -56,33 +46,40 @@ const DEFAULT_VIEW_STATE = {
   zoom: DEFAULT_ZOOM,
 };
 
-export const MunicipalityBoardsMap = ({
+export function MunicipalityBoardsMap({
   boards,
   geojson,
   focusedBoardId,
   onBoardFocused,
-}: MunicipalityBoardsMapProps) => {
-  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-  const mapRef = useRef<MapboxMapRef | null>(null);
-  const styleStateRef = useRef<MapStyleKey>("poster");
-  const appliedStyleRef = useRef<MapStyleKey>("poster");
-  const [mapStyle, setMapStyle] = useState<MapStyleKey>("poster");
-  const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
+}: MunicipalityBoardsMapProps) {
+  const theme = useTheme();
+  const mapRef = useRef<mapboxgl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const markersRef = useRef<Map<string, MarkerEntry>>(new Map());
 
-  const coordinates = useMemo(
-    () =>
-      boards
-        .filter((board) => board.longitude !== null && board.latitude !== null)
-        .map((board) => ({
-          id: board.id,
-          longitude: board.longitude as number,
-          latitude: board.latitude as number,
-          name: board.name ?? "",
-          boardNumber: board.boardNumber,
-        })),
-    [boards]
-  );
+  const coordinates = useMemo<CoordinatePoint[]>(() => {
+    return boards
+      .filter(
+        (
+          board
+        ): board is MunicipalityBoardDTO & {
+          longitude: number;
+          latitude: number;
+        } =>
+          typeof board.longitude === "number" &&
+          Number.isFinite(board.longitude) &&
+          typeof board.latitude === "number" &&
+          Number.isFinite(board.latitude)
+      )
+      .map((board) => ({
+        id: board.id,
+        longitude: board.longitude as number,
+        latitude: board.latitude as number,
+        name: board.name ?? "",
+        boardNumber: board.boardNumber,
+      }));
+  }, [boards]);
 
   const polygonBounds = useMemo(() => {
     if (!geojson || !geojson.geometry) {
@@ -90,6 +87,7 @@ export const MunicipalityBoardsMap = ({
     }
 
     const [minLng, minLat, maxLng, maxLat] = bbox(geojson as GeoJSON.Feature);
+
     if (
       minLng === undefined ||
       minLat === undefined ||
@@ -217,90 +215,192 @@ export const MunicipalityBoardsMap = ({
     [coordinates, polygonBounds]
   );
 
-  useEffect(() => {
-    if (mapInstance || !mapRef.current) {
-      return;
-    }
-    const map = mapRef.current.getMap();
-    if (map) {
-      setMapInstance(map);
-    }
-  }, [mapInstance]);
-
-  const handleMapLoad = useCallback(() => {
-    const map = mapRef.current?.getMap();
-    if (map) {
-      setMapInstance(map);
-    }
+  const handleMapReady = useCallback((map: mapboxgl.Map) => {
+    mapRef.current = map;
+    setMapReady(true);
   }, []);
 
   useEffect(() => {
-    if (!mapInstance) {
-      return;
-    }
-
-    if (mapInstance.isStyleLoaded()) {
-      adjustViewport(mapInstance);
-      return;
-    }
-
-    const handleLoad = () => {
-      adjustViewport(mapInstance);
-      mapInstance.off("load", handleLoad);
-    };
-
-    mapInstance.on("load", handleLoad);
-
     return () => {
-      mapInstance.off("load", handleLoad);
+      const markers = markersRef.current;
+      markers.forEach((entry) => {
+        entry.cleanup();
+      });
+      markersRef.current = new Map<string, MarkerEntry>();
+      mapRef.current = null;
+      setMapReady(false);
     };
-  }, [mapInstance, adjustViewport]);
+  }, []);
 
   useEffect(() => {
-    if (!mapInstance) {
+    const map = mapRef.current;
+    if (!map || !mapReady) {
       return;
     }
 
-    const applyStyle = () => {
-      setMapLanguageToJapanese(mapInstance);
-      if (styleStateRef.current === "poster") {
-        applyPosterStyling(mapInstance);
+    const ensurePolygon = () => {
+      if (!map.isStyleLoaded()) {
+        return;
+      }
+
+      if (!geojson) {
+        if (map.getLayer(POLYGON_LAYER_ID)) {
+          map.removeLayer(POLYGON_LAYER_ID);
+        }
+        if (map.getSource(POLYGON_SOURCE_ID)) {
+          map.removeSource(POLYGON_SOURCE_ID);
+        }
+        return;
+      }
+
+      const sourceData = geojson as GeoJSON.Feature;
+
+      if (map.getSource(POLYGON_SOURCE_ID)) {
+        const source = map.getSource(
+          POLYGON_SOURCE_ID
+        ) as mapboxgl.GeoJSONSource | null;
+        source?.setData(sourceData);
+      } else {
+        map.addSource(POLYGON_SOURCE_ID, {
+          type: "geojson",
+          data: sourceData,
+        });
+      }
+
+      if (!map.getLayer(POLYGON_LAYER_ID)) {
+        map.addLayer({
+          id: POLYGON_LAYER_ID,
+          type: "line",
+          source: POLYGON_SOURCE_ID,
+          paint: {
+            "line-color": theme.palette.primary.main,
+            "line-width": 2,
+          },
+        });
       }
     };
 
-    applyStyle();
-    mapInstance.on("styledata", applyStyle);
-
-    const navControl = new mapboxgl.NavigationControl({
-      visualizePitch: true,
-      showCompass: true,
-      showZoom: true,
-    });
-    mapInstance.addControl(navControl, "top-right");
+    ensurePolygon();
+    map.on("style.load", ensurePolygon);
 
     return () => {
-      mapInstance.off("styledata", applyStyle);
-      mapInstance.removeControl(navControl);
+      map.off("style.load", ensurePolygon);
+      if (map.getLayer(POLYGON_LAYER_ID)) {
+        map.removeLayer(POLYGON_LAYER_ID);
+      }
+      if (map.getSource(POLYGON_SOURCE_ID)) {
+        map.removeSource(POLYGON_SOURCE_ID);
+      }
     };
-  }, [mapInstance]);
+  }, [geojson, mapReady, theme.palette.primary.main]);
 
   useEffect(() => {
-    styleStateRef.current = mapStyle;
-  }, [mapStyle]);
-
-  useEffect(() => {
-    if (!mapInstance) {
+    const map = mapRef.current;
+    if (!map || !mapReady) {
       return;
     }
-    if (appliedStyleRef.current === mapStyle) {
-      return;
-    }
-    appliedStyleRef.current = mapStyle;
-    mapInstance.setStyle(MAP_STYLE_URLS[mapStyle]);
-  }, [mapInstance, mapStyle]);
+
+    const nextIds = new Set(coordinates.map((coord) => coord.id));
+    const palette = {
+      primary: theme.palette.primary.main,
+      secondary: theme.palette.secondary.main,
+      white: theme.palette.common.white,
+    };
+
+    // Remove markers that no longer exist
+    markersRef.current.forEach((entry, id) => {
+      if (!nextIds.has(id)) {
+        entry.cleanup();
+        markersRef.current.delete(id);
+      }
+    });
+
+    coordinates.forEach((coord) => {
+      const label =
+        coord.boardNumber !== null
+          ? `掲示板 No.${coord.boardNumber}${
+              coord.name ? ` ${coord.name}` : ""
+            }`
+          : `掲示板${coord.name ? ` ${coord.name}` : ""}`;
+
+      const existing = markersRef.current.get(coord.id);
+      if (existing) {
+        existing.marker.setLngLat([coord.longitude, coord.latitude]);
+        existing.element.setAttribute("aria-label", label);
+        existing.element.setAttribute("title", label);
+        applyMarkerStyle(existing.element, false, palette);
+        return;
+      }
+
+      const element = document.createElement("button");
+      element.type = "button";
+      element.style.border = "none";
+      element.style.padding = "0";
+      element.style.background = "transparent";
+      element.style.cursor = "pointer";
+      element.style.outline = "none";
+      element.style.transition =
+        "background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease";
+      element.setAttribute("aria-label", label);
+      element.setAttribute("title", label);
+      element.tabIndex = 0;
+
+      applyMarkerStyle(element, false, palette);
+
+      const handleClick = () => {
+        onBoardFocused?.(coord.id);
+      };
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onBoardFocused?.(coord.id);
+        }
+      };
+
+      element.addEventListener("click", handleClick);
+      element.addEventListener("keydown", handleKeyDown);
+
+      const marker = new mapboxgl.Marker({ element })
+        .setLngLat([coord.longitude, coord.latitude])
+        .addTo(map);
+
+      markersRef.current.set(coord.id, {
+        marker,
+        element,
+        cleanup: () => {
+          element.removeEventListener("click", handleClick);
+          element.removeEventListener("keydown", handleKeyDown);
+          marker.remove();
+        },
+      });
+    });
+  }, [
+    coordinates,
+    mapReady,
+    onBoardFocused,
+    theme.palette.common.white,
+    theme.palette.primary.main,
+    theme.palette.secondary.main,
+  ]);
 
   useEffect(() => {
-    if (!focusedBoardId || !mapInstance) {
+    const map = mapRef.current;
+    if (!map || !mapReady) {
+      return;
+    }
+
+    markersRef.current.forEach((entry, id) => {
+      const isFocused = focusedBoardId === id;
+      entry.element.setAttribute("aria-pressed", isFocused ? "true" : "false");
+      applyMarkerStyle(entry.element, isFocused, {
+        primary: theme.palette.primary.main,
+        secondary: theme.palette.secondary.main,
+        white: theme.palette.common.white,
+      });
+    });
+
+    if (!focusedBoardId) {
       return;
     }
 
@@ -309,34 +409,44 @@ export const MunicipalityBoardsMap = ({
       return;
     }
 
-    mapInstance.easeTo({
+    map.easeTo({
       center: [target.longitude, target.latitude],
-      zoom: Math.max(mapInstance.getZoom(), 14),
+      zoom: Math.max(map.getZoom(), 14),
       duration: 500,
     });
-  }, [mapInstance, coordinates, focusedBoardId]);
+  }, [
+    focusedBoardId,
+    mapReady,
+    coordinates,
+    theme.palette.common.white,
+    theme.palette.primary.main,
+    theme.palette.secondary.main,
+  ]);
 
-  useMapResize(mapInstance, containerRef);
-
-  if (!mapboxToken) {
-    return (
-      <Alert severity="warning">
-        Mapboxのアクセストークンが設定されていません。`.env.local`に`NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`を追加してください。
-      </Alert>
-    );
-  }
-
-  const hasGeoJSON = Boolean(geojson);
-
-  const handleStyleChange = (
-    _event: SyntheticEvent,
-    nextValue: MapStyleKey | null
-  ) => {
-    if (!nextValue) {
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) {
       return;
     }
-    setMapStyle(nextValue);
-  };
+
+    if (map.isStyleLoaded()) {
+      adjustViewport(map);
+      return;
+    }
+
+    const handleLoad = () => {
+      adjustViewport(map);
+      map.off("load", handleLoad);
+    };
+
+    map.on("load", handleLoad);
+
+    return () => {
+      map.off("load", handleLoad);
+    };
+  }, [adjustViewport, mapReady]);
+
+  useMapResize(mapReady ? mapRef.current : null, containerRef);
 
   return (
     <Box
@@ -348,158 +458,55 @@ export const MunicipalityBoardsMap = ({
         display: "flex",
         flexDirection: "column",
         minHeight: 360,
-        "& .mapboxgl-map": {
-          flex: 1,
-        },
       }}
     >
       <MapboxMap
-        ref={mapRef}
-        mapboxAccessToken={mapboxToken}
+        onMapReady={handleMapReady}
         initialViewState={initialViewState}
-        mapStyle={MAP_STYLE_URLS[mapStyle]}
-        onLoad={handleMapLoad}
-        style={{ flex: 1 }}
-      >
-        {hasGeoJSON ? null : (
-          <Typography
-            variant="caption"
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              bgcolor: "rgba(255,255,255,0.92)",
-              px: 1,
-              py: 0.4,
-              borderRadius: 1,
-              color: "text.secondary",
-            }}
-          >
-            行政区域ポリゴンは利用できません
-          </Typography>
-        )}
+        sx={{ flex: 1, minHeight: 0 }}
+        mapContainerSx={{ height: "100%" }}
+      />
 
-        {geojson && (
-          <Source
-            id="municipality-polygon"
-            type="geojson"
-            data={geojson as GeoJSON.Feature}
-          >
-            <Layer
-              id="municipality-outline"
-              type="line"
-              paint={{
-                "line-color": "#1976d2",
-                "line-width": 2,
-              }}
-            />
-          </Source>
-        )}
-
-        {coordinates.map((coord) => {
-          const isFocused = coord.id === focusedBoardId;
-          const markerLabel =
-            coord.boardNumber !== null
-              ? `掲示板 No.${coord.boardNumber}${
-                  coord.name ? ` ${coord.name}` : ""
-                }`
-              : `掲示板${coord.name ? ` ${coord.name}` : ""}`;
-
-          return (
-            <Marker
-              key={coord.id}
-              longitude={coord.longitude}
-              latitude={coord.latitude}
-              anchor="bottom"
-            >
-              <Tooltip
-                title={
-                  coord.boardNumber !== null
-                    ? `No.${coord.boardNumber} ${coord.name}`
-                    : coord.name
-                }
-                PopperProps={{ disablePortal: true }}
-              >
-                <Box
-                  role="button"
-                  tabIndex={0}
-                  aria-label={markerLabel}
-                  aria-pressed={isFocused}
-                  onClick={() => onBoardFocused?.(coord.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onBoardFocused?.(coord.id);
-                    }
-                  }}
-                  sx={{
-                    width: isFocused ? 18 : 14,
-                    height: isFocused ? 18 : 14,
-                    borderRadius: "50%",
-                    backgroundColor: isFocused
-                      ? "secondary.main"
-                      : "primary.main",
-                    opacity: isFocused ? 1 : 0.75,
-                    border: (theme) =>
-                      `2px solid ${theme.palette.common.white}`,
-                    boxShadow: isFocused
-                      ? "0 0 0 3px rgba(228,0,20,0.25)"
-                      : "0 0 6px rgba(29,41,61,0.25)",
-                    transition: "all 0.2s ease",
-                    cursor: "pointer",
-                    outline: "none",
-                    transform: isFocused ? "scale(1.1)" : "scale(1)",
-                    "&:focus-visible": {
-                      outline: (theme) =>
-                        `3px solid ${theme.palette.secondary.main}`,
-                      outlineOffset: 2,
-                    },
-                  }}
-                />
-              </Tooltip>
-            </Marker>
-          );
-        })}
-      </MapboxMap>
-
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ position: "absolute", top: 16, left: 16 }}
-      >
-        <ToggleButtonGroup
-          size="small"
-          color="primary"
-          value={mapStyle}
-          exclusive
-          onChange={handleStyleChange}
+      {!geojson ? (
+        <Typography
+          variant="caption"
           sx={{
+            position: "absolute",
+            top: 80,
+            left: 16,
             bgcolor: "rgba(255,255,255,0.92)",
+            px: 1,
+            py: 0.4,
             borderRadius: 1,
-            boxShadow: 3,
-            "& .MuiToggleButton-root": {
-              px: 1.6,
-              py: 0.6,
-              border: "none",
-              borderRadius: 0,
-              fontWeight: 600,
-            },
-            "& .MuiToggleButton-root:first-of-type": {
-              borderTopLeftRadius: 8,
-              borderBottomLeftRadius: 8,
-            },
-            "& .MuiToggleButton-root:last-of-type": {
-              borderTopRightRadius: 8,
-              borderBottomRightRadius: 8,
-            },
+            color: "text.secondary",
           }}
         >
-          <ToggleButton value="poster">地図</ToggleButton>
-          <ToggleButton value="satellite">衛星</ToggleButton>
-        </ToggleButtonGroup>
-      </Stack>
+          行政区域ポリゴンは利用できません
+        </Typography>
+      ) : null}
     </Box>
   );
-};
+}
+
+function applyMarkerStyle(
+  element: HTMLButtonElement,
+  isFocused: boolean,
+  palette: { primary: string; secondary: string; white: string }
+) {
+  element.style.width = isFocused ? "18px" : "14px";
+  element.style.height = isFocused ? "18px" : "14px";
+  element.style.borderRadius = "50%";
+  element.style.backgroundColor = isFocused
+    ? palette.secondary
+    : palette.primary;
+  element.style.opacity = isFocused ? "1" : "0.75";
+  element.style.border = `2px solid ${palette.white}`;
+  element.style.boxShadow = isFocused
+    ? "0 0 0 3px rgba(228,0,20,0.25)"
+    : "0 0 6px rgba(29,41,61,0.25)";
+  element.style.transition =
+    "background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease";
+  element.style.transform = isFocused ? "scale(1.1)" : "scale(1)";
+}
 
 export default MunicipalityBoardsMap;

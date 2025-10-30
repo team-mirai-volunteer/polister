@@ -26,10 +26,12 @@ model Board {
   updatedAt      DateTime                              @updatedAt @map("updated_at")
   deletedAt      DateTime?                             @map("deleted_at")
 
-  municipality  Municipality   @relation(fields: [municipalityId], references: [id])
+  municipality  Municipality         @relation(fields: [municipalityId], references: [id])
   images        BoardImage[]
   verifications Verification[]
   histories     BoardHistory[]
+  importRows    BoardImportRow[]
+  importMissing BoardImportMissing[]
 
   @@index([location], type: Gist)
   @@index([municipalityId])
@@ -37,6 +39,93 @@ model Board {
   @@index([trustLevel])
   @@index([status])
   @@map("boards")
+}
+
+model BoardImportBatch {
+  id             String            @id @default(uuid())
+  municipalityId String            @map("municipality_id")
+  status         BoardImportStatus @default(UPLOADED)
+  sourceFileName String            @map("source_file_name")
+  storagePath    String            @map("storage_path")
+  fileSize       Int               @map("file_size")
+  checksum       String
+  totalRows      Int               @map("total_rows")
+  matchedCount   Int               @map("matched_count")
+  newCount       Int               @map("new_count")
+  missingCount   Int               @map("missing_count")
+  updatedCount   Int               @map("updated_count")
+  duplicateCount Int               @map("duplicate_count")
+  uploadedBy     String?           @map("uploaded_by")
+  uploadedAt     DateTime          @default(now()) @map("uploaded_at")
+  confirmedBy    String?           @map("confirmed_by")
+  confirmedAt    DateTime?         @map("confirmed_at")
+  notes          String?           @db.Text
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  municipality    Municipality         @relation(fields: [municipalityId], references: [id], onDelete: Restrict)
+  uploadedByUser  User?                @relation("BoardImportBatchUploadedBy", fields: [uploadedBy], references: [id], onDelete: Restrict)
+  confirmedByUser User?                @relation("BoardImportBatchConfirmedBy", fields: [confirmedBy], references: [id], onDelete: SetNull)
+  rows            BoardImportRow[]
+  missing         BoardImportMissing[]
+  histories       BoardHistory[]
+
+  @@index([municipalityId])
+  @@index([status])
+  @@index([uploadedAt])
+  @@map("board_import_batches")
+}
+
+model BoardImportRow {
+  id              String                     @id @default(uuid())
+  batchId         String                     @map("batch_id")
+  prefecture      String
+  city            String
+  boardNumber     Int?                       @map("board_number")
+  address         String
+  name            String?
+  latitude        Decimal                    @db.Decimal(10, 7)
+  longitude       Decimal                    @db.Decimal(10, 7)
+  note            String?
+  rawJson         Json                       @map("raw_json")
+  matchedBoardId  String?                    @map("matched_board_id")
+  matchConfidence BoardImportMatchConfidence @default(NONE) @map("match_confidence")
+  distanceMeter   Float?                     @map("distance_meter")
+  diff            Json?                      @map("diff_data")
+  suggestedAction BoardImportSuggestedAction @default(KEEP) @map("suggested_action")
+  finalDecision   BoardImportRowDecision?    @map("final_decision")
+  assigneeId      String?                    @map("assignee_id")
+  comment         String?                    @db.Text
+  createdAt       DateTime                   @default(now()) @map("created_at")
+  updatedAt       DateTime                   @updatedAt @map("updated_at")
+
+  batch        BoardImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  matchedBoard Board?           @relation(fields: [matchedBoardId], references: [id], onDelete: SetNull)
+  assignee     User?            @relation("BoardImportRowAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  @@index([batchId])
+  @@index([matchConfidence])
+  @@index([suggestedAction])
+  @@index([finalDecision])
+  @@map("board_import_rows")
+}
+
+model BoardImportMissing {
+  id            String                      @id @default(uuid())
+  batchId       String                      @map("batch_id")
+  boardId       String                      @map("board_id")
+  reason        BoardImportMissingReason    @default(NOT_IN_SOURCE)
+  finalDecision BoardImportMissingDecision? @map("final_decision")
+  comment       String?                     @db.Text
+  createdAt     DateTime                    @default(now()) @map("created_at")
+  updatedAt     DateTime                    @updatedAt @map("updated_at")
+
+  batch BoardImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  board Board            @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@index([boardId])
+  @@map("board_import_missing")
 }
 
 // 市区町村
@@ -63,6 +152,7 @@ model Municipality {
 
   boards        Board[]
   userLocations UserLocation[]
+  importBatches BoardImportBatch[]
 
   @@index([polygon], type: Gist)
   @@index([code])
@@ -85,12 +175,15 @@ model User {
   deletedAt         DateTime? @map("deleted_at")
   emailVerified     DateTime? @map("email_verified")
 
-  accounts       Account[]
-  sessions       Session[]
-  verifications  Verification[]
-  boardImages    BoardImage[]
-  userLocations  UserLocation[]
-  boardHistories BoardHistory[]
+  accounts                Account[]
+  sessions                Session[]
+  verifications           Verification[]
+  boardImages             BoardImage[]
+  userLocations           UserLocation[]
+  boardHistories          BoardHistory[]
+  importBatchesUploaded   BoardImportBatch[] @relation("BoardImportBatchUploadedBy")
+  importBatchesConfirmed  BoardImportBatch[] @relation("BoardImportBatchConfirmedBy")
+  assignedBoardImportRows BoardImportRow[]   @relation("BoardImportRowAssignee")
 
   @@index([email])
   @@index([role])
@@ -194,22 +287,25 @@ model UserLocation {
 
 // 掲示板変更履歴
 model BoardHistory {
-  id           String       @id @default(uuid())
-  boardId      String       @map("board_id")
-  beforeData   Json?        @map("before_data")
-  afterData    Json         @map("after_data")
-  changeReason ChangeReason @map("change_reason")
-  userId       String?      @map("user_id")
-  comment      String?      @db.Text
-  changedAt    DateTime     @default(now()) @map("changed_at")
+  id            String       @id @default(uuid())
+  boardId       String       @map("board_id")
+  importBatchId String?      @map("import_batch_id")
+  beforeData    Json?        @map("before_data")
+  afterData     Json         @map("after_data")
+  changeReason  ChangeReason @map("change_reason")
+  userId        String?      @map("user_id")
+  comment       String?      @db.Text
+  changedAt     DateTime     @default(now()) @map("changed_at")
 
-  board Board @relation(fields: [boardId], references: [id], onDelete: Restrict)
-  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  board       Board             @relation(fields: [boardId], references: [id], onDelete: Restrict)
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  importBatch BoardImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
 
   @@index([boardId])
   @@index([userId])
   @@index([changeReason])
   @@index([changedAt])
+  @@index([importBatchId])
   @@map("board_histories")
 }
 
@@ -256,6 +352,44 @@ enum ContactStatus {
   RECEIVED // データ受領
   DIRECT_TO_CANDIDATE // 候補者へ直接提供
   STOPPED // 問い合わせ停止（北海道、福岡県等）
+}
+
+enum BoardImportStatus {
+  UPLOADED
+  REVIEWING
+  APPLIED
+  CANCELLED
+}
+
+enum BoardImportMatchConfidence {
+  HIGH
+  MEDIUM
+  LOW
+  NONE
+}
+
+enum BoardImportSuggestedAction {
+  KEEP
+  UPDATE
+  CREATE
+  SKIP
+}
+
+enum BoardImportRowDecision {
+  UPDATE
+  CREATE
+  IGNORE
+}
+
+enum BoardImportMissingReason {
+  NOT_IN_SOURCE
+  OUT_OF_SCOPE
+}
+
+enum BoardImportMissingDecision {
+  KEEP
+  SOFT_DELETE
+  FOLLOW_UP
 }
 
 // 変更理由

@@ -39,6 +39,7 @@
     "@prisma/client": "6.16.2",
     "@turf/turf": "^7.2.0",
     "adm-zip": "^0.5.16",
+    "csv-parse": "^6.1.0",
     "dbffile": "^1.12.0",
     "dotenv": "^17.2.3",
     "encoding-japanese": "^2.2.0",
