@@ -23,7 +23,10 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "要件定義",
-      items: ["requirements/project-overview"],
+      items: [
+        "requirements/project-overview",
+        "requirements/board-import-review",
+      ],
     },
     {
       type: "category",

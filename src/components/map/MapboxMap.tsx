@@ -1,33 +1,80 @@
 "use client";
 
-import {
-  Alert,
-  Box,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { Alert, Box, type SxProps, type Theme } from "@mui/material";
 import mapboxgl from "mapbox-gl";
-import { SyntheticEvent, useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import type { MapStyleKey } from "./mapStyleConfig";
 import {
   DEFAULT_CENTER,
   DEFAULT_ZOOM,
   MAP_STYLE_URLS,
-  applyPosterStyling,
+  applySimpleStyling,
 } from "./mapStyleConfig";
+import { MapStyleToggle } from "./MapStyleToggle";
 import { setMapLanguageToJapanese } from "./useJapaneseLabels";
 
-const MapboxMap = () => {
+type MapboxMapboxOptions = Omit<
+  mapboxgl.MapboxOptions,
+  "container" | "style" | "center" | "zoom"
+>;
+
+export interface MapboxMapProps {
+  initialStyle?: MapStyleKey;
+  initialViewState?: {
+    longitude: number;
+    latitude: number;
+    zoom?: number;
+  };
+  mapboxOptions?: Partial<MapboxMapboxOptions>;
+  onMapReady?: (map: mapboxgl.Map) => void;
+  showStyleToggle?: boolean;
+  showGeolocate?: boolean;
+  sx?: SxProps<Theme>;
+  mapContainerSx?: SxProps<Theme>;
+  className?: string;
+  style?: CSSProperties;
+}
+
+const MapboxMap = (props: MapboxMapProps = {}) => {
+  const {
+    initialStyle = "standard",
+    initialViewState,
+    mapboxOptions,
+    onMapReady,
+    showStyleToggle = true,
+    showGeolocate = true,
+    sx,
+    mapContainerSx,
+    className,
+    style,
+  } = props;
+
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const appliedStyleRef = useRef<MapStyleKey | null>(null);
-  const styleStateRef = useRef<MapStyleKey>("poster");
+  const styleStateRef = useRef<MapStyleKey>(initialStyle);
   const geolocateControlRef = useRef<mapboxgl.GeolocateControl | null>(null);
-  const [mapStyle, setMapStyle] = useState<MapStyleKey>("poster");
+  const [mapStyle, setMapStyle] = useState<MapStyleKey>(initialStyle);
   const [error, setError] = useState<string | null>(null);
+  const [mapInstance, setMapInstance] = useState<mapboxgl.Map | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+
+  const initialCenter = useMemo<[number, number]>(() => {
+    if (initialViewState) {
+      return [initialViewState.longitude, initialViewState.latitude];
+    }
+    return DEFAULT_CENTER as [number, number];
+  }, [initialViewState]);
+
+  const initialZoom = initialViewState?.zoom ?? DEFAULT_ZOOM;
 
   useEffect(() => {
     if (!accessToken) {
@@ -52,37 +99,45 @@ const MapboxMap = () => {
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: MAP_STYLE_URLS.poster,
-      center: DEFAULT_CENTER,
-      zoom: DEFAULT_ZOOM,
+      style: MAP_STYLE_URLS[initialStyle],
+      center: initialCenter,
+      zoom: initialZoom,
       attributionControl: false,
+      ...mapboxOptions,
     });
 
     mapRef.current = map;
-    appliedStyleRef.current = "poster";
+    appliedStyleRef.current = initialStyle;
 
     const navigationControl = new mapboxgl.NavigationControl({
       visualizePitch: true,
     });
     map.addControl(navigationControl, "top-right");
 
-    const geolocateControl = new mapboxgl.GeolocateControl({
-      positionOptions: { enableHighAccuracy: true },
-      trackUserLocation: true,
-      showUserHeading: true,
-    });
+    if (showGeolocate) {
+      const geolocateControl = new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true,
+      });
 
-    geolocateControlRef.current = geolocateControl;
-    map.addControl(geolocateControl, "top-right");
+      geolocateControlRef.current = geolocateControl;
+      map.addControl(geolocateControl, "top-right");
+    }
 
     const handleStyleData = () => {
       setMapLanguageToJapanese(map);
-      if (styleStateRef.current === "poster") {
-        applyPosterStyling(map);
+      if (styleStateRef.current === "simple") {
+        applySimpleStyling(map);
       }
     };
 
     map.on("styledata", handleStyleData);
+
+    map.once("load", () => {
+      setMapInstance(map);
+      setMapReady(true);
+    });
 
     return () => {
       map.off("styledata", handleStyleData);
@@ -90,8 +145,17 @@ const MapboxMap = () => {
       geolocateControlRef.current = null;
       mapRef.current = null;
       appliedStyleRef.current = null;
+      setMapInstance(null);
+      setMapReady(false);
     };
-  }, [accessToken]);
+  }, [
+    accessToken,
+    initialCenter,
+    initialStyle,
+    initialZoom,
+    mapboxOptions,
+    showGeolocate,
+  ]);
 
   useEffect(() => {
     styleStateRef.current = mapStyle;
@@ -108,15 +172,11 @@ const MapboxMap = () => {
     map.setStyle(MAP_STYLE_URLS[mapStyle]);
   }, [mapStyle]);
 
-  const handleStyleChange = (
-    _event: SyntheticEvent,
-    nextStyle: MapStyleKey | null
-  ) => {
-    if (!nextStyle) {
-      return;
+  useEffect(() => {
+    if (mapReady && mapInstance && onMapReady) {
+      onMapReady(mapInstance);
     }
-    setMapStyle(nextStyle);
-  };
+  }, [mapInstance, mapReady, onMapReady]);
 
   if (!accessToken) {
     return (
@@ -126,17 +186,28 @@ const MapboxMap = () => {
     );
   }
 
+  const wrapperSx = [
+    { position: "relative" },
+    ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+  ];
+
+  const containerSx = [
+    {
+      width: "100%",
+      height: { xs: 320, md: 520 },
+      borderRadius: 2,
+      overflow: "hidden",
+    },
+    ...(Array.isArray(mapContainerSx)
+      ? mapContainerSx
+      : mapContainerSx
+        ? [mapContainerSx]
+        : []),
+  ];
+
   return (
-    <Box sx={{ position: "relative" }}>
-      <Box
-        ref={containerRef}
-        sx={{
-          width: "100%",
-          height: { xs: 320, md: 520 },
-          borderRadius: 2,
-          overflow: "hidden",
-        }}
-      />
+    <Box className={className} style={style} sx={wrapperSx}>
+      <Box ref={containerRef} sx={containerSx} />
 
       {error ? (
         <Alert
@@ -150,49 +221,14 @@ const MapboxMap = () => {
         >
           {error}
         </Alert>
-      ) : (
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            position: "absolute",
-            top: 16,
-            left: 16,
+      ) : showStyleToggle ? (
+        <MapStyleToggle
+          value={mapStyle}
+          onChange={(nextStyle) => {
+            setMapStyle(nextStyle);
           }}
-        >
-          <ToggleButtonGroup
-            size="small"
-            color="primary"
-            value={mapStyle}
-            exclusive
-            onChange={handleStyleChange}
-            sx={{
-              bgcolor: "rgba(255,255,255,0.92)",
-              borderRadius: 1,
-              boxShadow: 3,
-              display: "inline-flex",
-              "& .MuiToggleButton-root": {
-                px: 1.6,
-                py: 0.6,
-                border: "none",
-                borderRadius: 0,
-                fontWeight: 600,
-              },
-              "& .MuiToggleButton-root:first-of-type": {
-                borderTopLeftRadius: 8,
-                borderBottomLeftRadius: 8,
-              },
-              "& .MuiToggleButton-root:last-of-type": {
-                borderTopRightRadius: 8,
-                borderBottomRightRadius: 8,
-              },
-            }}
-          >
-            <ToggleButton value="poster">地図</ToggleButton>
-            <ToggleButton value="satellite">衛星</ToggleButton>
-          </ToggleButtonGroup>
-        </Stack>
-      )}
+        />
+      ) : null}
     </Box>
   );
 };

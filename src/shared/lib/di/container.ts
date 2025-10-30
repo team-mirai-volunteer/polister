@@ -3,6 +3,10 @@ import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import { container, DependencyContainer } from "tsyringe";
 
+import type { BoardImportStorage } from "@/features/board-import/application/services/BoardImportStorage";
+import type { IBoardImportRepository } from "@/features/board-import/domain/repositories/IBoardImportRepository";
+import { BoardImportRepository } from "@/features/board-import/infrastructure/repositories/BoardImportRepository";
+import { LocalBoardImportStorage } from "@/features/board-import/infrastructure/services/LocalBoardImportStorage";
 import type { IBoardRepository } from "@/features/board/domain/repositories/IBoardRepository";
 import { BoardRepository } from "@/features/board/infrastructure/repositories/BoardRepository";
 import type { IMunicipalityRepository } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
@@ -167,6 +171,20 @@ const registerDefaults = (target: DependencyContainer): void => {
     target.registerSingleton<IBoardRepository>(
       TOKENS.BoardRepository,
       BoardRepository
+    );
+  }
+
+  if (!target.isRegistered(TOKENS.BoardImportRepository)) {
+    target.registerSingleton<IBoardImportRepository>(
+      TOKENS.BoardImportRepository,
+      BoardImportRepository
+    );
+  }
+
+  if (!target.isRegistered(TOKENS.BoardImportStorage)) {
+    target.registerSingleton<BoardImportStorage>(
+      TOKENS.BoardImportStorage,
+      LocalBoardImportStorage
     );
   }
 
