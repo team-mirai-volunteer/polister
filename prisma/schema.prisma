@@ -121,7 +121,7 @@ model BoardImportMissing {
   updatedAt     DateTime                    @updatedAt @map("updated_at")
 
   batch BoardImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  board Board            @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board Board            @relation(fields: [boardId], references: [id], onDelete: Restrict)
 
   @@index([batchId])
   @@index([boardId])

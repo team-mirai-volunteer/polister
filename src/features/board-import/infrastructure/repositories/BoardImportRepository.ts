@@ -314,6 +314,7 @@ export class BoardImportRepository implements IBoardImportRepository {
         ST_Y(location::geometry) AS latitude
       FROM boards
       WHERE id IN (${Prisma.join(boardIds.map((id) => Prisma.sql`${id}`))})
+        AND deleted_at IS NULL
     `);
 
     return rows.map((row) => ({
@@ -354,13 +355,13 @@ export class BoardImportRepository implements IBoardImportRepository {
     };
 
     if (input.uploadedBy) {
-      (base as Prisma.BoardImportBatchCreateInput).uploadedByUser = {
+      base.uploadedByUser = {
         connect: { id: input.uploadedBy },
       };
     }
 
     if (input.confirmedBy) {
-      (base as Prisma.BoardImportBatchCreateInput).confirmedByUser = {
+      base.confirmedByUser = {
         connect: { id: input.confirmedBy },
       };
     }

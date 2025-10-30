@@ -26,7 +26,15 @@ export async function getBoardImportBatchDetailAction(
 ): Promise<GetBoardImportBatchDetailActionOutput> {
   setupDI(container);
 
-  const useCase = container.resolve(GetBoardImportBatchDetailUseCase);
+  try {
+    const useCase = container.resolve(GetBoardImportBatchDetailUseCase);
 
-  return useCase.execute({ batchId: input.batchId });
+    return await useCase.execute({ batchId: input.batchId });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error("インポートバッチ詳細の取得に失敗しました。");
+  }
 }

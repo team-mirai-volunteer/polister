@@ -20,15 +20,15 @@ export interface BoardImportMissingProps {
 
 export class BoardImportMissing {
   constructor(private readonly props: Readonly<BoardImportMissingProps>) {
-    if (!props.id) {
+    if (!props.id || props.id.trim().length === 0) {
       throw new Error("BoardImportMissing requires id");
     }
 
-    if (!props.batchId) {
+    if (!props.batchId || props.batchId.trim().length === 0) {
       throw new Error("BoardImportMissing requires batchId");
     }
 
-    if (!props.boardId) {
+    if (!props.boardId || props.boardId.trim().length === 0) {
       throw new Error("BoardImportMissing requires boardId");
     }
 

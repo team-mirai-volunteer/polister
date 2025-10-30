@@ -76,6 +76,10 @@ export class BoardImportRow {
     if (!(props.updatedAt instanceof Date)) {
       throw new Error("BoardImportRow updatedAt must be a Date");
     }
+
+    if (!props.rawData || typeof props.rawData !== "object") {
+      throw new Error("BoardImportRow rawData must be a non-null object");
+    }
   }
 
   get id(): string {

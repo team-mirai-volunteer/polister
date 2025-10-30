@@ -1,10 +1,12 @@
 import { listBoardImportBatchesAction } from "@/features/board-import/application/actions/listBoardImportBatchesAction";
 import { BoardImportBatchList } from "@/features/board-import/ui/components/BoardImportBatchList";
 import { BoardImportUploadForm } from "@/features/board-import/ui/components/BoardImportUploadForm";
+import { isBoardImportFeatureEnabled } from "@/shared/constants/featureFlags";
 import Container from "@mui/material/Container";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { notFound } from "next/navigation";
 
 interface BoardImportsPageProps {
   searchParams?: Promise<{
@@ -16,6 +18,10 @@ interface BoardImportsPageProps {
 export default async function BoardImportsPage({
   searchParams,
 }: BoardImportsPageProps) {
+  if (!isBoardImportFeatureEnabled()) {
+    notFound();
+  }
+
   const batches = await listBoardImportBatchesAction({ limit: 25 });
 
   const resolvedParams = searchParams ? await searchParams : undefined;

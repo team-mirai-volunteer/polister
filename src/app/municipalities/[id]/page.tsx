@@ -25,6 +25,7 @@ import {
 } from "@mui/material";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
+import { isBoardImportFeatureEnabled } from "@/shared/constants/featureFlags";
 
 interface PageProps {
   params: Promise<{
@@ -56,6 +57,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   const importUrl = `/board-imports?municipalityId=${encodeURIComponent(
     municipality.id
   )}&municipalityName=${encodeURIComponent(municipality.fullName)}`;
+  const boardImportFeatureEnabled = isBoardImportFeatureEnabled();
 
   if (geojsonResult.status === "rejected") {
     throw geojsonResult.reason;
@@ -80,14 +82,16 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
           alignItems={{ xs: "flex-start", sm: "center" }}
         >
           <Typography variant="h4">{municipality.fullName}</Typography>
-          <Button
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-            component={NextLink}
-            href={importUrl}
-          >
-            インポート
-          </Button>
+          {boardImportFeatureEnabled && (
+            <Button
+              variant="contained"
+              startIcon={<CloudUploadIcon />}
+              component={NextLink}
+              href={importUrl}
+            >
+              インポート
+            </Button>
+          )}
         </Stack>
 
         <Stack

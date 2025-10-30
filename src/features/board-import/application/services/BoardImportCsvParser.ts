@@ -108,11 +108,21 @@ export class BoardImportCsvParser {
         );
       }
 
+      const prefecture = row.prefecture?.trim();
+      const city = row.city?.trim();
+      const address = row.address?.trim();
+
+      if (!prefecture || !city || !address) {
+        throw new Error(
+          `CSV ${index + 2}行目の必須フィールド（prefecture/city/address）が不足しています。`
+        );
+      }
+
       return {
-        prefecture: row.prefecture ?? "",
-        city: row.city ?? "",
+        prefecture,
+        city,
         boardNumber: toIntegerOrNull(row.number),
-        address: row.address ?? "",
+        address,
         name: row.name ?? null,
         latitude,
         longitude,

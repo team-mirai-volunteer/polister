@@ -2,11 +2,13 @@
 
 import { updateBoardImportRowDecisionAction } from "@/features/board-import/application/actions/updateBoardImportRowDecisionAction";
 import type { BoardImportRowDTO } from "@/features/board-import/application/dto/BoardImportBatchDTO";
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Select from "@mui/material/Select";
+import Snackbar from "@mui/material/Snackbar";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -53,6 +55,7 @@ export function BoardImportReviewTable({
   );
   const activeSelectedId = selectedRowId ?? internalSelectedId;
   const commentRollbackRef = useRef<Map<string, string | null>>(new Map());
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const applyServerUpdate = (
     rowId: string,
@@ -77,10 +80,15 @@ export function BoardImportReviewTable({
         setItems((previous) =>
           previous.map((row) => (row.id === rowId ? result : row))
         );
-      } catch {
+      } catch (error) {
         setItems((previous) =>
           previous.map((row) => (row.id === rowId ? rollback : row))
         );
+        console.error(
+          "[BoardImportReviewTable] Failed to update row",
+          error
+        );
+        setErrorMessage("更新に失敗しました。再度お試しください。");
       } finally {
         setPendingRowId(null);
         onSettled?.();
@@ -135,18 +143,19 @@ export function BoardImportReviewTable({
   };
 
   return (
-    <TableContainer
-      component={Paper}
-      elevation={0}
-      sx={{
-        border: "1px solid",
-        borderColor: "divider",
-        flexGrow: 1,
-        minHeight: 0,
-        maxHeight: "100%",
-        overflow: "auto",
-      }}
-    >
+    <>
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          flexGrow: 1,
+          minHeight: 0,
+          maxHeight: "100%",
+          overflow: "auto",
+        }}
+      >
       <Table
         size="small"
         sx={{
@@ -295,6 +304,22 @@ export function BoardImportReviewTable({
           })}
         </TableBody>
       </Table>
-    </TableContainer>
+      </TableContainer>
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={4000}
+        onClose={() => setErrorMessage(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setErrorMessage(null)}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }

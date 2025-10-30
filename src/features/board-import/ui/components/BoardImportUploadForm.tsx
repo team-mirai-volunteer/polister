@@ -62,11 +62,13 @@ export function BoardImportUploadForm({
 
       startTransition(async () => {
         try {
+          const trimmedUploaderId = uploaderId.trim();
+          const trimmedNotes = notes.trim();
           const result = await createBoardImportBatchAction({
             municipalityId: municipalityId.trim(),
-            uploaderId: uploaderId.trim() ? uploaderId.trim() : undefined,
+            uploaderId: trimmedUploaderId || undefined,
             file,
-            notes: notes.trim() ? notes.trim() : null,
+            notes: trimmedNotes || null,
           });
 
           router.push(`/board-imports/${result.batch.id}`);

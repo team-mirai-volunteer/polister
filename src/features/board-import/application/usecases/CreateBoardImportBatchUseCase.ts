@@ -5,6 +5,7 @@
  */
 
 import { BoardImportCsvParser } from "@/features/board-import/application/services/BoardImportCsvParser";
+import type { ParsedBoardImportRow } from "@/features/board-import/application/services/BoardImportCsvParser";
 import { BoardImportDiffer } from "@/features/board-import/application/services/BoardImportDiffer";
 import type {
   BoardImportStorage,
@@ -25,6 +26,55 @@ import type { AppLogger, DateProvider } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { createHash } from "crypto";
 import { inject, injectable } from "tsyringe";
+
+export interface MunicipalityReference {
+  prefecture: string;
+  name: string;
+}
+
+export const normalizeMunicipalityValue = (
+  value: string | null | undefined
+): string =>
+  value?.replace(/\s+/g, "").replace(/　/g, "").toLowerCase() ?? "";
+
+export const filterRowsForMunicipality = (
+  rows: ParsedBoardImportRow[],
+  municipality: MunicipalityReference
+): ParsedBoardImportRow[] => {
+  const expectedPrefecture = normalizeMunicipalityValue(municipality.prefecture);
+  const expectedCity = normalizeMunicipalityValue(municipality.name);
+
+  return rows.filter((row) => {
+    const rowPrefecture = normalizeMunicipalityValue(row.prefecture);
+    const rowCity = normalizeMunicipalityValue(row.city);
+    const rowAddress = normalizeMunicipalityValue(row.address);
+
+    if (rowPrefecture !== expectedPrefecture) {
+      return false;
+    }
+
+    if (rowCity === expectedCity) {
+      return true;
+    }
+
+    if (rowCity.startsWith(expectedCity)) {
+      return true;
+    }
+
+    if (expectedCity.startsWith(rowCity) && rowCity.length > 0) {
+      const tail = expectedCity.slice(rowCity.length);
+      if (tail.length === 0) {
+        return true;
+      }
+
+      if (rowAddress.startsWith(tail)) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+};
 
 export interface CreateBoardImportBatchInput {
   municipalityId: string;
@@ -85,41 +135,9 @@ export class CreateBoardImportBatchUseCase {
       throw new Error("解析対象の行が存在しません。");
     }
 
-    const normalize = (value: string | null | undefined): string =>
-      value?.replace(/\s+/g, "").replace(/　/g, "").toLowerCase() ?? "";
-
-    const expectedPrefecture = normalize(municipality.prefecture);
-    const expectedCity = normalize(municipality.name);
-
-    const filteredRows = parsedRows.filter((row) => {
-      const rowPrefecture = normalize(row.prefecture);
-      const rowCity = normalize(row.city);
-      const rowAddress = normalize(row.address);
-
-      if (rowPrefecture !== expectedPrefecture) {
-        return false;
-      }
-
-      if (rowCity === expectedCity) {
-        return true;
-      }
-
-      if (rowCity.startsWith(expectedCity)) {
-        return true;
-      }
-
-      if (expectedCity.startsWith(rowCity) && rowCity.length > 0) {
-        const tail = expectedCity.slice(rowCity.length);
-        if (tail.length === 0) {
-          return true;
-        }
-
-        if (rowAddress.startsWith(tail)) {
-          return true;
-        }
-      }
-
-      return false;
+    const filteredRows = filterRowsForMunicipality(parsedRows, {
+      prefecture: municipality.prefecture,
+      name: municipality.name,
     });
 
     if (filteredRows.length === 0) {
@@ -170,12 +188,16 @@ export class CreateBoardImportBatchUseCase {
     };
 
     const { storagePath } = await this.storage.saveFile(storageParams);
-    const downloadUrl = await this.storage
-      .getDownloadUrl(storagePath)
-      .catch((error) => {
-        this.logger.warn("[BoardImport] Failed to resolve download URL", error);
-        return null;
-      });
+    let downloadUrl: string | null = null;
+    try {
+      downloadUrl = await this.storage.getDownloadUrl(storagePath);
+    } catch (error) {
+      this.logger.error(
+        "[BoardImport] Failed to resolve download URL",
+        error
+      );
+      throw error;
+    }
 
     const uploadedAt = this.dateProvider.now();
 

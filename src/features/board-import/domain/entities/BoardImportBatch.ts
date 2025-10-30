@@ -176,7 +176,8 @@ export class BoardImportBatch {
       this.matchedCount +
       this.newCount +
       this.updatedCount +
-      this.duplicateCount;
+      this.duplicateCount +
+      this.missingCount;
     return Math.min(1, processed / this.totalRows);
   }
 

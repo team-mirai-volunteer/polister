@@ -36,17 +36,18 @@ export class ListBoardImportBatchesUseCase {
       cursor: input.cursor,
     });
 
-    const downloadUrls = await Promise.all(
-      batches.map((batch) =>
-        this.storage.getDownloadUrl(batch.storagePath).catch((error) => {
-          this.logger.warn(
-            "[BoardImport] Failed to resolve batch download URL",
-            error
-          );
-          return null;
-        })
-      )
-    );
+    const downloadUrls: Array<string | null> = [];
+    for (const batch of batches) {
+      try {
+        downloadUrls.push(await this.storage.getDownloadUrl(batch.storagePath));
+      } catch (error) {
+        this.logger.error(
+          "[BoardImport] Failed to resolve batch download URL",
+          error
+        );
+        throw error;
+      }
+    }
 
     return batches.map((batch, index) =>
       toBoardImportBatchDTO(batch, downloadUrls[index])

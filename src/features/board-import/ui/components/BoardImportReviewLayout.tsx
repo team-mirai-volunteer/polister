@@ -25,7 +25,19 @@ export function BoardImportReviewLayout({
   rows,
 }: BoardImportReviewLayoutProps) {
   const sortedRows = useMemo(
-    () => [...rows].sort((a, b) => (a.boardNumber ?? 0) - (b.boardNumber ?? 0)),
+    () =>
+      [...rows].sort((a, b) => {
+        if (a.boardNumber === null && b.boardNumber === null) {
+          return 0;
+        }
+        if (a.boardNumber === null) {
+          return 1;
+        }
+        if (b.boardNumber === null) {
+          return -1;
+        }
+        return a.boardNumber - b.boardNumber;
+      }),
     [rows]
   );
 
@@ -112,7 +124,7 @@ export function BoardImportReviewLayout({
           overflow: "hidden",
         }}
       >
-        <BoardImportReviewMap selectedRow={selectedRow ?? null} />
+        <BoardImportReviewMap selectedRow={selectedRow} />
       </Box>
 
       <Box

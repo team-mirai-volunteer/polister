@@ -16,6 +16,28 @@ export interface MapStyleToggleProps {
   sx?: SxProps<Theme>;
 }
 
+const TOGGLE_GROUP_SX = {
+  bgcolor: "rgba(255,255,255,0.92)",
+  borderRadius: 1,
+  boxShadow: 3,
+  display: "inline-flex",
+  "& .MuiToggleButton-root": {
+    px: 1.6,
+    py: 0.6,
+    border: "none",
+    borderRadius: 0,
+    fontWeight: 600,
+  },
+  "& .MuiToggleButton-root:first-of-type": {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  "& .MuiToggleButton-root:last-of-type": {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+} as const;
+
 export function MapStyleToggle({ value, onChange, sx }: MapStyleToggleProps) {
   return (
     <Stack
@@ -38,27 +60,7 @@ export function MapStyleToggle({ value, onChange, sx }: MapStyleToggleProps) {
             onChange(next);
           }
         }}
-        sx={{
-          bgcolor: "rgba(255,255,255,0.92)",
-          borderRadius: 1,
-          boxShadow: 3,
-          display: "inline-flex",
-          "& .MuiToggleButton-root": {
-            px: 1.6,
-            py: 0.6,
-            border: "none",
-            borderRadius: 0,
-            fontWeight: 600,
-          },
-          "& .MuiToggleButton-root:first-of-type": {
-            borderTopLeftRadius: 8,
-            borderBottomLeftRadius: 8,
-          },
-          "& .MuiToggleButton-root:last-of-type": {
-            borderTopRightRadius: 8,
-            borderBottomRightRadius: 8,
-          },
-        }}
+        sx={TOGGLE_GROUP_SX}
       >
         <ToggleButton value="standard">通常</ToggleButton>
         <ToggleButton value="simple">シンプル</ToggleButton>
