@@ -108,18 +108,20 @@ export default async function BoardImportsPage({
 
   const resolvedParams = searchParams ? await searchParams : undefined;
   const municipalityId = resolvedParams?.municipalityId;
+  const normalizedMunicipalityId = municipalityId?.trim() ?? undefined;
   const municipalityName = resolvedParams?.municipalityName;
   const cursor = resolvedParams?.cursor;
   const cursorTrail = decodeCursorTrail(resolvedParams?.cursorTrail);
 
   const { items: batches, nextCursor } = await listBoardImportBatchesAction({
+    municipalityId: normalizedMunicipalityId,
     limit: PAGE_SIZE,
     cursor,
   });
 
   const previousHref = buildPreviousPageHref({
     cursorTrail,
-    municipalityId,
+    municipalityId: normalizedMunicipalityId,
     municipalityName,
   });
   const nextHref = nextCursor
@@ -127,7 +129,7 @@ export default async function BoardImportsPage({
         cursorTrail,
         currentCursor: cursor,
         nextCursor,
-        municipalityId,
+        municipalityId: normalizedMunicipalityId,
         municipalityName,
       })
     : null;
@@ -145,7 +147,7 @@ export default async function BoardImportsPage({
         </div>
 
         <BoardImportUploadForm
-          defaultMunicipalityId={municipalityId}
+          defaultMunicipalityId={normalizedMunicipalityId}
           defaultMunicipalityName={municipalityName}
         />
 

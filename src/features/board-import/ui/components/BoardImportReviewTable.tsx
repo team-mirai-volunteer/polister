@@ -17,7 +17,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 const DECISION_OPTIONS: Array<{
   value: BoardImportRowDTO["finalDecision"];
@@ -37,6 +37,9 @@ const MATCH_CONFIDENCE_LABELS: Record<string, string> = {
 };
 
 const DECISION_NULL_PLACEHOLDER = "__null__" as const;
+const ROW_HEIGHT = 104;
+const OVERSCAN_COUNT = 6;
+const COLUMN_COUNT = 12;
 
 const decisionToSelectValue = (
   decision: BoardImportRowDTO["finalDecision"]
@@ -70,6 +73,9 @@ export function BoardImportReviewTable({
   );
   const activeSelectedId = selectedRowId ?? internalSelectedId;
   const commentRollbackRef = useRef<Map<string, string | null>>(new Map());
+  const tableContainerRef = useRef<HTMLDivElement | null>(null);
+  const [viewportHeight, setViewportHeight] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -81,7 +87,77 @@ export function BoardImportReviewTable({
       }
       return rows[0]?.id ?? null;
     });
+    commentRollbackRef.current.clear();
+    const container = tableContainerRef.current;
+    if (container) {
+      container.scrollTop = 0;
+    }
   }, [rows]);
+
+  useEffect(() => {
+    const cleanup = () => {
+      commentRollbackRef.current.clear();
+    };
+    return cleanup;
+  }, []);
+
+  useEffect(() => {
+    const container = tableContainerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const handleScroll = () => {
+      setScrollTop(container.scrollTop);
+    };
+
+    const updateViewport = () => {
+      setViewportHeight(container.clientHeight);
+    };
+
+    handleScroll();
+    updateViewport();
+
+    container.addEventListener("scroll", handleScroll);
+
+    let resizeObserver: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(updateViewport);
+      resizeObserver.observe(container);
+    }
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      resizeObserver?.disconnect();
+    };
+  }, []);
+
+  const { visibleRows, topPaddingHeight, bottomPaddingHeight } = useMemo(() => {
+    if (items.length === 0) {
+      return {
+        visibleRows: [] as BoardImportRowDTO[],
+        topPaddingHeight: 0,
+        bottomPaddingHeight: 0,
+      };
+    }
+
+    const effectiveViewport =
+      viewportHeight > 0 ? viewportHeight : ROW_HEIGHT * 10;
+    const visibleCount =
+      Math.max(1, Math.ceil(effectiveViewport / ROW_HEIGHT)) +
+      OVERSCAN_COUNT * 2;
+    const startIndex = Math.max(
+      0,
+      Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN_COUNT
+    );
+    const endIndex = Math.min(items.length, startIndex + visibleCount);
+
+    return {
+      visibleRows: items.slice(startIndex, endIndex),
+      topPaddingHeight: startIndex * ROW_HEIGHT,
+      bottomPaddingHeight: Math.max(0, (items.length - endIndex) * ROW_HEIGHT),
+    };
+  }, [items, scrollTop, viewportHeight]);
 
   const applyServerUpdate = (
     rowId: string,
@@ -178,12 +254,13 @@ export function BoardImportReviewTable({
       <TableContainer
         component={Paper}
         elevation={0}
+        ref={tableContainerRef}
         sx={{
           border: "1px solid",
           borderColor: "divider",
           flexGrow: 1,
           minHeight: 0,
-          maxHeight: "100%",
+          maxHeight: 560,
           overflow: "auto",
         }}
       >
@@ -211,7 +288,18 @@ export function BoardImportReviewTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {items.map((row) => {
+            {topPaddingHeight > 0 ? (
+              <TableRow
+                key="virtual-top-padding"
+                sx={{ height: topPaddingHeight }}
+              >
+                <TableCell
+                  colSpan={COLUMN_COUNT}
+                  sx={{ borderBottom: 0, padding: 0 }}
+                />
+              </TableRow>
+            ) : null}
+            {visibleRows.map((row) => {
               const matched = row.matchedBoard;
               const isRowPending = pendingRowIds.has(row.id) && isPending;
               const isSelected = row.id === activeSelectedId;
@@ -222,7 +310,10 @@ export function BoardImportReviewTable({
                   hover
                   selected={isSelected}
                   onClick={() => handleRowSelect(row)}
-                  sx={{ cursor: "pointer" }}
+                  sx={{
+                    cursor: "pointer",
+                    height: ROW_HEIGHT,
+                  }}
                 >
                   <TableCell>{row.boardNumber ?? "-"}</TableCell>
                   <TableCell>
@@ -324,6 +415,17 @@ export function BoardImportReviewTable({
                 </TableRow>
               );
             })}
+            {bottomPaddingHeight > 0 ? (
+              <TableRow
+                key="virtual-bottom-padding"
+                sx={{ height: bottomPaddingHeight }}
+              >
+                <TableCell
+                  colSpan={COLUMN_COUNT}
+                  sx={{ borderBottom: 0, padding: 0 }}
+                />
+              </TableRow>
+            ) : null}
           </TableBody>
         </Table>
       </TableContainer>

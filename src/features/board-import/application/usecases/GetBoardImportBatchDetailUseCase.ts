@@ -60,7 +60,9 @@ export class GetBoardImportBatchDetailUseCase {
     ) as string[];
 
     const matchedBoards =
-      await this.repository.findExistingBoardsByIds(matchedIds);
+      matchedIds.length > 0
+        ? await this.repository.findExistingBoardsByIds(matchedIds)
+        : [];
     const matchedMap = new Map(matchedBoards.map((board) => [board.id, board]));
 
     const downloadUrl = await this.storage
