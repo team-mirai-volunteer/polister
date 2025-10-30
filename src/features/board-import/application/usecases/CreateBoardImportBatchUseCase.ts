@@ -4,8 +4,8 @@
  * 自治体CSVを解析し、掲示板インポートバッチを作成する。
  */
 
-import { BoardImportCsvParser } from "@/features/board-import/application/services/BoardImportCsvParser";
 import type { ParsedBoardImportRow } from "@/features/board-import/application/services/BoardImportCsvParser";
+import { BoardImportCsvParser } from "@/features/board-import/application/services/BoardImportCsvParser";
 import { BoardImportDiffer } from "@/features/board-import/application/services/BoardImportDiffer";
 import type {
   BoardImportStorage,
@@ -34,14 +34,21 @@ export interface MunicipalityReference {
 
 export const normalizeMunicipalityValue = (
   value: string | null | undefined
-): string =>
-  value?.replace(/\s+/g, "").replace(/　/g, "").toLowerCase() ?? "";
+): string => {
+  if (!value) {
+    return "";
+  }
+
+  return value.replace(/\s+/g, "").replace(/　/g, "").toLowerCase();
+};
 
 export const filterRowsForMunicipality = (
   rows: ParsedBoardImportRow[],
   municipality: MunicipalityReference
 ): ParsedBoardImportRow[] => {
-  const expectedPrefecture = normalizeMunicipalityValue(municipality.prefecture);
+  const expectedPrefecture = normalizeMunicipalityValue(
+    municipality.prefecture
+  );
   const expectedCity = normalizeMunicipalityValue(municipality.name);
 
   return rows.filter((row) => {
@@ -192,10 +199,7 @@ export class CreateBoardImportBatchUseCase {
     try {
       downloadUrl = await this.storage.getDownloadUrl(storagePath);
     } catch (error) {
-      this.logger.error(
-        "[BoardImport] Failed to resolve download URL",
-        error
-      );
+      this.logger.error("[BoardImport] Failed to resolve download URL", error);
       throw error;
     }
 

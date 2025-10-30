@@ -127,6 +127,7 @@ export class BoardImportRepository implements IBoardImportRepository {
   }
 
   async listBatches(filter?: ListBoardImportBatchesFilter) {
+    const limit = filter?.limit ?? 50;
     const records = await this.prisma.boardImportBatch.findMany({
       where: {
         municipalityId: filter?.municipalityId,
@@ -134,7 +135,7 @@ export class BoardImportRepository implements IBoardImportRepository {
         uploadedBy: filter?.uploadedBy,
       },
       orderBy: { uploadedAt: "desc" },
-      take: filter?.limit ?? 50,
+      take: limit + 1,
       ...(filter?.cursor
         ? {
             skip: 1,
@@ -143,7 +144,16 @@ export class BoardImportRepository implements IBoardImportRepository {
         : {}),
     });
 
-    return records.map(toDomainBatch);
+    let nextCursor: string | null = null;
+    if (records.length > limit) {
+      const cursorCandidate = records.pop();
+      nextCursor = cursorCandidate?.id ?? null;
+    }
+
+    return {
+      items: records.map(toDomainBatch),
+      nextCursor,
+    };
   }
 
   async createRows(batchId: string, rows: CreateBoardImportRowInput[]) {

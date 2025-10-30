@@ -12,6 +12,7 @@ import {
   STATUS_LABELS,
 } from "@/features/municipality/constants";
 import { MunicipalityBoardsSection } from "@/features/municipality/ui/components/MunicipalityBoardsSection";
+import { isBoardImportFeatureEnabled } from "@/shared/constants/featureFlags";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
   Box,
@@ -25,7 +26,6 @@ import {
 } from "@mui/material";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { isBoardImportFeatureEnabled } from "@/shared/constants/featureFlags";
 
 interface PageProps {
   params: Promise<{

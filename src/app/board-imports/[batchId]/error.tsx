@@ -2,7 +2,14 @@
 
 import RefreshIcon from "@mui/icons-material/Refresh";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { Alert, AlertTitle, Box, Button, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useEffect } from "react";
 
 export default function BoardImportDetailError({
@@ -49,4 +56,3 @@ export default function BoardImportDetailError({
     </Box>
   );
 }
-

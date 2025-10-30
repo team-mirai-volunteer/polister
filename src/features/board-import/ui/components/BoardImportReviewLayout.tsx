@@ -106,6 +106,7 @@ export function BoardImportReviewLayout({
             component={Link}
             href={batch.downloadUrl}
             target="_blank"
+            rel="noopener noreferrer"
             startIcon={<CloudDownloadIcon />}
             size="small"
           >

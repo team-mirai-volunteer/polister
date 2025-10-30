@@ -19,9 +19,14 @@ export interface ListBoardImportBatchesActionInput {
   cursor?: string;
 }
 
+export interface ListBoardImportBatchesActionOutput {
+  items: BoardImportBatchDTO[];
+  nextCursor: string | null;
+}
+
 export async function listBoardImportBatchesAction(
   input: ListBoardImportBatchesActionInput = {}
-): Promise<BoardImportBatchDTO[]> {
+): Promise<ListBoardImportBatchesActionOutput> {
   setupDI(container);
 
   const useCase = container.resolve(ListBoardImportBatchesUseCase);

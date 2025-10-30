@@ -36,6 +36,19 @@ const MATCH_CONFIDENCE_LABELS: Record<string, string> = {
   NONE: "なし",
 };
 
+const DECISION_NULL_PLACEHOLDER = "__null__" as const;
+
+const decisionToSelectValue = (
+  decision: BoardImportRowDTO["finalDecision"]
+): string => decision ?? DECISION_NULL_PLACEHOLDER;
+
+const selectValueToDecision = (
+  value: string
+): BoardImportRowDTO["finalDecision"] =>
+  value === DECISION_NULL_PLACEHOLDER
+    ? null
+    : (value as BoardImportRowDTO["finalDecision"]);
+
 export interface BoardImportReviewTableProps {
   rows: BoardImportRowDTO[];
   selectedRowId?: string | null;
@@ -84,10 +97,7 @@ export function BoardImportReviewTable({
         setItems((previous) =>
           previous.map((row) => (row.id === rowId ? rollback : row))
         );
-        console.error(
-          "[BoardImportReviewTable] Failed to update row",
-          error
-        );
+        console.error("[BoardImportReviewTable] Failed to update row", error);
         setErrorMessage("更新に失敗しました。再度お試しください。");
       } finally {
         setPendingRowId(null);
@@ -156,154 +166,151 @@ export function BoardImportReviewTable({
           overflow: "auto",
         }}
       >
-      <Table
-        size="small"
-        sx={{
-          minWidth: "100%",
-          tableLayout: "fixed",
-        }}
-      >
-        <TableHead>
-          <TableRow>
-            <TableCell>番号</TableCell>
-            <TableCell>インポート名・住所</TableCell>
-            <TableCell>既存掲示板</TableCell>
-            <TableCell align="right">距離(m)</TableCell>
-            <TableCell>CSV緯度</TableCell>
-            <TableCell>CSV経度</TableCell>
-            <TableCell>既存緯度</TableCell>
-            <TableCell>既存経度</TableCell>
-            <TableCell>信頼度</TableCell>
-            <TableCell>推奨</TableCell>
-            <TableCell>決定</TableCell>
-            <TableCell>コメント</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {items.map((row) => {
-            const matched = row.matchedBoard;
-            const isRowPending = pendingRowId === row.id && isPending;
-            const isSelected = row.id === activeSelectedId;
+        <Table
+          size="small"
+          sx={{
+            minWidth: "100%",
+            tableLayout: "fixed",
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell>番号</TableCell>
+              <TableCell>インポート名・住所</TableCell>
+              <TableCell>既存掲示板</TableCell>
+              <TableCell align="right">距離(m)</TableCell>
+              <TableCell>CSV緯度</TableCell>
+              <TableCell>CSV経度</TableCell>
+              <TableCell>既存緯度</TableCell>
+              <TableCell>既存経度</TableCell>
+              <TableCell>信頼度</TableCell>
+              <TableCell>推奨</TableCell>
+              <TableCell>決定</TableCell>
+              <TableCell>コメント</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {items.map((row) => {
+              const matched = row.matchedBoard;
+              const isRowPending = pendingRowId === row.id && isPending;
+              const isSelected = row.id === activeSelectedId;
 
-            return (
-              <TableRow
-                key={row.id}
-                hover
-                selected={isSelected}
-                onClick={() => handleRowSelect(row)}
-                sx={{ cursor: "pointer" }}
-              >
-                <TableCell>{row.boardNumber ?? "-"}</TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {row.name ?? "名称なし"}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {row.address}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  {matched ? (
-                    <Box>
-                      <Typography variant="body2">
-                        {matched.name ?? "名称なし"}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {matched.address}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      未マッチ
+              return (
+                <TableRow
+                  key={row.id}
+                  hover
+                  selected={isSelected}
+                  onClick={() => handleRowSelect(row)}
+                  sx={{ cursor: "pointer" }}
+                >
+                  <TableCell>{row.boardNumber ?? "-"}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {row.name ?? "名称なし"}
                     </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="right">
-                  {row.distanceMeter !== null
-                    ? row.distanceMeter.toFixed(1)
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {Number.isFinite(row.latitude)
-                      ? row.latitude.toFixed(6)
+                    <Typography variant="caption" color="text.secondary">
+                      {row.address}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {matched ? (
+                      <Box>
+                        <Typography variant="body2">
+                          {matched.name ?? "名称なし"}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {matched.address}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        未マッチ
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    {row.distanceMeter !== null
+                      ? row.distanceMeter.toFixed(1)
                       : "-"}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {Number.isFinite(row.longitude)
-                      ? row.longitude.toFixed(6)
-                      : "-"}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {matched?.latitude !== null &&
-                    matched?.latitude !== undefined
-                      ? matched.latitude.toFixed(6)
-                      : "-"}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {matched?.longitude !== null &&
-                    matched?.longitude !== undefined
-                      ? matched.longitude.toFixed(6)
-                      : "-"}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  {MATCH_CONFIDENCE_LABELS[row.matchConfidence] ??
-                    row.matchConfidence}
-                </TableCell>
-                <TableCell>{row.suggestedAction}</TableCell>
-                <TableCell>
-                  <Select
-                    size="small"
-                    value={row.finalDecision ?? "__null__"}
-                    onChange={(event) =>
-                      handleDecisionChange(
-                        row,
-                        event.target.value === "__null__"
-                          ? null
-                          : (event.target
-                              .value as BoardImportRowDTO["finalDecision"])
-                      )
-                    }
-                    disabled={isRowPending}
-                    displayEmpty
-                  >
-                    {DECISION_OPTIONS.map((option) => (
-                      <MenuItem
-                        key={option.label}
-                        value={option.value ?? "__null__"}
-                      >
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </TableCell>
-                <TableCell sx={{ minWidth: 200 }}>
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={row.comment ?? ""}
-                    onChange={(event) =>
-                      handleCommentChange(row, event.target.value)
-                    }
-                    onBlur={() => handleCommentBlur(row)}
-                    disabled={isRowPending}
-                  />
-                  {isRowPending ? (
-                    <CircularProgress size={16} sx={{ mt: 0.5 }} />
-                  ) : null}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {Number.isFinite(row.latitude)
+                        ? row.latitude.toFixed(6)
+                        : "-"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {Number.isFinite(row.longitude)
+                        ? row.longitude.toFixed(6)
+                        : "-"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {matched?.latitude !== null &&
+                      matched?.latitude !== undefined
+                        ? matched.latitude.toFixed(6)
+                        : "-"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {matched?.longitude !== null &&
+                      matched?.longitude !== undefined
+                        ? matched.longitude.toFixed(6)
+                        : "-"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {MATCH_CONFIDENCE_LABELS[row.matchConfidence] ??
+                      row.matchConfidence}
+                  </TableCell>
+                  <TableCell>{row.suggestedAction}</TableCell>
+                  <TableCell>
+                    <Select
+                      size="small"
+                      value={decisionToSelectValue(row.finalDecision)}
+                      onChange={(event) =>
+                        handleDecisionChange(
+                          row,
+                          selectValueToDecision(event.target.value as string)
+                        )
+                      }
+                      disabled={isRowPending}
+                      displayEmpty
+                    >
+                      {DECISION_OPTIONS.map((option) => (
+                        <MenuItem
+                          key={option.label}
+                          value={decisionToSelectValue(option.value)}
+                        >
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </TableCell>
+                  <TableCell sx={{ minWidth: 200 }}>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={row.comment ?? ""}
+                      onChange={(event) =>
+                        handleCommentChange(row, event.target.value)
+                      }
+                      onBlur={() => handleCommentBlur(row)}
+                      disabled={isRowPending}
+                    />
+                    {isRowPending ? (
+                      <CircularProgress size={16} sx={{ mt: 0.5 }} />
+                    ) : null}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </TableContainer>
       <Snackbar
         open={Boolean(errorMessage)}

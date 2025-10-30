@@ -14,6 +14,11 @@ export interface ListBoardImportBatchesInput
   limit?: number;
 }
 
+export interface ListBoardImportBatchesOutput {
+  items: BoardImportBatchDTO[];
+  nextCursor: string | null;
+}
+
 @injectable()
 export class ListBoardImportBatchesUseCase {
   constructor(
@@ -27,30 +32,39 @@ export class ListBoardImportBatchesUseCase {
 
   async execute(
     input: ListBoardImportBatchesInput = {}
-  ): Promise<BoardImportBatchDTO[]> {
-    const batches = await this.repository.listBatches({
+  ): Promise<ListBoardImportBatchesOutput> {
+    const limit = input.limit ?? 20;
+    const { items: batches, nextCursor } = await this.repository.listBatches({
       municipalityId: input.municipalityId,
       status: input.status,
       uploadedBy: input.uploadedBy,
-      limit: input.limit ?? 20,
+      limit,
       cursor: input.cursor,
     });
 
-    const downloadUrls: Array<string | null> = [];
-    for (const batch of batches) {
-      try {
-        downloadUrls.push(await this.storage.getDownloadUrl(batch.storagePath));
-      } catch (error) {
-        this.logger.error(
-          "[BoardImport] Failed to resolve batch download URL",
-          error
-        );
-        throw error;
-      }
-    }
-
-    return batches.map((batch, index) =>
-      toBoardImportBatchDTO(batch, downloadUrls[index])
+    const downloadUrls = await Promise.all(
+      batches.map(async (batch) => {
+        try {
+          return await this.storage.getDownloadUrl(batch.storagePath);
+        } catch (error) {
+          this.logger.error(
+            "[BoardImport] Failed to resolve batch download URL",
+            {
+              batchId: batch.id,
+              storagePath: batch.storagePath,
+            },
+            error
+          );
+          throw error;
+        }
+      })
     );
+
+    return {
+      items: batches.map((batch, index) =>
+        toBoardImportBatchDTO(batch, downloadUrls[index])
+      ),
+      nextCursor,
+    };
   }
 }

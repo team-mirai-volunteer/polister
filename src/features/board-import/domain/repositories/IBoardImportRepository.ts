@@ -65,6 +65,11 @@ export interface ListBoardImportBatchesFilter {
   cursor?: string;
 }
 
+export interface ListBoardImportBatchesResult {
+  items: BoardImportBatch[];
+  nextCursor: string | null;
+}
+
 export interface UpdateBoardImportBatchStatsInput {
   matchedCount?: number;
   newCount?: number;
@@ -131,7 +136,7 @@ export interface IBoardImportRepository {
 
   listBatches(
     filter?: ListBoardImportBatchesFilter
-  ): Promise<BoardImportBatch[]>;
+  ): Promise<ListBoardImportBatchesResult>;
 
   createRows(
     batchId: string,

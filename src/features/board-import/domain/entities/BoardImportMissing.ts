@@ -32,11 +32,17 @@ export class BoardImportMissing {
       throw new Error("BoardImportMissing requires boardId");
     }
 
-    if (!(props.createdAt instanceof Date)) {
+    if (
+      !(props.createdAt instanceof Date) ||
+      Number.isNaN(props.createdAt.getTime())
+    ) {
       throw new Error("BoardImportMissing createdAt must be a Date");
     }
 
-    if (!(props.updatedAt instanceof Date)) {
+    if (
+      !(props.updatedAt instanceof Date) ||
+      Number.isNaN(props.updatedAt.getTime())
+    ) {
       throw new Error("BoardImportMissing updatedAt must be a Date");
     }
   }

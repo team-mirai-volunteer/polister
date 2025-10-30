@@ -62,9 +62,15 @@ export function MapStyleToggle({ value, onChange, sx }: MapStyleToggleProps) {
         }}
         sx={TOGGLE_GROUP_SX}
       >
-        <ToggleButton value="standard">通常</ToggleButton>
-        <ToggleButton value="simple">シンプル</ToggleButton>
-        <ToggleButton value="satellite">衛星</ToggleButton>
+        <ToggleButton value="standard" aria-label="標準マップスタイル">
+          通常
+        </ToggleButton>
+        <ToggleButton value="simple" aria-label="シンプルマップスタイル">
+          シンプル
+        </ToggleButton>
+        <ToggleButton value="satellite" aria-label="衛星マップスタイル">
+          衛星
+        </ToggleButton>
       </ToggleButtonGroup>
     </Stack>
   );

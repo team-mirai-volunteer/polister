@@ -5,9 +5,12 @@
  * 将来的に認証/認可と統合する際は刷新する予定。
  */
 
-const resolveFlag = (serverKey: string, clientKey: string): string | undefined =>
+const resolveFlag = (
+  serverKey: string,
+  clientKey: string
+): string | undefined =>
   typeof window === "undefined"
-    ? process.env[serverKey] ?? process.env[clientKey]
+    ? (process.env[serverKey] ?? process.env[clientKey])
     : process.env[clientKey];
 
 const BOARD_IMPORT_FEATURE_FLAG_KEY = "BOARD_IMPORT_FEATURE_ENABLED";
@@ -22,4 +25,3 @@ export const isBoardImportFeatureEnabled = (): boolean => {
 
   return rawValue === "true";
 };
-

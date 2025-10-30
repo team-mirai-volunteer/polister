@@ -31,7 +31,15 @@ export async function getBoardImportBatchDetailAction(
 
     return await useCase.execute({ batchId: input.batchId });
   } catch (error) {
-    if (error instanceof Error) {
+    console.error(
+      "[getBoardImportBatchDetailAction] Failed to load batch detail",
+      error
+    );
+
+    if (
+      error instanceof Error &&
+      error.message.includes("インポートバッチが見つかりません")
+    ) {
       throw error;
     }
 
