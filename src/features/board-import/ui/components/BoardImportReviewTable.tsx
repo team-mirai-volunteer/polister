@@ -17,7 +17,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 const DECISION_OPTIONS: Array<{
   value: BoardImportRowDTO["finalDecision"];
@@ -61,7 +61,9 @@ export function BoardImportReviewTable({
   onSelectRow,
 }: BoardImportReviewTableProps) {
   const [items, setItems] = useState(rows);
-  const [pendingRowId, setPendingRowId] = useState<string | null>(null);
+  const [pendingRowIds, setPendingRowIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const [isPending, startTransition] = useTransition();
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(
     () => rows[0]?.id ?? null
@@ -69,6 +71,17 @@ export function BoardImportReviewTable({
   const activeSelectedId = selectedRowId ?? internalSelectedId;
   const commentRollbackRef = useRef<Map<string, string | null>>(new Map());
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setItems(rows);
+    setPendingRowIds(new Set());
+    setInternalSelectedId((current) => {
+      if (current && rows.some((row) => row.id === current)) {
+        return current;
+      }
+      return rows[0]?.id ?? null;
+    });
+  }, [rows]);
 
   const applyServerUpdate = (
     rowId: string,
@@ -79,7 +92,11 @@ export function BoardImportReviewTable({
     rollback: BoardImportRowDTO,
     onSettled?: () => void
   ) => {
-    setPendingRowId(rowId);
+    setPendingRowIds((previous) => {
+      const next = new Set(previous);
+      next.add(rowId);
+      return next;
+    });
 
     startTransition(async () => {
       try {
@@ -100,7 +117,11 @@ export function BoardImportReviewTable({
         console.error("[BoardImportReviewTable] Failed to update row", error);
         setErrorMessage("更新に失敗しました。再度お試しください。");
       } finally {
-        setPendingRowId(null);
+        setPendingRowIds((previous) => {
+          const next = new Set(previous);
+          next.delete(rowId);
+          return next;
+        });
         onSettled?.();
       }
     });
@@ -192,7 +213,7 @@ export function BoardImportReviewTable({
           <TableBody>
             {items.map((row) => {
               const matched = row.matchedBoard;
-              const isRowPending = pendingRowId === row.id && isPending;
+            const isRowPending = pendingRowIds.has(row.id) && isPending;
               const isSelected = row.id === activeSelectedId;
 
               return (
