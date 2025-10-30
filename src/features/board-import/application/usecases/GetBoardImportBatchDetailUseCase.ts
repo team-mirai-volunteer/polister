@@ -14,6 +14,13 @@ import type { AppLogger } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { inject, injectable } from "tsyringe";
 
+export class BoardImportBatchNotFoundError extends Error {
+  constructor(batchId: string) {
+    super(`インポートバッチが見つかりません: ${batchId}`);
+    this.name = "BoardImportBatchNotFoundError";
+  }
+}
+
 export interface GetBoardImportBatchDetailInput {
   batchId: string;
 }
@@ -40,7 +47,7 @@ export class GetBoardImportBatchDetailUseCase {
   ): Promise<GetBoardImportBatchDetailOutput> {
     const batch = await this.repository.findBatchById(input.batchId);
     if (!batch) {
-      throw new Error("指定されたインポートバッチが見つかりません。");
+      throw new BoardImportBatchNotFoundError(input.batchId);
     }
 
     const [rows, missing] = await Promise.all([

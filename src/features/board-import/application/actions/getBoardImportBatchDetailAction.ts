@@ -7,7 +7,10 @@ import type {
   BoardImportMissingDTO,
   BoardImportRowDTO,
 } from "@/features/board-import/application/dto/BoardImportBatchDTO";
-import { GetBoardImportBatchDetailUseCase } from "@/features/board-import/application/usecases/GetBoardImportBatchDetailUseCase";
+import {
+  BoardImportBatchNotFoundError,
+  GetBoardImportBatchDetailUseCase,
+} from "@/features/board-import/application/usecases/GetBoardImportBatchDetailUseCase";
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 
@@ -36,10 +39,7 @@ export async function getBoardImportBatchDetailAction(
       error
     );
 
-    if (
-      error instanceof Error &&
-      error.message.includes("インポートバッチが見つかりません")
-    ) {
+    if (error instanceof BoardImportBatchNotFoundError) {
       throw error;
     }
 

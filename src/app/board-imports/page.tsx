@@ -30,6 +30,63 @@ const decodeCursorTrail = (value?: string): string[] => {
   }
 };
 
+const buildPreviousPageHref = (params: {
+  cursorTrail: string[];
+  municipalityId?: string;
+  municipalityName?: string;
+}): string | null => {
+  if (params.cursorTrail.length === 0) {
+    return null;
+  }
+
+  const previousParams = new URLSearchParams();
+  if (params.municipalityId) {
+    previousParams.set("municipalityId", params.municipalityId);
+  }
+  if (params.municipalityName) {
+    previousParams.set("municipalityName", params.municipalityName);
+  }
+
+  const previousTrail = params.cursorTrail.slice(0, -1);
+  const previousCursor = params.cursorTrail[params.cursorTrail.length - 1];
+
+  if (previousCursor && previousCursor !== ROOT_CURSOR_MARKER) {
+    previousParams.set("cursor", previousCursor);
+  }
+
+  if (previousTrail.length > 0) {
+    previousParams.set("cursorTrail", JSON.stringify(previousTrail));
+  }
+
+  const previousSearch = previousParams.toString();
+  return previousSearch ? `/board-imports?${previousSearch}` : "/board-imports";
+};
+
+const buildNextPageHref = (params: {
+  cursorTrail: string[];
+  currentCursor?: string;
+  nextCursor: string;
+  municipalityId?: string;
+  municipalityName?: string;
+}): string => {
+  const nextParams = new URLSearchParams();
+  if (params.municipalityId) {
+    nextParams.set("municipalityId", params.municipalityId);
+  }
+  if (params.municipalityName) {
+    nextParams.set("municipalityName", params.municipalityName);
+  }
+  nextParams.set("cursor", params.nextCursor);
+
+  const nextTrail = [...params.cursorTrail, params.currentCursor ?? ROOT_CURSOR_MARKER];
+  if (nextTrail.length > 0) {
+    nextParams.set("cursorTrail", JSON.stringify(nextTrail));
+  }
+
+  const nextSearch = nextParams.toString();
+  return nextSearch ? `/board-imports?${nextSearch}` : "/board-imports";
+};
+
 interface BoardImportsPageProps {
   searchParams?: Promise<{
     municipalityId?: string;
@@ -82,83 +139,44 @@ export default async function BoardImportsPage({
           </Typography>
           <BoardImportBatchList batches={batches} />
           <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
-            {cursorTrail.length > 0
-              ? (() => {
-                  const previousParams = new URLSearchParams();
-                  if (municipalityId) {
-                    previousParams.set("municipalityId", municipalityId);
-                  }
-                  if (municipalityName) {
-                    previousParams.set("municipalityName", municipalityName);
-                  }
+            {(() => {
+              const previousHref = buildPreviousPageHref({
+                cursorTrail,
+                municipalityId,
+                municipalityName,
+              });
 
-                  const previousTrail = cursorTrail.slice(0, -1);
-                  const previousCursor = cursorTrail[cursorTrail.length - 1];
+              if (!previousHref) {
+                return null;
+              }
 
-                  if (previousCursor && previousCursor !== ROOT_CURSOR_MARKER) {
-                    previousParams.set("cursor", previousCursor);
-                  }
-
-                  if (previousTrail.length > 0) {
-                    previousParams.set(
-                      "cursorTrail",
-                      JSON.stringify(previousTrail)
-                    );
-                  }
-
-                  const previousSearch = previousParams.toString();
-                  const previousHref = previousSearch
-                    ? `/board-imports?${previousSearch}`
-                    : "/board-imports";
-
-                  return (
-                    <Button
-                      component={Link}
-                      href={previousHref}
-                      variant="outlined"
-                      color="primary"
-                    >
-                      前のページ
-                    </Button>
-                  );
-                })()
-              : null}
-            {nextCursor
-              ? (() => {
-                  const nextParams = new URLSearchParams();
-                  if (municipalityId) {
-                    nextParams.set("municipalityId", municipalityId);
-                  }
-                  if (municipalityName) {
-                    nextParams.set("municipalityName", municipalityName);
-                  }
-                  nextParams.set("cursor", nextCursor);
-
-                  const nextTrail = [
-                    ...cursorTrail,
-                    cursor ?? ROOT_CURSOR_MARKER,
-                  ];
-                  if (nextTrail.length > 0) {
-                    nextParams.set("cursorTrail", JSON.stringify(nextTrail));
-                  }
-
-                  const nextSearch = nextParams.toString();
-                  const nextHref = nextSearch
-                    ? `/board-imports?${nextSearch}`
-                    : "/board-imports";
-
-                  return (
-                    <Button
-                      component={Link}
-                      href={nextHref}
-                      variant="outlined"
-                      color="primary"
-                    >
-                      次のページ
-                    </Button>
-                  );
-                })()
-              : null}
+              return (
+                <Button
+                  component={Link}
+                  href={previousHref}
+                  variant="outlined"
+                  color="primary"
+                >
+                  前のページ
+                </Button>
+              );
+            })()}
+            {nextCursor ? (
+              <Button
+                component={Link}
+                href={buildNextPageHref({
+                  cursorTrail,
+                  currentCursor: cursor,
+                  nextCursor,
+                  municipalityId,
+                  municipalityName,
+                })}
+                variant="outlined"
+                color="primary"
+              >
+                次のページ
+              </Button>
+            ) : null}
           </Stack>
         </div>
       </Stack>
