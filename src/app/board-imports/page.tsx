@@ -117,6 +117,21 @@ export default async function BoardImportsPage({
     cursor,
   });
 
+  const previousHref = buildPreviousPageHref({
+    cursorTrail,
+    municipalityId,
+    municipalityName,
+  });
+  const nextHref = nextCursor
+    ? buildNextPageHref({
+        cursorTrail,
+        currentCursor: cursor,
+        nextCursor,
+        municipalityId,
+        municipalityName,
+      })
+    : null;
+
   return (
     <Container maxWidth={false} sx={{ py: 4 }}>
       <Stack spacing={4}>
@@ -142,38 +157,20 @@ export default async function BoardImportsPage({
           </Typography>
           <BoardImportBatchList batches={batches} />
           <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
-            {(() => {
-              const previousHref = buildPreviousPageHref({
-                cursorTrail,
-                municipalityId,
-                municipalityName,
-              });
-
-              if (!previousHref) {
-                return null;
-              }
-
-              return (
-                <Button
-                  component={Link}
-                  href={previousHref}
-                  variant="outlined"
-                  color="primary"
-                >
-                  前のページ
-                </Button>
-              );
-            })()}
-            {nextCursor ? (
+            {previousHref ? (
               <Button
                 component={Link}
-                href={buildNextPageHref({
-                  cursorTrail,
-                  currentCursor: cursor,
-                  nextCursor,
-                  municipalityId,
-                  municipalityName,
-                })}
+                href={previousHref}
+                variant="outlined"
+                color="primary"
+              >
+                前のページ
+              </Button>
+            ) : null}
+            {nextHref ? (
+              <Button
+                component={Link}
+                href={nextHref}
                 variant="outlined"
                 color="primary"
               >
