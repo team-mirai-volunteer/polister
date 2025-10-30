@@ -213,7 +213,7 @@ export function BoardImportReviewTable({
           <TableBody>
             {items.map((row) => {
               const matched = row.matchedBoard;
-            const isRowPending = pendingRowIds.has(row.id) && isPending;
+              const isRowPending = pendingRowIds.has(row.id) && isPending;
               const isSelected = row.id === activeSelectedId;
 
               return (

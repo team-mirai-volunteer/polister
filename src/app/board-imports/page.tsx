@@ -78,7 +78,10 @@ const buildNextPageHref = (params: {
   }
   nextParams.set("cursor", params.nextCursor);
 
-  const nextTrail = [...params.cursorTrail, params.currentCursor ?? ROOT_CURSOR_MARKER];
+  const nextTrail = [
+    ...params.cursorTrail,
+    params.currentCursor ?? ROOT_CURSOR_MARKER,
+  ];
   if (nextTrail.length > 0) {
     nextParams.set("cursorTrail", JSON.stringify(nextTrail));
   }
