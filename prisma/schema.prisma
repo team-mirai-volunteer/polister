@@ -14,7 +14,7 @@ datasource db {
 // 掲示板
 model Board {
   id             String                                @id @default(uuid())
-  boardNumber    Int                                   @map("board_number")
+  boardNumber    String?                               @map("board_number")
   name           String?
   address        String
   location       Unsupported("geography(POINT, 4326)")
@@ -81,7 +81,7 @@ model BoardImportRow {
   batchId         String                     @map("batch_id")
   prefecture      String
   city            String
-  boardNumber     Int?                       @map("board_number")
+  boardNumber     String?                    @map("board_number")
   address         String
   name            String?
   latitude        Decimal                    @db.Decimal(10, 7)

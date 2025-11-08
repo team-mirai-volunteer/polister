@@ -4,6 +4,7 @@ import type {
   BoardImportBatchDTO,
   BoardImportRowDTO,
 } from "@/features/board-import/application/dto/BoardImportBatchDTO";
+import { compareBoardNumbers } from "@/shared/domain/board/BoardNumber";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -26,18 +27,9 @@ export function BoardImportReviewLayout({
 }: BoardImportReviewLayoutProps) {
   const sortedRows = useMemo(
     () =>
-      [...rows].sort((a, b) => {
-        if (a.boardNumber === null && b.boardNumber === null) {
-          return 0;
-        }
-        if (a.boardNumber === null) {
-          return 1;
-        }
-        if (b.boardNumber === null) {
-          return -1;
-        }
-        return a.boardNumber - b.boardNumber;
-      }),
+      [...rows].sort((a, b) =>
+        compareBoardNumbers(a.boardNumber, b.boardNumber)
+      ),
     [rows]
   );
 

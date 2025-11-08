@@ -31,7 +31,7 @@ export interface BoardImportBatchDTO {
 
 export interface BoardImportMatchedBoardDTO {
   id: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   name: string | null;
   address: string;
   note: string | null;
@@ -46,7 +46,7 @@ export interface BoardImportRowDTO {
   batchId: string;
   prefecture: string;
   city: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   address: string;
   name: string | null;
   latitude: number;

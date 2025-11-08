@@ -98,7 +98,7 @@ graph TB
 **属性**:
 
 - `id`: 一意識別子
-- `boardNumber`: 掲示場番号
+- `boardNumber`: 掲示板番号（`01-2`のような文字列）
 - `name`: 掲示場名称（例: "第1投票区第1号"）
 - `address`: 住所
 - `location`: 位置情報（PostGIS POINT型）
@@ -562,7 +562,7 @@ flowchart TD
 ```typescript
 // 変更前のデータ
 {
-  "boardNumber": 44,
+  "boardNumber": "44",
   "name": "県道給父西枇杷島線富塚信号西",
   "address": "あま市富塚七反地53番地1",
   "location": {
@@ -576,7 +576,7 @@ flowchart TD
 
 // 変更後のデータ
 {
-  "boardNumber": 45,
+  "boardNumber": "45",
   "name": "県道給父西枇杷島線富塚信号西",
   "address": "あま市冨塚郷1",
   "location": {
@@ -646,6 +646,7 @@ flowchart TD
    ```
 
 3. **エラー報告に基づく修正**:
+
    ```typescript
    changeReason: ChangeReason.ERROR_CORRECTION;
    errorReportId: "error-uuid-xxx";

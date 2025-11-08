@@ -1,14 +1,12 @@
 import { listBoardImportBatchesAction } from "@/features/board-import/application/actions/listBoardImportBatchesAction";
 import { BoardImportBatchList } from "@/features/board-import/ui/components/BoardImportBatchList";
 import { BoardImportUploadForm } from "@/features/board-import/ui/components/BoardImportUploadForm";
-import { isBoardImportFeatureEnabled } from "@/shared/constants/featureFlags";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 const PAGE_SIZE = 25;
 const ROOT_CURSOR_MARKER = "__root__";
@@ -102,10 +100,6 @@ interface BoardImportsPageProps {
 export default async function BoardImportsPage({
   searchParams,
 }: BoardImportsPageProps) {
-  if (!isBoardImportFeatureEnabled()) {
-    notFound();
-  }
-
   const resolvedParams = searchParams ? await searchParams : undefined;
   const municipalityId = resolvedParams?.municipalityId;
   const normalizedMunicipalityId = municipalityId?.trim() ?? undefined;

@@ -434,7 +434,7 @@ DROP TYPE IF EXISTS "ChangeReason";
 
 ```json
 {
-  "boardNumber": 44,
+  "boardNumber": "44",
   "name": "県道給父西枇杷島線富塚信号西",
   "address": "あま市富塚七反地53番地1",
   "location": {
@@ -451,7 +451,7 @@ DROP TYPE IF EXISTS "ChangeReason";
 
 ```json
 {
-  "boardNumber": 45,
+  "boardNumber": "45",
   "name": "県道給父西枇杷島線富塚信号西",
   "address": "あま市冨塚郷1",
   "location": {

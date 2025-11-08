@@ -45,7 +45,7 @@ export class BoardRepository implements IBoardRepository {
     const rows = await this.prisma.$queryRaw<
       Array<{
         id: string;
-        board_number: number | null;
+        board_number: string | null;
         name: string | null;
         address: string;
         longitude: number | null;

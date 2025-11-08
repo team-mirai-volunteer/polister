@@ -98,7 +98,7 @@ export interface UpdateBoardImportMissingDecisionInput {
 
 export interface ExistingBoardSnapshot {
   id: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   address: string;
   name: string | null;
   latitude: number | null;

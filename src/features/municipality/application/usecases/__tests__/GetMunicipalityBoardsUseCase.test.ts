@@ -24,7 +24,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
   ): MunicipalityBoardRecord => ({
     id: overrides.id ?? "board-id",
     boardNumber:
-      overrides.boardNumber !== undefined ? overrides.boardNumber : 1,
+      overrides.boardNumber !== undefined ? overrides.boardNumber : "1",
     name: overrides.name ?? "掲示板",
     address: overrides.address ?? "住所",
     longitude: overrides.longitude !== undefined ? overrides.longitude : 139.0,
@@ -35,10 +35,10 @@ describe("GetMunicipalityBoardsUseCase", () => {
 
   it("掲示板一覧を取得できる", async () => {
     const records = [
-      createBoardRecord({ id: "board-1", boardNumber: 10 }),
+      createBoardRecord({ id: "board-1", boardNumber: "10" }),
       createBoardRecord({
         id: "board-2",
-        boardNumber: 20,
+        boardNumber: "20",
         longitude: null,
         latitude: null,
       }),
@@ -55,7 +55,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
     expect(result).toEqual([
       {
         id: "board-1",
-        boardNumber: 10,
+        boardNumber: "10",
         name: "掲示板",
         address: "住所",
         longitude: 139,
@@ -65,7 +65,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
       },
       {
         id: "board-2",
-        boardNumber: 20,
+        boardNumber: "20",
         name: "掲示板",
         address: "住所",
         longitude: null,

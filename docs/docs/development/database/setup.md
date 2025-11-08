@@ -96,7 +96,7 @@ yarn db:studio
 ```sql
 CREATE TABLE boards (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  board_number INTEGER NOT NULL,
+  board_number TEXT,
   address TEXT NOT NULL,
   location GEOGRAPHY(POINT, 4326) NOT NULL,
   municipality_id UUID NOT NULL REFERENCES municipalities(id),
@@ -209,7 +209,7 @@ CREATE INDEX idx_user_locations_municipality ON user_locations(municipality_id);
 ```prisma
 model Board {
   id             String     @id @default(uuid())
-  boardNumber    Int        @map("board_number")
+  boardNumber    String?    @map("board_number")
   address        String
   location       Unsupported("geography(POINT, 4326)")
   municipalityId String     @map("municipality_id")

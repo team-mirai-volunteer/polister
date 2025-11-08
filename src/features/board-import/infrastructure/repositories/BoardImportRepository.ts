@@ -250,7 +250,7 @@ export class BoardImportRepository implements IBoardImportRepository {
     const rows = await this.prisma.$queryRaw<
       Array<{
         id: string;
-        board_number: number | null;
+        board_number: string | null;
         address: string;
         name: string | null;
         note: string | null;
@@ -275,12 +275,22 @@ export class BoardImportRepository implements IBoardImportRepository {
       FROM boards
       WHERE municipality_id = ${municipalityId}
         AND deleted_at IS NULL
-      ORDER BY board_number ASC NULLS LAST, id ASC
+      ORDER BY
+        CASE
+          WHEN board_number ~ '^\d+(-\d+)?$' THEN split_part(board_number, '-', 1)::int
+          ELSE NULL
+        END ASC NULLS LAST,
+        CASE
+          WHEN board_number ~ '^\d+-\d+$' THEN split_part(board_number, '-', 2)::int
+          ELSE NULL
+        END ASC NULLS LAST,
+        board_number ASC NULLS LAST,
+        id ASC
     `);
 
     return rows.map((row) => ({
       id: row.id,
-      boardNumber: row.board_number,
+      boardNumber: row.board_number?.trim() ?? null,
       address: row.address,
       name: row.name,
       note: row.note,
@@ -300,7 +310,7 @@ export class BoardImportRepository implements IBoardImportRepository {
     const rows = await this.prisma.$queryRaw<
       Array<{
         id: string;
-        board_number: number | null;
+        board_number: string | null;
         address: string;
         name: string | null;
         note: string | null;
@@ -329,7 +339,7 @@ export class BoardImportRepository implements IBoardImportRepository {
 
     return rows.map((row) => ({
       id: row.id,
-      boardNumber: row.board_number,
+      boardNumber: row.board_number?.trim() ?? null,
       address: row.address,
       name: row.name,
       note: row.note,

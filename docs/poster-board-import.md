@@ -71,7 +71,7 @@ erDiagram
   BOARDS {
     string id
     string municipality_id
-    int board_number
+    string board_number
     datetime created_at
     datetime updated_at
     datetime deleted_at
@@ -87,7 +87,7 @@ erDiagram
 
 ### メモ
 
-- `merge_boards.sql` では `deleted_at IS NULL` な掲示板のみ取り込みます。座標や自治体名が一致しないレコードがある場合は、ステージングテーブルを確認して補正してください。
+- `merge_boards.sql` では `deleted_at IS NULL` な掲示板のみ取り込みます。座標や自治体名が一致しないレコードがある場合は、ステージングテーブルを確認して補正してください。掲示板番号は `01-2` のような文字列を想定しており、空文字の場合は `NULL` として扱われます。
 - 大規模データを扱う場合は、`export.sh` で生成したCSVをバージョン管理せず別ストレージに置き、必要に応じて `data/poster-board/` へ配置してから `import.sh` を実行してください。
 
 ### トラブルシューティング

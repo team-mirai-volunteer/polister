@@ -7,6 +7,10 @@ import type {
   BoardImportRowDecision,
   BoardImportSuggestedAction,
 } from "@/features/board-import/domain/types/BoardImportTypes";
+import {
+  BOARD_NUMBER_MAX_LENGTH,
+  BOARD_NUMBER_PATTERN,
+} from "@/shared/domain/board/BoardNumber";
 
 export interface BoardImportRowDiffEntry {
   previous: unknown;
@@ -20,7 +24,7 @@ export interface BoardImportRowProps {
   batchId: string;
   prefecture: string;
   city: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   address: string;
   name: string | null;
   latitude: number;
@@ -61,6 +65,23 @@ export class BoardImportRow {
       throw new Error("BoardImportRow requires address");
     }
 
+    if (props.boardNumber !== null) {
+      if (typeof props.boardNumber !== "string") {
+        throw new Error("BoardImportRow boardNumber must be a string");
+      }
+
+      const trimmed = props.boardNumber.trim();
+      if (
+        trimmed.length === 0 ||
+        trimmed.length > BOARD_NUMBER_MAX_LENGTH ||
+        !BOARD_NUMBER_PATTERN.test(trimmed)
+      ) {
+        throw new Error(
+          "BoardImportRow boardNumber must match numeric or `xx-x` format"
+        );
+      }
+    }
+
     if (typeof props.latitude !== "number" || Number.isNaN(props.latitude)) {
       throw new Error("BoardImportRow latitude must be a number");
     }
@@ -98,7 +119,7 @@ export class BoardImportRow {
     return this.props.city;
   }
 
-  get boardNumber(): number | null {
+  get boardNumber(): string | null {
     return this.props.boardNumber;
   }
 
