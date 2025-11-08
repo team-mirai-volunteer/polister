@@ -38,4 +38,10 @@ describe("normalizeBoardNumber", () => {
     const tooLong = "1".repeat(BOARD_NUMBER_MAX_LENGTH + 1);
     expect(() => normalizeBoardNumber(tooLong)).toThrow();
   });
+
+  it("accepts numeric inputs", () => {
+    expect(normalizeBoardNumber(123)).toBe("123");
+    expect(normalizeBoardNumber(1)).toBe("1");
+    expect(normalizeBoardNumber(0)).toBe("0");
+  });
 });
