@@ -153,7 +153,7 @@ export class CreateBoardImportBatchUseCase {
       );
     }
 
-    const duplicateNumbers = new Map<number, number>();
+    const duplicateNumbers = new Map<string, number>();
     filteredRows.forEach((row) => {
       if (row.boardNumber === null) {
         return;

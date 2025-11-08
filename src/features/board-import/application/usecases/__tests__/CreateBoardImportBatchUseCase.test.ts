@@ -9,7 +9,7 @@ const createRow = (
 ): ParsedBoardImportRow => ({
   prefecture: "神奈川県",
   city: "横浜市",
-  boardNumber: 1,
+  boardNumber: "1",
   address: "神奈川県横浜市西区みなとみらい1-1",
   name: "みなとみらい駅前掲示板",
   latitude: 35.4546,

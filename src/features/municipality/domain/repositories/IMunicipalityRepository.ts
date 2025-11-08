@@ -153,7 +153,7 @@ export interface GeoJSONFeature {
 
 export interface MunicipalityBoardRecord {
   id: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   name: string | null;
   address: string;
   longitude: number | null;

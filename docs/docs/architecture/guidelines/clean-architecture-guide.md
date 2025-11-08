@@ -309,7 +309,7 @@ src/
 import type { Board, BoardStatus, TrustLevel } from "@prisma/client";
 
 export interface CreateBoardData {
-  boardNumber: number;
+  boardNumber: string;
   address: string;
   latitude: number;
   longitude: number;
@@ -319,7 +319,7 @@ export interface CreateBoardData {
 }
 
 export interface UpdateBoardData {
-  boardNumber?: number;
+  boardNumber?: string;
   address?: string;
   latitude?: number;
   longitude?: number;
@@ -457,7 +457,7 @@ export class BoardManagementUseCase {
 
   async createBoard(
     address: string,
-    boardNumber: number,
+    boardNumber: string,
     municipalityId: string,
     executorUserId: string
   ): Promise<BoardCreationResult> {

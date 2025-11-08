@@ -1,6 +1,5 @@
 import { getBoardImportBatchDetailAction } from "@/features/board-import/application/actions/getBoardImportBatchDetailAction";
 import { BoardImportReviewLayout } from "@/features/board-import/ui/components/BoardImportReviewLayout";
-import { isBoardImportFeatureEnabled } from "@/shared/constants/featureFlags";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -25,10 +24,6 @@ interface BoardImportDetailPageProps {
 export default async function BoardImportDetailPage({
   params,
 }: BoardImportDetailPageProps) {
-  if (!isBoardImportFeatureEnabled()) {
-    notFound();
-  }
-
   try {
     const { batch, rows } = await getBoardImportBatchDetailAction({
       batchId: params.batchId,

@@ -8,10 +8,14 @@ import type {
   BoardStatus,
   TrustLevel,
 } from "@/shared/domain/board/BoardAttributes";
+import {
+  BOARD_NUMBER_MAX_LENGTH,
+  BOARD_NUMBER_PATTERN,
+} from "@/shared/domain/board/BoardNumber";
 
 export interface BoardLocationProps {
   id: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   name: string | null;
   address: string;
   longitude: number | null;
@@ -57,13 +61,18 @@ export class BoardLocation {
     }
 
     if (props.boardNumber !== null) {
+      if (typeof props.boardNumber !== "string") {
+        throw new Error("BoardLocation boardNumber must be a string");
+      }
+
+      const trimmed = props.boardNumber.trim();
       if (
-        typeof props.boardNumber !== "number" ||
-        !Number.isInteger(props.boardNumber) ||
-        props.boardNumber < 0
+        trimmed.length === 0 ||
+        trimmed.length > BOARD_NUMBER_MAX_LENGTH ||
+        !BOARD_NUMBER_PATTERN.test(trimmed)
       ) {
         throw new Error(
-          "BoardLocation boardNumber must be a non-negative integer"
+          "BoardLocation boardNumber must be a numeric string or `xx-x` format"
         );
       }
     }
@@ -73,7 +82,7 @@ export class BoardLocation {
     return this.props.id;
   }
 
-  get boardNumber(): number | null {
+  get boardNumber(): string | null {
     return this.props.boardNumber;
   }
 

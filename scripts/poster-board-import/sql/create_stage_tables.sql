@@ -4,7 +4,7 @@
 DROP TABLE IF EXISTS boards_import_stage;
 CREATE TABLE boards_import_stage (
   id              TEXT PRIMARY KEY,
-  board_number    INTEGER,
+  board_number    TEXT,
   name            TEXT,
   address         TEXT,
   longitude       DOUBLE PRECISION,

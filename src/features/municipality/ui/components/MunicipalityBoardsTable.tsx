@@ -1,5 +1,6 @@
 "use client";
 
+import { formatBoardNumberLabel } from "@/shared/domain/board/BoardNumber";
 import {
   Box,
   Chip,
@@ -24,13 +25,6 @@ interface MunicipalityBoardsTableProps {
   selectedBoardId?: string | null;
   onSelectBoard?: (boardId: string) => void;
 }
-
-const formatBoardNumber = (boardNumber: number | null): string => {
-  if (boardNumber === null || Number.isNaN(boardNumber)) {
-    return "-";
-  }
-  return boardNumber.toString();
-};
 
 export const MunicipalityBoardsTable = ({
   boards,
@@ -77,7 +71,7 @@ export const MunicipalityBoardsTable = ({
                 sx={{ cursor: "pointer" }}
               >
                 <TableCell width="80">
-                  {formatBoardNumber(board.boardNumber)}
+                  {formatBoardNumberLabel(board.boardNumber)}
                 </TableCell>
                 <TableCell width="200">{board.name ?? "名称未設定"}</TableCell>
                 <TableCell>{board.address}</TableCell>

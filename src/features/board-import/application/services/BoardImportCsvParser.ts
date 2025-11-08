@@ -1,9 +1,10 @@
+import { normalizeBoardNumber } from "@/shared/domain/board/BoardNumber";
 import { parse } from "csv-parse/sync";
 
 export interface ParsedBoardImportRow {
   prefecture: string;
   city: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   address: string;
   name: string | null;
   latitude: number;
@@ -55,17 +56,28 @@ const toNumberOrNull = (value: string | null | undefined): number | null => {
   return parsed;
 };
 
-const toIntegerOrNull = (value: string | null | undefined): number | null => {
-  const num = toNumberOrNull(value);
-  if (num === null) {
+const toBoardNumberOrNull = (
+  value: string | null | undefined,
+  csvRowIndex: number
+): string | null => {
+  if (value === null || value === undefined) {
     return null;
   }
 
-  if (!Number.isInteger(num)) {
+  const trimmed = String(value).trim();
+  if (trimmed.length === 0) {
     return null;
   }
 
-  return num;
+  try {
+    return normalizeBoardNumber(trimmed);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "フォーマットが不正です";
+    throw new Error(
+      `CSV ${csvRowIndex + 2}行目の掲示板番号が無効です: ${message}`
+    );
+  }
 };
 
 export class BoardImportCsvParser {
@@ -121,7 +133,7 @@ export class BoardImportCsvParser {
       return {
         prefecture,
         city,
-        boardNumber: toIntegerOrNull(row.number),
+        boardNumber: toBoardNumberOrNull(row.number, index),
         address,
         name: row.name ?? null,
         latitude,

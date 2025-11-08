@@ -119,7 +119,7 @@ erDiagram
 
     BOARDS {
         uuid id PK
-        int board_number
+        string board_number
         string address
         geography location
         enum trust_level

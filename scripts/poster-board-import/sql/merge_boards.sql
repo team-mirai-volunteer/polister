@@ -17,7 +17,7 @@ INSERT INTO boards (
 )
 SELECT
   s.id,
-  COALESCE(s.board_number, 0),
+  NULLIF(BTRIM(s.board_number), ''),
   NULLIF(s.name, ''),
   COALESCE(s.address, ''),
   CASE

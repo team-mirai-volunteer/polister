@@ -5,7 +5,7 @@ import type {
 
 export interface MunicipalityBoardDTO {
   id: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
   name: string | null;
   address: string;
   longitude: number | null;

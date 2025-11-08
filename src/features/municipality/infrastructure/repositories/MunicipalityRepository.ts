@@ -193,7 +193,7 @@ export class MunicipalityRepository implements IMunicipalityRepository {
     const rows = await this.prisma.$queryRaw<
       Array<{
         id: string;
-        board_number: number | null;
+        board_number: string | null;
         name: string | null;
         address: string;
         longitude: number | null;
@@ -214,7 +214,21 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       FROM boards
       WHERE municipality_id = ${municipalityId}
         AND deleted_at IS NULL
-      ORDER BY board_number ASC NULLS LAST, created_at ASC
+      ORDER BY
+        CASE
+          WHEN board_number ~ '^\d+(-\d+)?$' THEN (
+            split_part(board_number, '-', 1)::int
+          )
+          ELSE NULL
+        END ASC NULLS LAST,
+        CASE
+          WHEN board_number ~ '^\d+-\d+$' THEN (
+            split_part(board_number, '-', 2)::int
+          )
+          ELSE NULL
+        END ASC NULLS LAST,
+        board_number ASC NULLS LAST,
+        created_at ASC
     `;
 
     return rows
@@ -246,8 +260,7 @@ export class MunicipalityRepository implements IMunicipalityRepository {
 
         return {
           id: row.id,
-          boardNumber:
-            row.board_number !== null ? Number(row.board_number) : null,
+          boardNumber: row.board_number?.trim() ?? null,
           name: row.name,
           address: row.address,
           longitude: row.longitude !== null ? Number(row.longitude) : null,

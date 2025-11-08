@@ -36,7 +36,7 @@ export interface BoardsClusterMapProps {
 interface FeatureProperties {
   id: string;
   name: string | null;
-  boardNumber: number | null;
+  boardNumber: string | null;
 }
 
 export function BoardsClusterMap({

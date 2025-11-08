@@ -138,7 +138,7 @@ const createMockPrismaData = () =>
 // [OK] 推奨：完全な型定義ファクトリ関数
 const createMockBoard = (overrides: Partial<Board> = {}): Board => ({
   id: "board-123",
-  boardNumber: 1,
+  boardNumber: "1",
   address: "東京都千代田区永田町1-7-1",
   location: {
     type: "Point",
@@ -155,7 +155,7 @@ const createMockBoard = (overrides: Partial<Board> = {}): Board => ({
 // [NG] 非推奨：不完全なオブジェクトリテラル
 const badMockData = {
   id: "test",
-  boardNumber: 1,
+  boardNumber: "1",
   // 他の必須フィールドが不足
 };
 ```
@@ -263,7 +263,7 @@ describe("BoardManagementUseCase", () => {
   describe("createBoard", () => {
     it("有効なデータで掲示板を作成できる", async () => {
       const address = "東京都千代田区永田町1-7-1";
-      const boardNumber = 1;
+      const boardNumber = "1";
       const municipalityId = "municipality-123";
       const userId = "user-123";
 
@@ -357,7 +357,7 @@ describe("BoardRepository", () => {
       prismaMock.board.create.mockResolvedValue(mockBoard);
 
       const result = await repository.create({
-        boardNumber: 1,
+        boardNumber: "1",
         address: "東京都千代田区永田町1-7-1",
         latitude: 35.6762,
         longitude: 139.7453,
@@ -367,7 +367,7 @@ describe("BoardRepository", () => {
       expect(result).toEqual(mockBoard);
       expect(prismaMock.board.create).toHaveBeenCalledWith({
         data: {
-          boardNumber: 1,
+          boardNumber: "1",
           address: "東京都千代田区永田町1-7-1",
           location: {
             type: "Point",
@@ -428,7 +428,7 @@ describe("/api/boards POST", () => {
   it("有効なデータで掲示板を作成できる", async () => {
     const requestData = {
       address: "東京都千代田区永田町1-7-1",
-      boardNumber: 1,
+      boardNumber: "1",
       municipalityId: "municipality-123",
       userId: "user-123",
     };
@@ -468,7 +468,7 @@ describe("/api/boards POST", () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         address: "ab",
-        boardNumber: 1,
+        boardNumber: "1",
         municipalityId: "muni-123",
         userId: "user-123",
       }),
@@ -553,7 +553,7 @@ import type { BoardStatus, TrustLevel } from "@/features/board/domain/types";
 
 export const createMockBoard = (overrides: Partial<Board> = {}): Board => ({
   id: "board-123",
-  boardNumber: 1,
+  boardNumber: "1",
   address: "東京都千代田区永田町1-7-1",
   location: {
     type: "Point",
@@ -713,7 +713,7 @@ yarn test BoardRepository
 ```typescript
 it("掲示板を作成できる", async () => {
   // Arrange: テストデータの準備
-  const data = { address: "東京都", boardNumber: 1 };
+  const data = { address: "東京都", boardNumber: "1" };
   mockRepository.create.mockResolvedValue(createMockBoard());
 
   // Act: テスト対象の実行

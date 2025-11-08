@@ -210,7 +210,7 @@ export class PrefectureRepository implements IPrefectureRepository {
     const rows = await this.prisma.$queryRaw<
       Array<{
         id: string;
-        board_number: number | null;
+        board_number: string | null;
         name: string | null;
         address: string;
         longitude: number | null;
@@ -234,7 +234,18 @@ export class PrefectureRepository implements IPrefectureRepository {
       WHERE m.code LIKE ${normalizedCode + "%"}
         AND b.deleted_at IS NULL
         AND b.location IS NOT NULL
-      ORDER BY m.code ASC, b.board_number ASC NULLS LAST, b.created_at ASC
+      ORDER BY
+        m.code ASC,
+        CASE
+          WHEN b.board_number ~ '^\d+(-\d+)?$' THEN split_part(b.board_number, '-', 1)::int
+          ELSE NULL
+        END ASC NULLS LAST,
+        CASE
+          WHEN b.board_number ~ '^\d+-\d+$' THEN split_part(b.board_number, '-', 2)::int
+          ELSE NULL
+        END ASC NULLS LAST,
+        b.board_number ASC NULLS LAST,
+        b.created_at ASC
     `;
 
     return this.transformBoardRows(rows);
@@ -291,7 +302,7 @@ export class PrefectureRepository implements IPrefectureRepository {
   private transformBoardRows(
     rows: Array<{
       id: string;
-      board_number: number | null;
+      board_number: string | null;
       name: string | null;
       address: string;
       longitude: number | null;
@@ -326,7 +337,7 @@ export class PrefectureRepository implements IPrefectureRepository {
 
         return {
           id: row.id,
-          boardNumber: row.board_number,
+          boardNumber: row.board_number?.trim() ?? null,
           name: row.name,
           address: row.address,
           longitude: row.longitude,

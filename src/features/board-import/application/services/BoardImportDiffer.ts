@@ -91,7 +91,7 @@ export class BoardImportDiffer {
     rows: ParsedBoardImportRow[],
     existingBoards: ExistingBoardSnapshot[]
   ): BoardImportDiffResult {
-    const boardByNumber = new Map<number, ExistingBoardSnapshot>();
+    const boardByNumber = new Map<string, ExistingBoardSnapshot>();
     const unmatchedBoards = new Map<string, ExistingBoardSnapshot>();
 
     existingBoards.forEach((board) => {

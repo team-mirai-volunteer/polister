@@ -26,7 +26,7 @@ interface CoordinatePoint {
   longitude: number;
   latitude: number;
   name: string;
-  boardNumber: number | null;
+  boardNumber: string | null;
 }
 
 interface MarkerEntry {

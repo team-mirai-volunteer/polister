@@ -24,7 +24,7 @@ erDiagram
 
     BOARDS {
         uuid id PK
-        int board_number
+        string board_number
         string name
         string address
         geography location "POINT"
@@ -245,7 +245,7 @@ erDiagram
 
     BOARDS {
         uuid id PK
-        int board_number
+        string board_number
         string name
         string address
         geography location
@@ -364,21 +364,21 @@ erDiagram
 
 掲示板の位置情報と基本データを管理します。
 
-| カラム名          | 型               | 説明                               |
-| ----------------- | ---------------- | ---------------------------------- |
-| id                | UUID             | 主キー                             |
-| board_number      | Integer          | 掲示板番号                         |
-| name              | String           | 掲示場名称（例: "第1投票区第1号"） |
-| address           | String           | 住所                               |
-| location          | Geography(POINT) | 位置情報（緯度経度）               |
-| municipality_id   | UUID             | 市区町村ID（外部キー）             |
-| normalized_csv_id | UUID             | 正規化CSVID（外部キー、Phase 2+）  |
-| trust_level       | TrustLevel       | 信頼度レベル                       |
-| status            | BoardStatus      | ステータス                         |
-| note              | Text             | 備考（例: "緯度経度は怪しい"）     |
-| created_at        | Timestamp        | 作成日時                           |
-| updated_at        | Timestamp        | 更新日時                           |
-| deleted_at        | Timestamp        | 削除日時（論理削除）               |
+| カラム名          | 型               | 説明                                     |
+| ----------------- | ---------------- | ---------------------------------------- |
+| id                | UUID             | 主キー                                   |
+| board_number      | Text             | 掲示板番号（例: `01-2`）。空の場合はNULL |
+| name              | String           | 掲示場名称（例: "第1投票区第1号"）       |
+| address           | String           | 住所                                     |
+| location          | Geography(POINT) | 位置情報（緯度経度）                     |
+| municipality_id   | UUID             | 市区町村ID（外部キー）                   |
+| normalized_csv_id | UUID             | 正規化CSVID（外部キー、Phase 2+）        |
+| trust_level       | TrustLevel       | 信頼度レベル                             |
+| status            | BoardStatus      | ステータス                               |
+| note              | Text             | 備考（例: "緯度経度は怪しい"）           |
+| created_at        | Timestamp        | 作成日時                                 |
+| updated_at        | Timestamp        | 更新日時                                 |
+| deleted_at        | Timestamp        | 削除日時（論理削除）                     |
 
 **インデックス**:
 
@@ -573,7 +573,7 @@ erDiagram
 ```json
 // before_data
 {
-  "boardNumber": 44,
+  "boardNumber": "44",
   "name": "県道給父西枇杷島線富塚信号西",
   "address": "あま市富塚七反地53番地1",
   "location": {"lat": 35.199806, "lng": 136.805573},
@@ -584,7 +584,7 @@ erDiagram
 
 // after_data
 {
-  "boardNumber": 45,
+  "boardNumber": "45",
   "name": "県道給父西枇杷島線富塚信号西",
   "address": "あま市冨塚郷1",
   "location": {"lat": 35.199850, "lng": 136.805600},
