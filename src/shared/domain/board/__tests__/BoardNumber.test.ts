@@ -30,18 +30,33 @@ describe("normalizeBoardNumber", () => {
   });
 
   it("throws for invalid formats", () => {
-    expect(() => normalizeBoardNumber("abc")).toThrow();
-    expect(() => normalizeBoardNumber("1-2-3")).toThrow();
+    const message =
+      "掲示板番号は数字、または「数字-数字」の形式で入力してください。";
+    expect(() => normalizeBoardNumber("abc")).toThrow(message);
+    expect(() => normalizeBoardNumber("1-2-3")).toThrow(message);
   });
 
   it("enforces maximum length", () => {
     const tooLong = "1".repeat(BOARD_NUMBER_MAX_LENGTH + 1);
-    expect(() => normalizeBoardNumber(tooLong)).toThrow();
+    expect(() => normalizeBoardNumber(tooLong)).toThrow(
+      `掲示板番号は最大${BOARD_NUMBER_MAX_LENGTH}文字までにしてください。`
+    );
   });
 
   it("accepts numeric inputs", () => {
     expect(normalizeBoardNumber(123)).toBe("123");
     expect(normalizeBoardNumber(1)).toBe("1");
     expect(normalizeBoardNumber(0)).toBe("0");
+  });
+
+  it("rejects negative and fractional numeric inputs", () => {
+    const message =
+      "掲示板番号は数字、または「数字-数字」の形式で入力してください。";
+    expect(() => normalizeBoardNumber(-1)).toThrow(message);
+    expect(() => normalizeBoardNumber(1.5)).toThrow(message);
+  });
+
+  it("accepts large safe integers as valid board numbers", () => {
+    expect(normalizeBoardNumber(9876543210)).toBe("9876543210");
   });
 });
