@@ -108,6 +108,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Rebuild Sharp for system libvips
+        run: yarn add sharp --force
+
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps
 
