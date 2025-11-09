@@ -7,10 +7,7 @@
 import type { ParsedBoardImportRow } from "@/features/board-import/application/services/BoardImportCsvParser";
 import { BoardImportCsvParser } from "@/features/board-import/application/services/BoardImportCsvParser";
 import { BoardImportDiffer } from "@/features/board-import/application/services/BoardImportDiffer";
-import type {
-  BoardImportStorage,
-  SaveBoardImportFileParams,
-} from "@/features/board-import/application/services/BoardImportStorage";
+import { generateBoardImportStoragePath } from "@/features/board-import/application/utils/boardImportStorageHelpers";
 import type { BoardImportBatch } from "@/features/board-import/domain/entities/BoardImportBatch";
 import type { BoardImportMissing } from "@/features/board-import/domain/entities/BoardImportMissing";
 import type { BoardImportRow } from "@/features/board-import/domain/entities/BoardImportRow";
@@ -22,6 +19,7 @@ import type {
   CreateBoardImportBatchInput as RepositoryBatchInput,
 } from "@/features/board-import/domain/repositories/IBoardImportRepository";
 import type { IMunicipalityRepository } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
+import type { IStorageService } from "@/infrastructure/storage/IStorageService";
 import type { AppLogger, DateProvider } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { createHash } from "crypto";
@@ -110,8 +108,8 @@ export class CreateBoardImportBatchUseCase {
     private readonly repository: IBoardImportRepository,
     @inject(TOKENS.MunicipalityRepository)
     private readonly municipalityRepository: IMunicipalityRepository,
-    @inject(TOKENS.BoardImportStorage)
-    private readonly storage: BoardImportStorage,
+    @inject(TOKENS.StorageService)
+    private readonly storage: IStorageService,
     @inject(TOKENS.DateProvider)
     private readonly dateProvider: DateProvider,
     @inject(TOKENS.Logger)
@@ -187,17 +185,17 @@ export class CreateBoardImportBatchUseCase {
 
     const checksum = createHash("sha256").update(input.buffer).digest("hex");
 
-    const storageParams: SaveBoardImportFileParams = {
-      municipalityId: input.municipalityId,
-      fileName: input.fileName,
-      buffer: input.buffer,
-      contentType: input.contentType,
-    };
+    // Generate storage path and save file
+    const { storagePath } = generateBoardImportStoragePath(
+      input.municipalityId,
+      input.fileName
+    );
 
-    const { storagePath } = await this.storage.saveFile(storageParams);
+    await this.storage.save(input.buffer, storagePath);
+
     let downloadUrl: string | null = null;
     try {
-      downloadUrl = await this.storage.getDownloadUrl(storagePath);
+      downloadUrl = await this.storage.getPublicUrl(storagePath);
     } catch (error) {
       this.logger.error("[BoardImport] Failed to resolve download URL", error);
       throw error;

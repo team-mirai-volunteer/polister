@@ -12,6 +12,19 @@ export interface FindBoardLocationsOptions {
   limit?: number;
 }
 
+export interface FindByLocationOptions {
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+  limit?: number;
+}
+
+export interface FindByMunicipalityOptions {
+  prefecture: string;
+  city: string;
+  limit?: number;
+}
+
 export interface IBoardRepository {
   /**
    * 地図表示用の掲示板位置情報を全件取得
@@ -38,4 +51,16 @@ export interface IBoardRepository {
     boardNumber: string,
     excludeBoardId?: string
   ): Promise<boolean>;
+
+  /**
+   * 位置情報で検索（PostGIS空間検索）
+   */
+  findByLocation(options: FindByLocationOptions): Promise<BoardLocation[]>;
+
+  /**
+   * 市区町村で検索
+   */
+  findByMunicipality(
+    options: FindByMunicipalityOptions
+  ): Promise<BoardLocation[]>;
 }

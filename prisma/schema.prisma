@@ -256,17 +256,49 @@ model Verification {
 
 // 掲示板画像
 model BoardImage {
-  id        String    @id @default(uuid())
-  boardId   String    @map("board_id")
-  userId    String    @map("user_id")
-  imageUrl  String    @map("image_url")
-  takenAt   DateTime? @map("taken_at")
-  createdAt DateTime  @default(now()) @map("created_at")
+  id      String  @id @default(uuid())
+  boardId String? @map("board_id") // NULL許可（未マッチング対応）
+  userId  String? @map("user_id") // NULL許可（インポート時）
 
-  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id])
+  // 画像ファイル情報
+  originalFilename String  @map("original_filename") // CSVのFilename
+  originalPath     String  @map("storage_path") // オリジナル画像パス（既存カラムを再利用）
+  displayPath      String? @map("display_path") // UI表示用画像パス（大きめ）
+  thumbnailPath    String? @map("thumbnail_path") // サムネイル画像パス
+
+  // 外部ソース情報
+  sourceUrl    String? @map("source_url") @db.Text // Google Drive URL
+  sourceFileId String? @map("source_file_id") // Google Drive File ID
+
+  // CSV由来のメタデータ
+  csvPrefecture  String? @map("csv_prefecture") // CSV の Prefecture
+  csvCity        String? @map("csv_city") // CSV の City
+  csvBoardNumber String? @map("csv_board_number") // CSV の Number
+
+  // 位置情報
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
+
+  // メタデータ
+  takenAt    DateTime? @map("taken_at")
+  uploadedAt DateTime? @map("uploaded_at") // CSV の Timestamp
+
+  // 検証ステータス
+  verificationStatus ImageVerificationStatus @default(PENDING) @map("verification_status")
+  statusNote         String?                 @map("status_note") @db.Text // CSV の Status
+  reviewNote         String?                 @map("review_note") @db.Text // CSV の Note
+  reviewComment      String?                 @map("review_comment") @db.Text // CSV の Comment
+  isPublic           Boolean                 @default(false) @map("is_public") // 公開可否
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  board Board? @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id])
 
   @@index([boardId])
+  @@index([verificationStatus])
+  @@index([csvPrefecture, csvCity])
   @@map("board_images")
 }
 
@@ -404,4 +436,15 @@ enum ChangeReason {
   MIGRATION // データマイグレーション
   SYSTEM_UPDATE // システムによる自動更新
   OTHER // その他
+}
+
+// 画像検証ステータス
+enum ImageVerificationStatus {
+  PENDING // 未検証
+  VERIFIED // 検証済み（正常な掲示板写真）
+  REJECTED // 却下（番号読めず、対象外など）
+  LOCATION_ISSUE // 緯度経度に問題あり
+  DUPLICATE // 重複
+  NO_NUMBER // 番号なし
+  DOWNLOAD_FAILED // ダウンロード失敗
 }

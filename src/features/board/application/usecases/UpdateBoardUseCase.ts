@@ -39,9 +39,9 @@ export class UpdateBoardError extends Error {
 @injectable()
 export class UpdateBoardUseCase {
   constructor(
-    @inject(TOKENS.IBoardRepository)
+    @inject(TOKENS.BoardRepository)
     private readonly boardRepository: IBoardRepository,
-    @inject(TOKENS.IBoardHistoryRepository)
+    @inject(TOKENS.BoardHistoryRepository)
     private readonly boardHistoryRepository: IBoardHistoryRepository
   ) {}
 

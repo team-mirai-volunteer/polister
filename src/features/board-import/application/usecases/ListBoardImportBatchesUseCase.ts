@@ -1,10 +1,10 @@
 import type { BoardImportBatchDTO } from "@/features/board-import/application/dto/BoardImportBatchDTO";
 import { toBoardImportBatchDTO } from "@/features/board-import/application/dto/BoardImportDTOMapper";
-import type { BoardImportStorage } from "@/features/board-import/application/services/BoardImportStorage";
 import type {
   IBoardImportRepository,
   ListBoardImportBatchesFilter,
 } from "@/features/board-import/domain/repositories/IBoardImportRepository";
+import type { IStorageService } from "@/infrastructure/storage/IStorageService";
 import type { AppLogger } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { inject, injectable } from "tsyringe";
@@ -24,8 +24,8 @@ export class ListBoardImportBatchesUseCase {
   constructor(
     @inject(TOKENS.BoardImportRepository)
     private readonly repository: IBoardImportRepository,
-    @inject(TOKENS.BoardImportStorage)
-    private readonly storage: BoardImportStorage,
+    @inject(TOKENS.StorageService)
+    private readonly storage: IStorageService,
     @inject(TOKENS.Logger)
     private readonly logger: AppLogger
   ) {}
@@ -45,7 +45,7 @@ export class ListBoardImportBatchesUseCase {
     const downloadUrls = await Promise.all(
       batches.map(async (batch) => {
         try {
-          return await this.storage.getDownloadUrl(batch.storagePath);
+          return await this.storage.getPublicUrl(batch.storagePath);
         } catch (error) {
           this.logger.error(
             "[BoardImport] Failed to resolve batch download URL",

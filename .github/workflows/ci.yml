@@ -102,8 +102,14 @@ jobs:
           node-version: "20"
           cache: "yarn"
 
+      - name: Install system dependencies for Sharp
+        run: sudo apt-get update && sudo apt-get install -y libvips-dev
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Rebuild Sharp for system libvips
+        run: npm rebuild sharp
 
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps
