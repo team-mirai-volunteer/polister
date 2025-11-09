@@ -183,18 +183,25 @@ export class BoardImageRepository implements IBoardImageRepository {
 
   async update(id: string, input: UpdateBoardImageInput): Promise<BoardImage> {
     const updateData: {
-      verificationStatus: never;
+      verificationStatus?: never;
       isPublic?: boolean;
       csvBoardNumber?: string | null;
       board?: { connect: { id: string } } | { disconnect: true };
-    } = {
-      verificationStatus: input.verificationStatus as never,
-      isPublic: input.isPublic,
-      csvBoardNumber:
-        input.csvBoardNumber === null
-          ? null
-          : (input.csvBoardNumber ?? undefined),
-    };
+    } = {};
+
+    // Only set verificationStatus if provided
+    if (input.verificationStatus !== undefined) {
+      updateData.verificationStatus = input.verificationStatus as never;
+    }
+
+    if (input.isPublic !== undefined) {
+      updateData.isPublic = input.isPublic;
+    }
+
+    if (input.csvBoardNumber !== undefined) {
+      updateData.csvBoardNumber =
+        input.csvBoardNumber === null ? null : input.csvBoardNumber;
+    }
 
     // boardIdの更新はリレーション経由で行う
     if (input.boardId !== undefined) {

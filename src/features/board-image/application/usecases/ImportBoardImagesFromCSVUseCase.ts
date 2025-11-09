@@ -140,6 +140,19 @@ export class ImportBoardImagesFromCSVUseCase {
     return result;
   }
 
+  /**
+   * Sanitize directory name to prevent path traversal
+   */
+  private sanitizeDirectoryName(name: string): string {
+    // Remove any path separators and special characters
+    return name
+      .replace(/[\/\\]/g, "_") // Replace path separators
+      .replace(/\.\./g, "_") // Replace ..
+      .replace(/^\./, "_") // Replace leading .
+      .trim()
+      .substring(0, 100); // Limit length
+  }
+
   private async processRow(
     row: CSVRow,
     rowNumber: number,
@@ -148,8 +161,10 @@ export class ImportBoardImagesFromCSVUseCase {
   ): Promise<void> {
     try {
       const fileId = row["File ID"];
-      const prefecture = row.Prefecture || "unknown";
-      const city = row.City || "unknown";
+      const prefecture = this.sanitizeDirectoryName(
+        row.Prefecture || "unknown"
+      );
+      const city = this.sanitizeDirectoryName(row.City || "unknown");
       const filename = row.Filename;
       const filenameWithoutExt = path.parse(filename).name;
 
