@@ -3,7 +3,7 @@
 import MapboxMap from "@/components/map/MapboxMap";
 import { Alert, Box, Card, Typography } from "@mui/material";
 import mapboxgl from "mapbox-gl";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface BoardCandidate {
   boardId: string;
@@ -29,6 +29,7 @@ export function BoardImageMap({
   const candidateMarkersRef = useRef<mapboxgl.Marker[]>([]);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
   const isInitializedRef = useRef(false);
+  const [isMapReady, setIsMapReady] = useState(false);
   const hasLocation = latitude !== null && longitude !== null;
 
   // デフォルト位置（日本の中心）
@@ -44,12 +45,13 @@ export function BoardImageMap({
     }
     mapInstanceRef.current = map;
     isInitializedRef.current = true;
+    setIsMapReady(true);
   }, []);
 
   // Update markers when candidates or location changes
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map) return;
+    if (!map || !isMapReady) return;
 
     // Clear existing markers
     if (imageMarkerRef.current) {
@@ -128,7 +130,7 @@ export function BoardImageMap({
         console.error("候補マーカー追加エラー:", error);
       }
     });
-  }, [candidates, latitude, longitude, hasLocation]);
+  }, [candidates, latitude, longitude, hasLocation, isMapReady]);
 
   useEffect(() => {
     return () => {
