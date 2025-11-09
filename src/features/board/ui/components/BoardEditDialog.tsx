@@ -57,6 +57,10 @@ const CHANGE_REASONS = [
   { value: "FIELD_VERIFICATION", label: "現地確認" },
 ];
 
+// デフォルト位置（東京駅）
+const DEFAULT_LATITUDE = 35.6812;
+const DEFAULT_LONGITUDE = 139.7671;
+
 export function BoardEditDialog({
   open,
   board,
@@ -65,16 +69,16 @@ export function BoardEditDialog({
 }: BoardEditDialogProps) {
   // 初期位置を保持（ダイアログが開くたびに最新のboard座標を設定）
   const [initialPosition, setInitialPosition] = useState({
-    latitude: board.latitude ?? 35.6812,
-    longitude: board.longitude ?? 139.7671,
+    latitude: board.latitude ?? DEFAULT_LATITUDE,
+    longitude: board.longitude ?? DEFAULT_LONGITUDE,
   });
 
   // ダイアログが開いた時に初期位置を更新
   useEffect(() => {
     if (open) {
       setInitialPosition({
-        latitude: board.latitude ?? 35.6812,
-        longitude: board.longitude ?? 139.7671,
+        latitude: board.latitude ?? DEFAULT_LATITUDE,
+        longitude: board.longitude ?? DEFAULT_LONGITUDE,
       });
     }
   }, [open, board.latitude, board.longitude]);
@@ -85,10 +89,10 @@ export function BoardEditDialog({
       boardNumber: board.boardNumber || "",
       name: board.name || "",
       address: board.address,
-      latitude: board.latitude ?? 35.6812,
-      longitude: board.longitude ?? 139.7671,
-      latitudeStr: board.latitude?.toString() ?? "35.6812",
-      longitudeStr: board.longitude?.toString() ?? "139.7671",
+      latitude: board.latitude ?? DEFAULT_LATITUDE,
+      longitude: board.longitude ?? DEFAULT_LONGITUDE,
+      latitudeStr: board.latitude?.toString() ?? DEFAULT_LATITUDE.toString(),
+      longitudeStr: board.longitude?.toString() ?? DEFAULT_LONGITUDE.toString(),
       status: board.status,
       trustLevel: board.trustLevel,
       note: board.note || "",
