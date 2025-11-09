@@ -4,7 +4,7 @@ import { middlewareAuth } from "@/shared/lib/auth/middleware";
 
 export default middlewareAuth((req) => {
   if (!req.auth) {
-    const signInUrl = new URL("/api/auth/signin", req.nextUrl.origin);
+    const signInUrl = new URL("/auth/signin", req.nextUrl.origin);
     signInUrl.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(signInUrl);
   }
