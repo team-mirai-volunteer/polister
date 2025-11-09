@@ -167,6 +167,7 @@ model User {
   name              String?
   slackName         String?   @map("slack_name")
   image             String?
+  passwordHash      String?   @map("password_hash") @db.Text
   role              UserRole  @default(VIEWER)
   trustScore        Float     @default(0.0) @map("trust_score")
   verificationCount Int       @default(0) @map("verification_count")

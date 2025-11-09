@@ -5,8 +5,10 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
 
+import { auth } from "@/shared/lib/auth";
 import { setupDI } from "@/shared/lib/di";
 import { AppShell } from "@/shared/ui/components/layout/AppShell";
+import { AuthSessionProvider } from "@/shared/ui/providers/AuthSessionProvider";
 import { ColorModeProvider } from "@/shared/ui/providers/ColorModeProvider";
 
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -36,17 +38,21 @@ export const metadata: Metadata = {
   description: "Polisterプロジェクト",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="ja" className={notoSansJP.variable} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppRouterCacheProvider>
           <ColorModeProvider>
-            <AppShell>{children}</AppShell>
+            <AuthSessionProvider session={session}>
+              <AppShell>{children}</AppShell>
+            </AuthSessionProvider>
           </ColorModeProvider>
         </AppRouterCacheProvider>
       </body>

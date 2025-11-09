@@ -7,6 +7,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   AppBar as MuiAppBar,
   Stack,
@@ -14,8 +15,10 @@ import {
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback } from "react";
 
 import { APP_BAR_HEIGHT } from "@/shared/constants/layout";
 
@@ -28,17 +31,25 @@ const NAV_ITEMS = [
   { label: "都道府県一覧", path: "/prefectures" },
 ];
 
-const DEFAULT_USER = {
-  name: "運営チーム",
-  email: "team@polister.local",
-};
-
 export function AppBar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated";
+  const isLoading = status === "loading";
 
   const docsUrl =
     process.env.NEXT_PUBLIC_DOCS_URL ??
     "https://team-mirai-volunteer.github.io/polister/";
+
+  const handleSignIn = useCallback(() => {
+    const search = searchParams.toString();
+    const currentPath = pathname ?? "/";
+    const callbackSource = search ? `${currentPath}?${search}` : currentPath;
+    const callback = encodeURIComponent(callbackSource);
+    router.push(`/auth/signin?callbackUrl=${callback}`);
+  }, [pathname, router, searchParams]);
 
   return (
     <MuiAppBar position="fixed">
@@ -183,7 +194,24 @@ export function AppBar() {
               ドキュメント
             </Button>
             <ColorModeToggle />
-            <UserMenu user={DEFAULT_USER} />
+            {isAuthenticated && session?.user ? (
+              <UserMenu user={session.user} />
+            ) : isLoading ? (
+              <CircularProgress
+                size={20}
+                aria-label="認証状態を確認中"
+                color="inherit"
+              />
+            ) : (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleSignIn}
+                sx={{ fontWeight: 600 }}
+              >
+                ログイン
+              </Button>
+            )}
           </Stack>
         </Container>
       </Toolbar>
