@@ -4,7 +4,6 @@ import { formatBoardNumberLabel } from "@/shared/domain/board/BoardNumber";
 import {
   Box,
   Chip,
-  Link,
   Table,
   TableBody,
   TableCell,
@@ -12,7 +11,6 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import NextLink from "next/link";
 
 import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 import {
@@ -63,10 +61,6 @@ export const MunicipalityBoardsTable = ({
                 selected={isSelected}
                 onClick={() => onSelectBoard?.(board.id)}
                 onKeyDown={(event) => {
-                  // インタラクティブな子要素（リンクなど）からのイベントは無視
-                  if (event.target !== event.currentTarget) {
-                    return;
-                  }
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
                     onSelectBoard?.(board.id);
@@ -77,28 +71,9 @@ export const MunicipalityBoardsTable = ({
                 sx={{ cursor: "pointer" }}
               >
                 <TableCell width="80">
-                  <Link
-                    component={NextLink}
-                    href={`/boards/${board.id}`}
-                    underline="hover"
-                    color="primary"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {formatBoardNumberLabel(board.boardNumber)}
-                  </Link>
+                  {formatBoardNumberLabel(board.boardNumber)}
                 </TableCell>
-                <TableCell width="200">
-                  <Link
-                    component={NextLink}
-                    href={`/boards/${board.id}`}
-                    underline="hover"
-                    color="inherit"
-                    onClick={(e) => e.stopPropagation()}
-                    sx={{ textDecoration: "none" }}
-                  >
-                    {board.name ?? "名称未設定"}
-                  </Link>
-                </TableCell>
+                <TableCell width="200">{board.name ?? "名称未設定"}</TableCell>
                 <TableCell>{board.address}</TableCell>
                 <TableCell width="120">
                   <Chip

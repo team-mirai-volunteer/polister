@@ -19,9 +19,9 @@ export interface GetBoardDetailResult {
 @injectable()
 export class GetBoardDetailUseCase {
   constructor(
-    @inject(TOKENS.IBoardRepository)
+    @inject(TOKENS.BoardRepository)
     private readonly boardRepository: IBoardRepository,
-    @inject(TOKENS.IBoardHistoryRepository)
+    @inject(TOKENS.BoardHistoryRepository)
     private readonly boardHistoryRepository: IBoardHistoryRepository
   ) {}
 

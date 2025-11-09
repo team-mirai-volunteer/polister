@@ -24,6 +24,8 @@ import { inject, injectable } from "tsyringe";
 import { BoardLocation } from "../../domain/entities/BoardLocation";
 import type {
   FindBoardLocationsOptions,
+  FindByLocationOptions,
+  FindByMunicipalityOptions,
   IBoardRepository,
 } from "../../domain/repositories/IBoardRepository";
 
@@ -237,5 +239,158 @@ export class BoardRepository implements IBoardRepository {
     });
 
     return count > 0;
+  }
+
+  async findByLocation(
+    options: FindByLocationOptions
+  ): Promise<BoardLocation[]> {
+    const { latitude, longitude, radiusMeters, limit = 50 } = options;
+
+    // PostGIS空間検索（ST_DWithin）
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        id: string;
+        board_number: string | null;
+        name: string | null;
+        address: string;
+        municipality_id: string;
+        municipality_name: string;
+        municipality_prefecture: string;
+        longitude: number;
+        latitude: number;
+        distance: number;
+        status: PrismaBoardStatus;
+        trust_level: PrismaTrustLevel;
+      }>
+    >(Prisma.sql`
+      SELECT
+        b.id,
+        b.board_number,
+        b.name,
+        b.address,
+        b.municipality_id,
+        m.name AS municipality_name,
+        m.prefecture AS municipality_prefecture,
+        ST_X(b.location::geometry) AS longitude,
+        ST_Y(b.location::geometry) AS latitude,
+        ST_Distance(
+          b.location::geography,
+          ST_SetSRID(ST_MakePoint(${longitude}, ${latitude})::geometry, 4326)::geography
+        ) AS distance,
+        b.status,
+        b.trust_level
+      FROM boards b
+      JOIN municipalities m ON b.municipality_id = m.id
+      WHERE b.deleted_at IS NULL
+        AND b.location IS NOT NULL
+        AND ST_DWithin(
+          b.location::geography,
+          ST_SetSRID(ST_MakePoint(${longitude}, ${latitude})::geometry, 4326)::geography,
+          ${radiusMeters}
+        )
+      ORDER BY distance ASC
+      LIMIT ${limit}
+    `);
+
+    return rows
+      .map((row) => {
+        try {
+          return new BoardLocation({
+            id: row.id,
+            boardNumber: row.board_number,
+            name: row.name,
+            address: row.address,
+            municipalityId: row.municipality_id,
+            municipalityName: row.municipality_name,
+            municipalityPrefecture: row.municipality_prefecture,
+            longitude: row.longitude,
+            latitude: row.latitude,
+            status: row.status as never,
+            trustLevel: row.trust_level as never,
+          });
+        } catch (error) {
+          this.logger.warn("[BoardRepository] Skip board: invalid data", {
+            id: row.id,
+            boardNumber: row.board_number,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return null;
+        }
+      })
+      .filter((item): item is BoardLocation => item !== null);
+  }
+
+  async findByMunicipality(
+    options: FindByMunicipalityOptions
+  ): Promise<BoardLocation[]> {
+    const { prefecture, city, limit = 50 } = options;
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        id: string;
+        board_number: string | null;
+        name: string | null;
+        address: string;
+        municipality_id: string;
+        municipality_name: string;
+        municipality_prefecture: string;
+        longitude: number | null;
+        latitude: number | null;
+        status: PrismaBoardStatus;
+        trust_level: PrismaTrustLevel;
+      }>
+    >(Prisma.sql`
+      SELECT
+        b.id,
+        b.board_number,
+        b.name,
+        b.address,
+        b.municipality_id,
+        m.name AS municipality_name,
+        m.prefecture AS municipality_prefecture,
+        ST_X(b.location::geometry) AS longitude,
+        ST_Y(b.location::geometry) AS latitude,
+        b.status,
+        b.trust_level
+      FROM boards b
+      JOIN municipalities m ON b.municipality_id = m.id
+      WHERE b.deleted_at IS NULL
+        AND b.location IS NOT NULL
+        AND m.prefecture = ${prefecture}
+        AND m.name = ${city}
+      ORDER BY b.created_at DESC
+      LIMIT ${limit}
+    `);
+
+    return rows
+      .map((row) => {
+        if (!isBoardStatus(row.status)) return null;
+        if (!isTrustLevel(row.trust_level)) return null;
+
+        try {
+          return new BoardLocation({
+            id: row.id,
+            boardNumber: row.board_number,
+            name: row.name,
+            address: row.address,
+            municipalityId: row.municipality_id,
+            municipalityName: row.municipality_name,
+            municipalityPrefecture: row.municipality_prefecture,
+            longitude: row.longitude,
+            latitude: row.latitude,
+            status: row.status,
+            trustLevel: row.trust_level,
+          });
+        } catch (error) {
+          this.logger.warn("[BoardRepository] Skip board: invalid data", {
+            id: row.id,
+            boardNumber: row.board_number,
+            address: row.address,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return null;
+        }
+      })
+      .filter((item): item is BoardLocation => item !== null);
   }
 }

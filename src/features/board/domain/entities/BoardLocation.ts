@@ -18,6 +18,9 @@ export interface BoardLocationProps {
   boardNumber: string | null;
   name: string | null;
   address: string;
+  municipalityId?: string;
+  municipalityName?: string;
+  municipalityPrefecture?: string;
   longitude: number | null;
   latitude: number | null;
   status: BoardStatus;
@@ -92,6 +95,18 @@ export class BoardLocation {
 
   get address(): string {
     return this.props.address;
+  }
+
+  get municipalityId(): string | undefined {
+    return this.props.municipalityId;
+  }
+
+  get municipalityName(): string | undefined {
+    return this.props.municipalityName;
+  }
+
+  get municipalityPrefecture(): string | undefined {
+    return this.props.municipalityPrefecture;
   }
 
   get longitude(): number | null {
