@@ -1,7 +1,15 @@
 import type { AppLogger } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
-import exifr from "exifr";
 import { inject, injectable } from "tsyringe";
+
+// Lazy load exifr to avoid loading in E2E tests
+let exifr: typeof import("exifr") | null = null;
+const getExifr = async () => {
+  if (!exifr) {
+    exifr = await import("exifr");
+  }
+  return exifr;
+};
 
 export interface ExifGPSData {
   latitude: number | null;
@@ -25,7 +33,8 @@ export class ExifParserService {
    */
   async extractGPS(imageBuffer: Buffer): Promise<ExifGPSData> {
     try {
-      const exif = await exifr.parse(imageBuffer, {
+      const exifrLib = await getExifr();
+      const exif = await exifrLib.parse(imageBuffer, {
         gps: true,
         pick: ["latitude", "longitude", "GPSAltitude", "DateTimeOriginal"],
       });

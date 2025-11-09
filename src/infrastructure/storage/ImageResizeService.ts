@@ -1,5 +1,13 @@
-import sharp from "sharp";
 import { injectable } from "tsyringe";
+
+// Lazy load sharp to avoid loading native modules in E2E tests
+let sharp: typeof import("sharp") | null = null;
+const getSharp = async () => {
+  if (!sharp) {
+    sharp = (await import("sharp")).default;
+  }
+  return sharp;
+};
 
 export interface ResizedImages {
   original: Buffer;
@@ -37,11 +45,13 @@ export class ImageResizeService {
     imageBuffer: Buffer,
     dimensions: ImageDimensions = DEFAULT_DIMENSIONS
   ): Promise<ResizedImages> {
+    const sharpLib = await getSharp();
+
     // オリジナルはそのまま保持
     const original = imageBuffer;
 
     // UI表示用（最大サイズ制限、アスペクト比維持）
-    const display = await sharp(imageBuffer)
+    const display = await sharpLib(imageBuffer)
       .rotate() // Exif Orientationを自動適用
       .resize(dimensions.displayMaxWidth, dimensions.displayMaxHeight, {
         fit: "inside",
@@ -51,7 +61,7 @@ export class ImageResizeService {
       .toBuffer();
 
     // サムネイル（正方形、中央クロップ）
-    const thumbnail = await sharp(imageBuffer)
+    const thumbnail = await sharpLib(imageBuffer)
       .rotate() // Exif Orientationを自動適用
       .resize(dimensions.thumbnailWidth, dimensions.thumbnailHeight, {
         fit: "cover",
@@ -71,6 +81,7 @@ export class ImageResizeService {
    * 画像のメタデータを取得
    */
   async getMetadata(imageBuffer: Buffer) {
-    return await sharp(imageBuffer).metadata();
+    const sharpLib = await getSharp();
+    return await sharpLib(imageBuffer).metadata();
   }
 }
