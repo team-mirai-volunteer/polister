@@ -3,21 +3,14 @@
 import MapboxMap from "@/components/map/MapboxMap";
 import { Alert, Box, Card, Typography } from "@mui/material";
 import mapboxgl from "mapbox-gl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export interface BoardCandidate {
-  boardId: string;
-  boardNumber: string | null;
-  latitude: number;
-  longitude: number;
-  matchScore: number;
-  matchRank: string;
-}
+import type { BoardCandidateDTO } from "@/features/board-image/application/actions/getBoardCandidatesAction";
 
 interface BoardImageMapProps {
   latitude: number | null;
   longitude: number | null;
-  candidates?: BoardCandidate[];
+  candidates?: BoardCandidateDTO[];
 }
 
 export function BoardImageMap({
@@ -25,69 +18,80 @@ export function BoardImageMap({
   longitude,
   candidates = [],
 }: BoardImageMapProps) {
-  const imageMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const markerRef = useRef<mapboxgl.Marker | null>(null);
   const candidateMarkersRef = useRef<mapboxgl.Marker[]>([]);
-  const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
-  const isInitializedRef = useRef(false);
-  const [isMapReady, setIsMapReady] = useState(false);
-  const hasLocation = latitude !== null && longitude !== null;
+  const [mapReady, setMapReady] = useState(false);
 
-  // デフォルト位置（日本の中心）
+  const hasLocation = latitude !== null && longitude !== null;
   const defaultLatitude = 36.5;
   const defaultLongitude = 138.0;
 
-  const handleMapReady = useCallback((map: mapboxgl.Map | null | undefined) => {
-    // 既に初期化済みの場合はスキップ
-    if (isInitializedRef.current) return;
-    if (!map) {
-      console.warn("Map instance is null or undefined");
-      return;
-    }
-    mapInstanceRef.current = map;
-    isInitializedRef.current = true;
-    setIsMapReady(true);
+  const initialViewState = useMemo(
+    () => ({
+      longitude: hasLocation && longitude !== null ? longitude : defaultLongitude,
+      latitude: hasLocation && latitude !== null ? latitude : defaultLatitude,
+      zoom: hasLocation ? 15 : 5,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const handleMapReady = useCallback((map: mapboxgl.Map) => {
+    mapRef.current = map;
+    setMapReady(true);
   }, []);
 
-  // Update markers when candidates or location changes
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || !isMapReady) return;
-
-    // Clear existing markers
-    if (imageMarkerRef.current) {
-      imageMarkerRef.current.remove();
-      imageMarkerRef.current = null;
+    const map = mapRef.current;
+    if (!map || !mapReady) {
+      return;
     }
-    candidateMarkersRef.current.forEach((m) => m.remove());
+
+    if (!hasLocation) {
+      markerRef.current?.remove();
+      markerRef.current = null;
+      return;
+    }
+
+    if (!markerRef.current) {
+      markerRef.current = new mapboxgl.Marker({ color: "#d32f2f" })
+        .setLngLat([longitude!, latitude!])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 12 }).setHTML(
+            `<strong>撮影位置</strong><br/>緯度: ${latitude!.toFixed(
+              6
+            )}<br/>経度: ${longitude!.toFixed(6)}`
+          )
+        )
+        .addTo(map);
+    } else {
+      markerRef.current.setLngLat([longitude!, latitude!]);
+    }
+
+    map.easeTo({
+      center: [longitude!, latitude!],
+      zoom: 16,
+      duration: 500,
+    });
+  }, [hasLocation, latitude, longitude, mapReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) {
+      return;
+    }
+
+    candidateMarkersRef.current.forEach((marker) => marker.remove());
     candidateMarkersRef.current = [];
 
-    // Add image location marker (red)
-    if (hasLocation) {
-      try {
-        const imageMarker = new mapboxgl.Marker({ color: "#FF0000" })
-          .setLngLat([longitude!, latitude!])
-          .setPopup(
-            new mapboxgl.Popup().setHTML(
-              `<div>
-                <strong>撮影位置</strong><br/>
-                緯度: ${latitude!.toFixed(7)}<br/>
-                経度: ${longitude!.toFixed(7)}
-              </div>`
-            )
-          )
-          .addTo(map);
-
-        imageMarkerRef.current = imageMarker;
-      } catch (error) {
-        console.error("画像マーカー追加エラー:", error);
-      }
+    if (candidates.length === 0) {
+      return;
     }
 
-    // Add candidate board markers
     candidates.forEach((candidate, index) => {
       try {
-        const rank = index + 1;
-        const color =
+        const rankColor =
           candidate.matchRank === "HIGH"
             ? "#4CAF50"
             : candidate.matchRank === "MEDIUM"
@@ -95,9 +99,8 @@ export function BoardImageMap({
               : "#9E9E9E";
 
         const el = document.createElement("div");
-        el.className = "custom-marker";
         el.style.cssText = `
-          background-color: ${color};
+          background-color: ${rankColor};
           width: 32px;
           height: 32px;
           border-radius: 50%;
@@ -111,15 +114,16 @@ export function BoardImageMap({
           font-size: 14px;
           cursor: pointer;
         `;
-        el.textContent = rank.toString();
+        el.textContent = String(index + 1);
 
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([candidate.longitude, candidate.latitude])
           .setPopup(
             new mapboxgl.Popup().setHTML(
               `<div>
-                <strong>#${rank} 掲示板 ${candidate.boardNumber || "番号なし"}</strong><br/>
-                スコア: ${candidate.matchScore}点 (${candidate.matchRank})<br/>
+                <strong>#${index + 1} 掲示板 ${candidate.boardNumber || "番号なし"}</strong><br/>
+                スコア: ${candidate.matchScore} (${candidate.matchRank})<br/>
+                ${candidate.address}
               </div>`
             )
           )
@@ -127,34 +131,31 @@ export function BoardImageMap({
 
         candidateMarkersRef.current.push(marker);
       } catch (error) {
-        console.error("候補マーカー追加エラー:", error);
+        console.error("候補マーカーの描画に失敗しました:", error);
       }
     });
-  }, [candidates, latitude, longitude, hasLocation, isMapReady]);
+  }, [candidates, mapReady]);
 
   useEffect(() => {
     return () => {
-      if (imageMarkerRef.current) {
-        imageMarkerRef.current.remove();
-      }
-      candidateMarkersRef.current.forEach((m) => m.remove());
+      markerRef.current?.remove();
+      markerRef.current = null;
+      candidateMarkersRef.current.forEach((marker) => marker.remove());
+      candidateMarkersRef.current = [];
+      mapRef.current = null;
+      setMapReady(false);
     };
   }, []);
 
   return (
     <Card sx={{ position: "relative" }}>
       <MapboxMap
-        initialViewState={{
-          longitude: hasLocation ? longitude : defaultLongitude,
-          latitude: hasLocation ? latitude : defaultLatitude,
-          zoom: hasLocation ? 15 : 5,
-        }}
+        initialViewState={initialViewState}
         onMapReady={handleMapReady}
-        showStyleToggle={true}
-        showGeolocate={true}
+        showStyleToggle={false}
+        showGeolocate={false}
         mapContainerSx={{ height: 400 }}
       />
-      {/* 位置情報がない場合のオーバーレイ */}
       {!hasLocation && (
         <Box
           sx={{
@@ -168,9 +169,7 @@ export function BoardImageMap({
           <Alert severity="info">
             <Typography variant="body2">位置情報がありません</Typography>
             <Typography variant="caption" display="block">
-              この画像にはExifの位置情報が含まれていません。
-              <br />
-              CSVにも位置データがありません。
+              この画像には位置情報が登録されていません。
             </Typography>
           </Alert>
         </Box>
