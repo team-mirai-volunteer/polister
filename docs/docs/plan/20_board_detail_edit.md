@@ -44,7 +44,7 @@
 - [ ] IBoardRepositoryの拡張
   - [ ] findById()
   - [ ] update()
-- [ ] IBoar dHistoryRepositoryの作成
+- [ ] IBoardHistoryRepositoryの作成
   - [ ] create()
   - [ ] findByBoardId()
 - [ ] GetBoardDetailUseCase（詳細取得）

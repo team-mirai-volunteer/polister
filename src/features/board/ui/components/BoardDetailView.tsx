@@ -5,6 +5,10 @@
  */
 
 import type { GetBoardDetailResponseDTO } from "@/features/board/application/dto/BoardDetailDTO";
+import {
+  BOARD_STATUS_LABELS,
+  TRUST_LEVEL_LABELS,
+} from "@/features/municipality/constants";
 import { Edit as EditIcon } from "@mui/icons-material";
 import {
   Box,
@@ -23,19 +27,6 @@ import { BoardLocationMapEditor } from "./BoardLocationMapEditor";
 interface BoardDetailViewProps {
   data: GetBoardDetailResponseDTO;
 }
-
-const TRUST_LEVEL_LABELS: Record<string, string> = {
-  LEVEL_1: "公式",
-  LEVEL_2: "確認済み",
-  LEVEL_3: "報告",
-  LEVEL_4: "記憶",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: "未検証",
-  VERIFIED: "検証済み",
-  REJECTED: "却下",
-};
 
 export function BoardDetailView({ data }: BoardDetailViewProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -73,19 +64,21 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                位置情報
-              </Typography>
-              <BoardLocationMapEditor
-                latitude={board.latitude}
-                longitude={board.longitude}
-                readonly={true}
-                height={300}
-              />
-            </CardContent>
-          </Card>
+          {board.latitude !== null && board.longitude !== null && (
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  位置情報
+                </Typography>
+                <BoardLocationMapEditor
+                  latitude={board.latitude}
+                  longitude={board.longitude}
+                  readonly={true}
+                  height={300}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardContent>
@@ -122,8 +115,9 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
                     位置情報
                   </Typography>
                   <Typography variant="body1">
-                    緯度: {board.latitude.toFixed(6)}, 経度:{" "}
-                    {board.longitude.toFixed(6)}
+                    {board.latitude !== null && board.longitude !== null
+                      ? `緯度: ${board.latitude.toFixed(6)}, 経度: ${board.longitude.toFixed(6)}`
+                      : "位置情報が設定されていません"}
                   </Typography>
                 </Box>
 
@@ -132,7 +126,9 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
                     信頼度
                   </Typography>
                   <Typography variant="body1">
-                    {TRUST_LEVEL_LABELS[board.trustLevel] || board.trustLevel}
+                    {TRUST_LEVEL_LABELS[
+                      board.trustLevel as keyof typeof TRUST_LEVEL_LABELS
+                    ] || board.trustLevel}
                   </Typography>
                 </Box>
 
@@ -141,7 +137,9 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
                     ステータス
                   </Typography>
                   <Typography variant="body1">
-                    {STATUS_LABELS[board.status] || board.status}
+                    {BOARD_STATUS_LABELS[
+                      board.status as keyof typeof BOARD_STATUS_LABELS
+                    ] || board.status}
                   </Typography>
                 </Box>
 

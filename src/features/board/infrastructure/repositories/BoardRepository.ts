@@ -150,10 +150,6 @@ export class BoardRepository implements IBoardRepository {
 
     const { latitude, longitude } = coordinates[0];
 
-    // 座標がない場合はデフォルト値（東京駅）を使用
-    const validLatitude = latitude ?? 35.6812;
-    const validLongitude = longitude ?? 139.7671;
-
     if (!isBoardStatus(board.status)) {
       throw new Error(`Invalid board status: ${board.status}`);
     }
@@ -162,15 +158,18 @@ export class BoardRepository implements IBoardRepository {
       throw new Error(`Invalid trust level: ${board.trustLevel}`);
     }
 
+    // 座標がnullの場合はnullのまま保持（デフォルト値で上書きしない）
+    const coords =
+      latitude !== null && longitude !== null
+        ? new Coordinates({ latitude, longitude })
+        : null;
+
     return new Board({
       id: board.id,
       boardNumber: board.boardNumber,
       name: board.name,
       address: new Address(board.address),
-      coordinates: new Coordinates({
-        latitude: validLatitude,
-        longitude: validLongitude,
-      }),
+      coordinates: coords,
       municipalityId: board.municipalityId,
       trustLevel: board.trustLevel,
       status: board.status,
@@ -183,10 +182,32 @@ export class BoardRepository implements IBoardRepository {
   async update(board: Board): Promise<void> {
     const coordinates = board.coordinates;
 
-    // トランザクションで実行
-    await this.prisma.$transaction([
-      // 通常のフィールドはPrismaのメソッドで型安全に更新
-      this.prisma.board.update({
+    // 座標が設定されている場合のみlocationを更新
+    if (coordinates !== null) {
+      await this.prisma.$transaction([
+        // 通常のフィールドはPrismaのメソッドで型安全に更新
+        this.prisma.board.update({
+          where: { id: board.id },
+          data: {
+            boardNumber: board.boardNumber,
+            name: board.name,
+            address: board.address.value,
+            status: board.status,
+            trustLevel: board.trustLevel,
+            note: board.note,
+            updatedAt: board.updatedAt,
+          },
+        }),
+        // PostGISのlocationフィールドのみ生SQLで更新
+        this.prisma.$executeRaw`
+          UPDATE boards
+          SET location = ST_GeogFromText(${coordinates.toWKT()})
+          WHERE id = ${board.id}
+        `,
+      ]);
+    } else {
+      // 座標がnullの場合は通常のフィールドのみ更新
+      await this.prisma.board.update({
         where: { id: board.id },
         data: {
           boardNumber: board.boardNumber,
@@ -197,14 +218,8 @@ export class BoardRepository implements IBoardRepository {
           note: board.note,
           updatedAt: board.updatedAt,
         },
-      }),
-      // PostGISのlocationフィールドのみ生SQLで更新
-      this.prisma.$executeRaw`
-        UPDATE boards
-        SET location = ST_GeogFromText(${coordinates.toWKT()})
-        WHERE id = ${board.id}
-      `,
-    ]);
+      });
+    }
   }
 
   async existsByBoardNumberInMunicipality(

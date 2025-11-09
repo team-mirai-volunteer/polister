@@ -16,7 +16,7 @@ export interface BoardProps {
   boardNumber: string | null;
   name: string | null;
   address: Address;
-  coordinates: Coordinates;
+  coordinates: Coordinates | null;
   municipalityId: string;
   trustLevel: TrustLevel;
   status: BoardStatus;
@@ -40,7 +40,7 @@ export class Board {
   private _boardNumber: string | null;
   private _name: string | null;
   private _address: Address;
-  private _coordinates: Coordinates;
+  private _coordinates: Coordinates | null;
   private _municipalityId: string;
   private _trustLevel: TrustLevel;
   private _status: BoardStatus;
@@ -62,8 +62,13 @@ export class Board {
       throw new Error("Board address must be an Address value object");
     }
 
-    if (!(props.coordinates instanceof Coordinates)) {
-      throw new Error("Board coordinates must be a Coordinates value object");
+    if (
+      props.coordinates !== null &&
+      !(props.coordinates instanceof Coordinates)
+    ) {
+      throw new Error(
+        "Board coordinates must be a Coordinates value object or null"
+      );
     }
 
     if (!(props.createdAt instanceof Date)) {
@@ -104,7 +109,7 @@ export class Board {
     return this._address;
   }
 
-  get coordinates(): Coordinates {
+  get coordinates(): Coordinates | null {
     return this._coordinates;
   }
 
@@ -185,8 +190,8 @@ export class Board {
       boardNumber: this._boardNumber,
       name: this._name,
       address: this._address.value,
-      latitude: this._coordinates.latitude,
-      longitude: this._coordinates.longitude,
+      latitude: this._coordinates?.latitude ?? null,
+      longitude: this._coordinates?.longitude ?? null,
       municipalityId: this._municipalityId,
       trustLevel: this._trustLevel,
       status: this._status,
@@ -224,8 +229,8 @@ export interface BoardSnapshot {
   boardNumber: string | null;
   name: string | null;
   address: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   municipalityId: string;
   trustLevel: TrustLevel;
   status: BoardStatus;

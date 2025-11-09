@@ -27,6 +27,12 @@ export function BoardLocationMapEditor({
 }: BoardLocationMapEditorProps) {
   const markerRef = useRef<mapboxgl.Marker | null>(null);
   const isDraggingRef = useRef(false);
+  const onLocationChangeRef = useRef(onLocationChange);
+
+  // onLocationChangeの最新値を保持
+  useEffect(() => {
+    onLocationChangeRef.current = onLocationChange;
+  }, [onLocationChange]);
 
   // 初期座標を固定（地図の再初期化を防ぐ）
   const initialViewState = useMemo(
@@ -58,11 +64,11 @@ export function BoardLocationMapEditor({
           isDraggingRef.current = true;
         });
 
-        // ドラッグ終了
+        // ドラッグ終了 - refから最新のコールバックを参照
         marker.on("dragend", () => {
           isDraggingRef.current = false;
           const lngLat = marker.getLngLat();
-          onLocationChange?.(lngLat.lat, lngLat.lng);
+          onLocationChangeRef.current?.(lngLat.lat, lngLat.lng);
         });
       }
 
@@ -86,10 +92,11 @@ export function BoardLocationMapEditor({
               isDraggingRef.current = true;
             });
 
+            // ドラッグ終了 - refから最新のコールバックを参照
             newMarker.on("dragend", () => {
               isDraggingRef.current = false;
               const lngLat = newMarker.getLngLat();
-              onLocationChange?.(lngLat.lat, lngLat.lng);
+              onLocationChangeRef.current?.(lngLat.lat, lngLat.lng);
             });
           }
         }

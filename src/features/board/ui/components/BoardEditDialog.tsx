@@ -63,13 +63,14 @@ export function BoardEditDialog({
   onClose,
   onSuccess,
 }: BoardEditDialogProps) {
-  // 初期位置を保持
+  // 初期位置を保持（座標がnullの場合は東京駅をデフォルト）
   const initialPosition = useMemo(
     () => ({
-      latitude: board.latitude,
-      longitude: board.longitude,
+      latitude: board.latitude ?? 35.6812,
+      longitude: board.longitude ?? 139.7671,
     }),
-    [board.latitude, board.longitude]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [] // 空の依存配列で初回のみ計算
   );
 
   // 初期フォームデータを生成する関数
@@ -78,10 +79,10 @@ export function BoardEditDialog({
       boardNumber: board.boardNumber || "",
       name: board.name || "",
       address: board.address,
-      latitude: board.latitude,
-      longitude: board.longitude,
-      latitudeStr: board.latitude.toString(),
-      longitudeStr: board.longitude.toString(),
+      latitude: board.latitude ?? 35.6812,
+      longitude: board.longitude ?? 139.7671,
+      latitudeStr: board.latitude?.toString() ?? "35.6812",
+      longitudeStr: board.longitude?.toString() ?? "139.7671",
       status: board.status,
       trustLevel: board.trustLevel,
       note: board.note || "",

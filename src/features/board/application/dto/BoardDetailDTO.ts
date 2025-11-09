@@ -10,8 +10,8 @@ export interface BoardDetailDTO {
   boardNumber: string | null;
   name: string | null;
   address: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   municipalityId: string;
   trustLevel: string;
   status: string;
@@ -43,8 +43,8 @@ export const mapBoardToDTO = (board: Board): BoardDetailDTO => ({
   boardNumber: board.boardNumber,
   name: board.name,
   address: board.address.value,
-  latitude: board.coordinates.latitude,
-  longitude: board.coordinates.longitude,
+  latitude: board.coordinates?.latitude ?? null,
+  longitude: board.coordinates?.longitude ?? null,
   municipalityId: board.municipalityId,
   trustLevel: board.trustLevel,
   status: board.status,
