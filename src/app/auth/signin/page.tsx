@@ -21,19 +21,13 @@ const getSafeCallbackUrl = (value?: string): string => {
   try {
     const decoded = decodeURIComponent(value);
 
-    // プロトコル相対パス（//evil.com）やホスト指定（/\）を拒否
-    if (decoded.startsWith("//") || decoded.startsWith("/\\")) {
+    // 単一スラッシュで始まるパスのみ許可（絶対URLやホスト指定を拒否）
+    // 正規表現: /で始まり、2文字目が/でもバックスラッシュでもない
+    if (!/^\/[^/\\]/.test(decoded)) {
       return "/";
     }
 
-    // 単一スラッシュで始まるパスのみ許可
-    if (decoded.startsWith("/")) {
-      return decoded;
-    }
-
-    // 絶対URLの場合はパス部分のみ抽出
-    const url = new URL(decoded);
-    return url.pathname + url.search + url.hash;
+    return decoded;
   } catch {
     return "/";
   }
