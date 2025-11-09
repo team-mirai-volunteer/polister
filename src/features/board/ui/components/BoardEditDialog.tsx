@@ -63,15 +63,21 @@ export function BoardEditDialog({
   onClose,
   onSuccess,
 }: BoardEditDialogProps) {
-  // 初期位置を保持（座標がnullの場合は東京駅をデフォルト）
-  const initialPosition = useMemo(
-    () => ({
-      latitude: board.latitude ?? 35.6812,
-      longitude: board.longitude ?? 139.7671,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [] // 空の依存配列で初回のみ計算
-  );
+  // 初期位置を保持（ダイアログが開くたびに最新のboard座標を設定）
+  const [initialPosition, setInitialPosition] = useState({
+    latitude: board.latitude ?? 35.6812,
+    longitude: board.longitude ?? 139.7671,
+  });
+
+  // ダイアログが開いた時に初期位置を更新
+  useEffect(() => {
+    if (open) {
+      setInitialPosition({
+        latitude: board.latitude ?? 35.6812,
+        longitude: board.longitude ?? 139.7671,
+      });
+    }
+  }, [open, board.latitude, board.longitude]);
 
   // 初期フォームデータを生成する関数
   const createInitialFormData = useMemo(
