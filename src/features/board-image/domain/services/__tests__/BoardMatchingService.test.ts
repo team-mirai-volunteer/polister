@@ -253,6 +253,32 @@ describe("BoardMatchingService", () => {
         expect(numberScore?.detail).toBe("不一致");
       });
 
+      it("無効な形式の掲示板番号は0点として扱う", () => {
+        const image = createImageCandidate({ csvBoardNumber: "A-1" });
+        const board = createBoardCandidate({ boardNumber: "1-7" });
+
+        const result = service.calculateMatchScore(image, board);
+
+        const numberScore = result.details.find(
+          (d) => d.factor === "boardNumber"
+        );
+        expect(numberScore?.score).toBe(0);
+        expect(numberScore?.detail).toBe("不一致");
+      });
+
+      it("掲示板側の番号が無効な場合も0点で継続する", () => {
+        const image = createImageCandidate({ csvBoardNumber: "1-7" });
+        const board = createBoardCandidate({ boardNumber: "invalid-value" });
+
+        const result = service.calculateMatchScore(image, board);
+
+        const numberScore = result.details.find(
+          (d) => d.factor === "boardNumber"
+        );
+        expect(numberScore?.score).toBe(0);
+        expect(numberScore?.detail).toBe("不一致");
+      });
+
       it("掲示板番号がない場合、掲示板番号スコアが含まれない", () => {
         const image = createImageCandidate({ csvBoardNumber: null });
         const board = createBoardCandidate({ boardNumber: "1-7" });

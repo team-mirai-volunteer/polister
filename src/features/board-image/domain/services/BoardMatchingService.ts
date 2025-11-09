@@ -151,14 +151,11 @@ export class BoardMatchingService {
   /**
    * 掲示板番号一致スコア（0-20点）
    */
-  private getBoardNumberScore(
-    imageNumber: string,
-    boardNumber: string
-  ): number {
-    const normalizedImage = normalizeBoardNumber(imageNumber);
-    const normalizedBoard = normalizeBoardNumber(boardNumber);
+  private getBoardNumberScore(imageNumber: string, boardNumber: string): number {
+    const normalizedImage = this.normalizeBoardNumberOrNull(imageNumber);
+    const normalizedBoard = this.normalizeBoardNumberOrNull(boardNumber);
 
-    // 正規化に失敗した場合は0点
+    // 正規化に失敗した場合は0点扱い
     if (!normalizedImage || !normalizedBoard) {
       return 0;
     }
@@ -188,6 +185,14 @@ export class BoardMatchingService {
     }
 
     return 0;
+  }
+
+  private normalizeBoardNumberOrNull(value: string): string | null {
+    try {
+      return normalizeBoardNumber(value);
+    } catch {
+      return null;
+    }
   }
 
   /**
