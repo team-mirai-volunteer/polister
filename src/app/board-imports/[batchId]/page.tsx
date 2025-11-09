@@ -24,9 +24,11 @@ interface BoardImportDetailPageProps {
 export default async function BoardImportDetailPage({
   params,
 }: BoardImportDetailPageProps) {
+  const { batchId } = await params;
+
   try {
     const { batch, rows } = await getBoardImportBatchDetailAction({
-      batchId: params.batchId,
+      batchId,
     });
 
     return (
@@ -69,7 +71,7 @@ export default async function BoardImportDetailPage({
     }
 
     console.error(
-      `[BoardImportDetailPage] Failed to load batch ${params.batchId}:`,
+      `[BoardImportDetailPage] Failed to load batch ${batchId}:`,
       error
     );
     throw error;

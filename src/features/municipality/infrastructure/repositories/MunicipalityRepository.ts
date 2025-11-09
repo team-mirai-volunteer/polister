@@ -204,7 +204,7 @@ export class MunicipalityRepository implements IMunicipalityRepository {
     >`
       SELECT
         id,
-        board_number,
+        board_number::text AS board_number,
         name,
         address,
         ST_X(location::geometry) AS longitude,
@@ -216,18 +216,18 @@ export class MunicipalityRepository implements IMunicipalityRepository {
         AND deleted_at IS NULL
       ORDER BY
         CASE
-          WHEN board_number ~ '^\d+(-\d+)?$' THEN (
-            split_part(board_number, '-', 1)::int
+          WHEN board_number::text ~ '^\d+(-\d+)?$' THEN (
+            split_part(board_number::text, '-', 1)::int
           )
           ELSE NULL
         END ASC NULLS LAST,
         CASE
-          WHEN board_number ~ '^\d+-\d+$' THEN (
-            split_part(board_number, '-', 2)::int
+          WHEN board_number::text ~ '^\d+-\d+$' THEN (
+            split_part(board_number::text, '-', 2)::int
           )
           ELSE NULL
         END ASC NULLS LAST,
-        board_number ASC NULLS LAST,
+        board_number::text ASC NULLS LAST,
         created_at ASC
     `;
 

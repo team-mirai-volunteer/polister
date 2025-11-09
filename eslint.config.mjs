@@ -21,6 +21,7 @@ const eslintConfig = [
       "docs/.docusaurus/**",
       "docs/build/**",
       "**/coverage/**",
+      "tmp/**",
     ],
   },
 ];
