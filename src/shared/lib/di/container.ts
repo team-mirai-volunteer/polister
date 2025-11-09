@@ -7,7 +7,9 @@ import type { BoardImportStorage } from "@/features/board-import/application/ser
 import type { IBoardImportRepository } from "@/features/board-import/domain/repositories/IBoardImportRepository";
 import { BoardImportRepository } from "@/features/board-import/infrastructure/repositories/BoardImportRepository";
 import { LocalBoardImportStorage } from "@/features/board-import/infrastructure/services/LocalBoardImportStorage";
+import type { IBoardHistoryRepository } from "@/features/board/domain/repositories/IBoardHistoryRepository";
 import type { IBoardRepository } from "@/features/board/domain/repositories/IBoardRepository";
+import { BoardHistoryRepository } from "@/features/board/infrastructure/repositories/BoardHistoryRepository";
 import { BoardRepository } from "@/features/board/infrastructure/repositories/BoardRepository";
 import type { IMunicipalityRepository } from "@/features/municipality/domain/repositories/IMunicipalityRepository";
 import { MunicipalityRepository } from "@/features/municipality/infrastructure/repositories/MunicipalityRepository";
@@ -164,6 +166,20 @@ const registerDefaults = (target: DependencyContainer): void => {
     target.registerSingleton<IPrefectureRepository>(
       TOKENS.PrefectureRepository,
       PrefectureRepository
+    );
+  }
+
+  if (!target.isRegistered(TOKENS.IBoardRepository)) {
+    target.registerSingleton<IBoardRepository>(
+      TOKENS.IBoardRepository,
+      BoardRepository
+    );
+  }
+
+  if (!target.isRegistered(TOKENS.IBoardHistoryRepository)) {
+    target.registerSingleton<IBoardHistoryRepository>(
+      TOKENS.IBoardHistoryRepository,
+      BoardHistoryRepository
     );
   }
 
