@@ -4,26 +4,14 @@ import type { JWT } from "next-auth/jwt";
 
 const defaultUserRole: UserRole = "VIEWER";
 
-const getNextAuthSecret = (): string => {
-  const secret = process.env.NEXTAUTH_SECRET;
-
-  if (!secret || secret.trim().length === 0) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        "NEXTAUTH_SECRET is required in production. Please set it in your environment variables."
-      );
-    }
-
-    // 開発環境用のデフォルト値（警告を出す）
+const warnMissingSecretInDevelopment = () => {
+  if (process.env.NODE_ENV !== "production" && !process.env.NEXTAUTH_SECRET) {
     console.warn(
-      "⚠️  NEXTAUTH_SECRET is not set. Using a default value for development. " +
-        "Please set NEXTAUTH_SECRET in your .env file for production use."
+      "⚠️  NEXTAUTH_SECRET is not set. Please configure it in your .env file when testing NextAuth."
     );
-    return "development-secret-change-this-in-production";
   }
-
-  return secret.trim();
 };
+warnMissingSecretInDevelopment();
 
 const buildSessionUser = (
   sessionUser: DefaultSession["user"] | undefined,
@@ -51,7 +39,6 @@ const buildSessionUser = (
 };
 
 export const authConfigBase: NextAuthConfig = {
-  secret: getNextAuthSecret(),
   providers: [],
   session: {
     strategy: "jwt",
