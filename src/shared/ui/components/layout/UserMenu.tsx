@@ -13,19 +13,29 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import type { UserRole } from "@prisma/client";
+import { signOut } from "next-auth/react";
 import { useMemo, useState } from "react";
 
 interface UserInfo {
-  name: string;
-  email?: string;
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  role?: UserRole;
 }
 
 interface UserMenuProps {
   user: UserInfo;
 }
 
-const getInitials = (name: string): string => {
-  const parts = name.trim().split(/\s+/);
+const getInitials = (name?: string | null, email?: string | null): string => {
+  if (!name && email) {
+    return email.slice(0, 2).toUpperCase();
+  }
+
+  const safeName = name ?? "";
+  const parts = safeName.trim().split(/\s+/);
   if (parts.length === 0) {
     return "U";
   }
@@ -42,7 +52,11 @@ export function UserMenu({ user }: UserMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const initials = useMemo(() => getInitials(user.name), [user.name]);
+  const initials = useMemo(
+    () => getInitials(user.name, user.email),
+    [user.email, user.name]
+  );
+  const displayName = user.name ?? user.email ?? "ログインユーザー";
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -65,6 +79,7 @@ export function UserMenu({ user }: UserMenuProps) {
           aria-expanded={open ? "true" : undefined}
         >
           <Avatar
+            src={user.image ?? undefined}
             sx={{
               width: 32,
               height: 32,
@@ -97,23 +112,32 @@ export function UserMenu({ user }: UserMenuProps) {
           </ListItemIcon>
           <div>
             <Typography variant="body2" fontWeight={600}>
-              {user.name}
+              {displayName}
             </Typography>
             {user.email && (
               <Typography variant="caption" color="text.secondary">
                 {user.email}
               </Typography>
             )}
+            {user.role && (
+              <Typography variant="caption" color="text.secondary">
+                ロール: {user.role}
+              </Typography>
+            )}
           </div>
         </MenuItem>
         <Divider sx={{ my: 1 }} />
-        <MenuItem>
+        <MenuItem disabled>
           <ListItemIcon>
             <ManageAccountsIcon fontSize="small" />
           </ListItemIcon>
-          プロフィール設定
+          プロフィール設定（準備中）
         </MenuItem>
-        <MenuItem>
+        <MenuItem
+          onClick={() => {
+            void signOut({ callbackUrl: "/" });
+          }}
+        >
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
           </ListItemIcon>

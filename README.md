@@ -55,6 +55,23 @@ PORT=3100 yarn docs:dev
 - アプリケーション: <http://localhost:3000>
 - ドキュメント: <http://localhost:3100（`PORT=3100> yarn docs:dev` で起動）
 
+### 環境変数
+
+`.env.example` をコピーして `.env` を作成し、以下の値を設定してください：
+
+- `NEXTAUTH_URL`: ローカル開発では `http://localhost:3000` を指定
+- `NEXTAUTH_SECRET`: `openssl rand -base64 32` などで生成したランダム文字列
+- 初期管理者作成時は `ADMIN_EMAIL` / `ADMIN_PASSWORD`（任意で `ADMIN_NAME`）をセットして `yarn user:create-admin` を実行
+
+サインインはメールアドレスとパスワードで行います。Google OAuth 連携は今後の実装予定です。
+
+```bash
+# 初期管理者アカウントの作成例
+ADMIN_EMAIL="admin@example.com" \
+ADMIN_PASSWORD="change-me" \
+yarn user:create-admin
+```
+
 ## 📚 ドキュメント
 
 詳細なドキュメントは以下で公開しています：

@@ -8,6 +8,7 @@ import {
   BOARD_IMPORT_STATUS_VALUES,
   type BoardImportStatus,
 } from "@/features/board-import/domain/types/BoardImportTypes";
+import { requireAuth } from "@/shared/lib/auth/session";
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 
@@ -27,6 +28,7 @@ export interface ListBoardImportBatchesActionOutput {
 export async function listBoardImportBatchesAction(
   input: ListBoardImportBatchesActionInput = {}
 ): Promise<ListBoardImportBatchesActionOutput> {
+  await requireAuth();
   setupDI(container);
 
   const useCase = container.resolve(ListBoardImportBatchesUseCase);
