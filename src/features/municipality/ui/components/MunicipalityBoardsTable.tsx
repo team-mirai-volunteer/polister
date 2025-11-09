@@ -3,6 +3,7 @@
 import { formatBoardNumberLabel } from "@/shared/domain/board/BoardNumber";
 import {
   Box,
+  Button,
   Chip,
   Table,
   TableBody,
@@ -11,6 +12,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import NextLink from "next/link";
 
 import type { MunicipalityBoardDTO } from "../../application/dto/MunicipalityBoardDTO";
 import {
@@ -49,6 +51,7 @@ export const MunicipalityBoardsTable = ({
             <TableCell>住所</TableCell>
             <TableCell>状態</TableCell>
             <TableCell>信頼度</TableCell>
+            <TableCell>詳細</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -91,6 +94,18 @@ export const MunicipalityBoardsTable = ({
                     color={TRUST_LEVEL_COLORS[board.trustLevel] ?? "info"}
                     variant="outlined"
                   />
+                </TableCell>
+                <TableCell width="120" sx={{ whiteSpace: "nowrap" }}>
+                  <Button
+                    component={NextLink}
+                    href={`/boards/${board.id}`}
+                    size="small"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                    }}
+                  >
+                    詳細を見る
+                  </Button>
                 </TableCell>
               </TableRow>
             );
