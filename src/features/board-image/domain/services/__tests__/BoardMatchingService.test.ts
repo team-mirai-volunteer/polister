@@ -35,7 +35,7 @@ describe("BoardMatchingService", () => {
     });
 
     describe("位置情報スコア（0-50点）", () => {
-      it("10m以内の場合、50点を付与", () => {
+      it("5m以内の場合、50点を付与", () => {
         const image = createImageCandidate();
         const board = createBoardCandidate({ distance: 5 });
 
@@ -48,7 +48,19 @@ describe("BoardMatchingService", () => {
         expect(locationScore?.detail).toContain("距離: 5m");
       });
 
-      it("50m以内の場合、40点を付与", () => {
+      it("15m以内の場合、45点を付与", () => {
+        const image = createImageCandidate();
+        const board = createBoardCandidate({ distance: 15 });
+
+        const result = service.calculateMatchScore(image, board);
+
+        const locationScore = result.details.find(
+          (d) => d.factor === "location"
+        );
+        expect(locationScore?.score).toBe(45);
+      });
+
+      it("30m以内の場合、40点を付与", () => {
         const image = createImageCandidate();
         const board = createBoardCandidate({ distance: 30 });
 
@@ -60,9 +72,21 @@ describe("BoardMatchingService", () => {
         expect(locationScore?.score).toBe(40);
       });
 
+      it("60m以内の場合、35点を付与", () => {
+        const image = createImageCandidate();
+        const board = createBoardCandidate({ distance: 60 });
+
+        const result = service.calculateMatchScore(image, board);
+
+        const locationScore = result.details.find(
+          (d) => d.factor === "location"
+        );
+        expect(locationScore?.score).toBe(35);
+      });
+
       it("100m以内の場合、30点を付与", () => {
         const image = createImageCandidate();
-        const board = createBoardCandidate({ distance: 80 });
+        const board = createBoardCandidate({ distance: 100 });
 
         const result = service.calculateMatchScore(image, board);
 
@@ -72,9 +96,21 @@ describe("BoardMatchingService", () => {
         expect(locationScore?.score).toBe(30);
       });
 
-      it("500m以内の場合、20点を付与", () => {
+      it("200m以内の場合、25点を付与", () => {
         const image = createImageCandidate();
-        const board = createBoardCandidate({ distance: 300 });
+        const board = createBoardCandidate({ distance: 200 });
+
+        const result = service.calculateMatchScore(image, board);
+
+        const locationScore = result.details.find(
+          (d) => d.factor === "location"
+        );
+        expect(locationScore?.score).toBe(25);
+      });
+
+      it("400m以内の場合、20点を付与", () => {
+        const image = createImageCandidate();
+        const board = createBoardCandidate({ distance: 400 });
 
         const result = service.calculateMatchScore(image, board);
 
@@ -84,9 +120,21 @@ describe("BoardMatchingService", () => {
         expect(locationScore?.score).toBe(20);
       });
 
-      it("1km以内の場合、10点を付与", () => {
+      it("800m以内の場合、15点を付与", () => {
         const image = createImageCandidate();
         const board = createBoardCandidate({ distance: 800 });
+
+        const result = service.calculateMatchScore(image, board);
+
+        const locationScore = result.details.find(
+          (d) => d.factor === "location"
+        );
+        expect(locationScore?.score).toBe(15);
+      });
+
+      it("1200m以内の場合、10点を付与", () => {
+        const image = createImageCandidate();
+        const board = createBoardCandidate({ distance: 1200 });
 
         const result = service.calculateMatchScore(image, board);
 
@@ -96,7 +144,7 @@ describe("BoardMatchingService", () => {
         expect(locationScore?.score).toBe(10);
       });
 
-      it("1km超の場合、0点を付与", () => {
+      it("1200m超の場合、0点を付与", () => {
         const image = createImageCandidate();
         const board = createBoardCandidate({ distance: 1500 });
 
@@ -317,7 +365,7 @@ describe("BoardMatchingService", () => {
 
       it("30-49点の場合、LOW判定", () => {
         const image = createImageCandidate({ csvBoardNumber: null });
-        const board = createBoardCandidate({ distance: 800 }); // 10 + 30 + 0 = 40点
+        const board = createBoardCandidate({ distance: 1200 }); // 10 + 30 + 0 = 40点
 
         const result = service.calculateMatchScore(image, board);
 

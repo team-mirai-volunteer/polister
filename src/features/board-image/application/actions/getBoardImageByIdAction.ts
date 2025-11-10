@@ -8,9 +8,25 @@ export async function getBoardImageByIdAction(
   id: string
 ): Promise<BoardImageDTO | null> {
   const repository = resolve(TOKENS.BoardImageRepository);
+  const boardRepository = resolve(TOKENS.BoardRepository);
 
   const image = await repository.findById(id);
   if (!image) return null;
+
+  let linkedBoard: BoardImageDTO["linkedBoard"] = null;
+  if (image.boardId) {
+    const board = await boardRepository.findById(image.boardId);
+    if (board) {
+      linkedBoard = {
+        id: board.id,
+        boardNumber: board.boardNumber,
+        name: board.name,
+        latitude: board.coordinates?.latitude ?? null,
+        longitude: board.coordinates?.longitude ?? null,
+        address: board.address.value,
+      };
+    }
+  }
 
   return {
     id: image.id,
@@ -34,5 +50,6 @@ export async function getBoardImageByIdAction(
     reviewComment: image.reviewComment,
     isPublic: image.isPublic,
     createdAt: image.createdAt.toISOString(),
+    linkedBoard,
   };
 }

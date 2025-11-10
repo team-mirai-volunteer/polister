@@ -2,6 +2,7 @@
  * 掲示板詳細 DTO
  */
 
+import type { BoardImage } from "@/features/board-image/domain/entities/BoardImage";
 import type { Board } from "@/features/board/domain/aggregates/Board";
 import type { BoardHistory } from "@/features/board/domain/entities/BoardHistory";
 
@@ -36,6 +37,21 @@ export interface BoardHistoryDTO {
 export interface GetBoardDetailResponseDTO {
   board: BoardDetailDTO;
   histories: BoardHistoryDTO[];
+  images: BoardRelatedImageDTO[];
+}
+
+export interface BoardRelatedImageDTO {
+  id: string;
+  originalFilename: string;
+  originalPath: string;
+  displayPath: string | null;
+  thumbnailPath: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  takenAt: string | null;
+  verificationStatus: string;
+  statusNote: string | null;
+  createdAt: string;
 }
 
 export const mapBoardToDTO = (board: Board): BoardDetailDTO => ({
@@ -62,4 +78,20 @@ export const mapBoardHistoryToDTO = (
   comment: history.comment,
   changedAt: history.changedAt.toISOString(),
   changes: history.getDiff().changes,
+});
+
+export const mapBoardImageToRelatedDTO = (
+  image: BoardImage
+): BoardRelatedImageDTO => ({
+  id: image.id,
+  originalFilename: image.originalFilename,
+  originalPath: image.originalPath,
+  displayPath: image.displayPath,
+  thumbnailPath: image.thumbnailPath,
+  latitude: image.latitude,
+  longitude: image.longitude,
+  takenAt: image.takenAt?.toISOString() ?? null,
+  verificationStatus: image.verificationStatus,
+  statusNote: image.statusNote,
+  createdAt: image.createdAt.toISOString(),
 });

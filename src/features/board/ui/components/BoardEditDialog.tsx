@@ -4,10 +4,12 @@
  * 掲示板編集ダイアログ
  */
 
+import { buildImagePreviewUrl } from "@/features/board-image/ui/utils/imageUrl";
 import { getBoardDetailAction } from "@/features/board/application/actions/getBoardDetailAction";
 import { updateBoardAction } from "@/features/board/application/actions/updateBoardAction";
 import type {
   BoardDetailDTO,
+  BoardRelatedImageDTO,
   GetBoardDetailResponseDTO,
 } from "@/features/board/application/dto/BoardDetailDTO";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -34,6 +36,7 @@ import { BoardLocationMapEditor } from "./BoardLocationMapEditor";
 interface BoardEditDialogProps {
   open: boolean;
   board: BoardDetailDTO;
+  images: BoardRelatedImageDTO[];
   onClose: () => void;
   onSuccess: (data: GetBoardDetailResponseDTO) => void;
 }
@@ -64,6 +67,7 @@ const DEFAULT_LONGITUDE = 139.7671;
 export function BoardEditDialog({
   open,
   board,
+  images,
   onClose,
   onSuccess,
 }: BoardEditDialogProps) {
@@ -115,6 +119,24 @@ export function BoardEditDialog({
   );
 
   const [formData, setFormData] = useState(createInitialFormData);
+  const relatedImageMarkers = useMemo(
+    () =>
+      images
+        .map((image, index) => ({ image, order: index + 1 }))
+        .filter(
+          ({ image }) => image.latitude !== null && image.longitude !== null
+        )
+        .map(({ image, order }) => ({
+          id: image.id,
+          latitude: image.latitude as number,
+          longitude: image.longitude as number,
+          label: image.originalFilename,
+          previewUrl: buildImagePreviewUrl(image),
+          href: `/board-images/${image.id}`,
+          order,
+        })),
+    [images]
+  );
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -257,6 +279,7 @@ export function BoardEditDialog({
                 });
               }}
               height={250}
+              relatedImages={relatedImageMarkers}
             />
           </Box>
 

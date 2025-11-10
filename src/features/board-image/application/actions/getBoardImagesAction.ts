@@ -1,5 +1,11 @@
 "use server";
 
+import {
+  BOARD_IMAGE_FILTER_FIELDS,
+  BOARD_IMAGE_FILTER_OPERATORS,
+  type BoardImageFilterField,
+  type BoardImageFilterOperator,
+} from "@/features/board-image/constants/filters";
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
 
@@ -25,6 +31,14 @@ export interface BoardImageDTO {
   reviewComment: string | null;
   isPublic: boolean;
   createdAt: string;
+  linkedBoard?: {
+    id: string;
+    boardNumber: string | null;
+    name: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    address: string;
+  } | null;
 }
 
 export interface GetBoardImagesInput {
@@ -32,8 +46,9 @@ export interface GetBoardImagesInput {
   offset?: number;
   verificationStatus?: string;
   hasBoard?: boolean;
-  csvPrefecture?: string;
-  csvCity?: string;
+  filterField?: string;
+  filterOperator?: string;
+  filterValue?: string;
   sortField?: string;
   sortOrder?: "asc" | "desc";
 }
@@ -48,22 +63,39 @@ export async function getBoardImagesAction(
 ): Promise<GetBoardImagesResult> {
   const repository = resolve(TOKENS.BoardImageRepository);
 
+  const normalizedFilterField = normalizeFilterField(input.filterField);
+  const normalizedFilterOperator = normalizedFilterField
+    ? normalizeFilterOperator(input.filterOperator, normalizedFilterField)
+    : undefined;
+  const trimmedValue = input.filterValue?.trim();
+  const filterValue =
+    normalizedFilterField && normalizedFilterOperator && trimmedValue
+      ? trimmedValue
+      : undefined;
+
+  const filter =
+    normalizedFilterField && normalizedFilterOperator && filterValue
+      ? {
+          field: normalizedFilterField,
+          operator: normalizedFilterOperator,
+          value: filterValue,
+        }
+      : undefined;
+
   const [images, total] = await Promise.all([
     repository.findMany({
       limit: input.limit ?? 50,
       offset: input.offset ?? 0,
       verificationStatus: input.verificationStatus,
       hasBoard: input.hasBoard,
-      csvPrefecture: input.csvPrefecture,
-      csvCity: input.csvCity,
+      filter,
       sortField: input.sortField as never,
       sortOrder: input.sortOrder,
     }),
     repository.count({
       verificationStatus: input.verificationStatus,
       hasBoard: input.hasBoard,
-      csvPrefecture: input.csvPrefecture,
-      csvCity: input.csvCity,
+      filter,
     }),
   ]);
 
@@ -91,8 +123,37 @@ export async function getBoardImagesAction(
         reviewComment: image.reviewComment,
         isPublic: image.isPublic,
         createdAt: image.createdAt.toISOString(),
+        linkedBoard: null,
       })
     ),
     total,
   };
+}
+
+function normalizeFilterField(
+  value: string | undefined
+): BoardImageFilterField | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return BOARD_IMAGE_FILTER_FIELDS.includes(value as BoardImageFilterField)
+    ? (value as BoardImageFilterField)
+    : undefined;
+}
+
+function normalizeFilterOperator(
+  operator: string | undefined,
+  field: BoardImageFilterField
+): BoardImageFilterOperator {
+  if (!operator) {
+    return field === "verificationStatus" ? "equals" : "contains";
+  }
+
+  const allowed = BOARD_IMAGE_FILTER_OPERATORS[field];
+  return allowed.includes(operator as BoardImageFilterOperator)
+    ? (operator as BoardImageFilterOperator)
+    : field === "verificationStatus"
+      ? "equals"
+      : "contains";
 }

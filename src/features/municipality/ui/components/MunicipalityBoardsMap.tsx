@@ -2,6 +2,7 @@
 
 import MapboxMap from "@/components/map/MapboxMap";
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from "@/components/map/mapStyleConfig";
+import { applyBoardMarkerStyle } from "@/features/board/ui/utils/boardMarkerStyle";
 import { useMapResize } from "@/shared/ui/hooks/useMapResize";
 import { Box, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -328,7 +329,7 @@ export function MunicipalityBoardsMap({
         existing.marker.setLngLat([coord.longitude, coord.latitude]);
         existing.element.setAttribute("aria-label", label);
         existing.element.setAttribute("title", label);
-        applyMarkerStyle(existing.element, false, palette);
+        applyBoardMarkerStyle(existing.element, false, palette);
         return;
       }
 
@@ -345,7 +346,7 @@ export function MunicipalityBoardsMap({
       element.setAttribute("title", label);
       element.tabIndex = 0;
 
-      applyMarkerStyle(element, false, palette);
+      applyBoardMarkerStyle(element, false, palette);
 
       const handleClick = () => {
         onBoardFocused?.(coord.id);
@@ -393,7 +394,7 @@ export function MunicipalityBoardsMap({
     markersRef.current.forEach((entry, id) => {
       const isFocused = focusedBoardId === id;
       entry.element.setAttribute("aria-pressed", isFocused ? "true" : "false");
-      applyMarkerStyle(entry.element, isFocused, {
+      applyBoardMarkerStyle(entry.element, isFocused, {
         primary: theme.palette.primary.main,
         secondary: theme.palette.secondary.main,
         white: theme.palette.common.white,
@@ -486,27 +487,6 @@ export function MunicipalityBoardsMap({
       ) : null}
     </Box>
   );
-}
-
-function applyMarkerStyle(
-  element: HTMLButtonElement,
-  isFocused: boolean,
-  palette: { primary: string; secondary: string; white: string }
-) {
-  element.style.width = isFocused ? "18px" : "14px";
-  element.style.height = isFocused ? "18px" : "14px";
-  element.style.borderRadius = "50%";
-  element.style.backgroundColor = isFocused
-    ? palette.secondary
-    : palette.primary;
-  element.style.opacity = isFocused ? "1" : "0.75";
-  element.style.border = `2px solid ${palette.white}`;
-  element.style.boxShadow = isFocused
-    ? "0 0 0 3px rgba(228,0,20,0.25)"
-    : "0 0 6px rgba(29,41,61,0.25)";
-  element.style.transition =
-    "background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease";
-  element.style.transform = isFocused ? "scale(1.1)" : "scale(1)";
 }
 
 export default MunicipalityBoardsMap;

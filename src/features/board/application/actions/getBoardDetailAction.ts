@@ -8,6 +8,7 @@ import "reflect-metadata";
 
 import {
   mapBoardHistoryToDTO,
+  mapBoardImageToRelatedDTO,
   mapBoardToDTO,
   type GetBoardDetailResponseDTO,
 } from "@/features/board/application/dto/BoardDetailDTO";
@@ -29,5 +30,6 @@ export async function getBoardDetailAction(
   return {
     board: mapBoardToDTO(result.board),
     histories: result.histories.map(mapBoardHistoryToDTO),
+    images: result.images.map(mapBoardImageToRelatedDTO),
   };
 }

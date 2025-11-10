@@ -2,9 +2,11 @@ import { getBoardCandidatesAction } from "@/features/board-image/application/act
 import { getBoardImageByIdAction } from "@/features/board-image/application/actions/getBoardImageByIdAction";
 import { BoardCandidateListWrapper } from "@/features/board-image/ui/components/BoardCandidateListWrapper";
 import { BoardImageActions } from "@/features/board-image/ui/components/BoardImageActions";
+import { BoardImageDeleteButton } from "@/features/board-image/ui/components/BoardImageDeleteButton";
 import { BoardImageMap } from "@/features/board-image/ui/components/BoardImageMap";
 import { BoardImageViewer } from "@/features/board-image/ui/components/BoardImageViewer";
 import { LinkedBoardInfo } from "@/features/board-image/ui/components/LinkedBoardInfo";
+import { buildImagePreviewUrl } from "@/features/board-image/ui/utils/imageUrl";
 import {
   Box,
   Chip,
@@ -200,6 +202,9 @@ export default async function BoardImageDetailPage({ params }: PageProps) {
                       />
                     </Box>
                   )}
+                  <Box sx={{ mt: 3 }}>
+                    <BoardImageDeleteButton imageId={id} />
+                  </Box>
                 </Stack>
               </Stack>
             </Grid>
@@ -225,6 +230,8 @@ export default async function BoardImageDetailPage({ params }: PageProps) {
               <BoardImageMap
                 latitude={image.latitude}
                 longitude={image.longitude}
+                previewUrl={buildImagePreviewUrl(image)}
+                linkedBoard={image.linkedBoard}
                 candidates={image.boardId ? [] : candidates}
               />
             </Grid>

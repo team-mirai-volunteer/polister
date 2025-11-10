@@ -1,6 +1,7 @@
 import { TOKENS } from "@/shared/lib/di/tokens";
 import type { PrismaClient } from "@prisma/client";
 import { inject, injectable } from "tsyringe";
+import type { BoardImageFilter } from "../../constants/filters";
 import { BoardImage } from "../../domain/entities/BoardImage";
 import type {
   CreateBoardImageInput,
@@ -82,18 +83,10 @@ export class BoardImageRepository implements IBoardImageRepository {
   }
 
   async findMany(options?: FindBoardImagesOptions): Promise<BoardImage[]> {
+    const where = this.buildWhereClause(options);
+
     const data = await this.prisma.boardImage.findMany({
-      where: {
-        verificationStatus: options?.verificationStatus as never,
-        boardId:
-          options?.hasBoard !== undefined
-            ? options.hasBoard
-              ? { not: null }
-              : null
-            : undefined,
-        csvPrefecture: options?.csvPrefecture,
-        csvCity: options?.csvCity,
-      },
+      where,
       take: options?.limit,
       skip: options?.offset,
       orderBy: options?.sortField
@@ -106,17 +99,7 @@ export class BoardImageRepository implements IBoardImageRepository {
 
   async count(options?: FindBoardImagesOptions): Promise<number> {
     return await this.prisma.boardImage.count({
-      where: {
-        verificationStatus: options?.verificationStatus as never,
-        boardId:
-          options?.hasBoard !== undefined
-            ? options.hasBoard
-              ? { not: null }
-              : null
-            : undefined,
-        csvPrefecture: options?.csvPrefecture,
-        csvCity: options?.csvCity,
-      },
+      where: this.buildWhereClause(options),
     });
   }
 
@@ -218,5 +201,74 @@ export class BoardImageRepository implements IBoardImageRepository {
     });
 
     return this.mapToEntity(data);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.boardImage.delete({ where: { id } });
+  }
+
+  private buildWhereClause(options?: FindBoardImagesOptions) {
+    const where: Record<string, unknown> = {
+      verificationStatus: options?.verificationStatus as never,
+      boardId:
+        options?.hasBoard !== undefined
+          ? options.hasBoard
+            ? { not: null }
+            : null
+          : undefined,
+    };
+
+    if (options?.filter) {
+      Object.assign(where, this.buildFilterWhere(options.filter));
+    }
+
+    return where;
+  }
+
+  private buildFilterWhere(filter: BoardImageFilter): Record<string, unknown> {
+    const { field, operator, value } = filter;
+
+    if (!value && operator !== "equals") {
+      return {};
+    }
+
+    const normalizedValue = value ?? "";
+    const stringFilter = this.buildStringFilter(operator, normalizedValue);
+
+    switch (field) {
+      case "csvPrefecture":
+        return { csvPrefecture: stringFilter };
+      case "csvCity":
+        return { csvCity: stringFilter };
+      case "csvBoardNumber":
+        return { csvBoardNumber: stringFilter };
+      case "originalFilename":
+        return { originalFilename: stringFilter };
+      case "verificationStatus":
+        return {
+          verificationStatus: normalizedValue.toUpperCase(),
+        };
+      default:
+        return {};
+    }
+  }
+
+  private buildStringFilter(
+    operator: string,
+    value: string
+  ): Record<string, unknown> {
+    const base = { mode: "insensitive" as const };
+
+    switch (operator) {
+      case "startsWith":
+        return { ...base, startsWith: value };
+      case "endsWith":
+        return { ...base, endsWith: value };
+      case "equals":
+        return { ...base, equals: value };
+      case "contains":
+      default:
+        return { ...base, contains: value };
+    }
   }
 }

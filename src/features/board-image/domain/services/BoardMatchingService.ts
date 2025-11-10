@@ -117,11 +117,15 @@ export class BoardMatchingService {
    * 距離に応じた位置情報スコア（0-50点）
    */
   private getLocationScore(distanceMeters: number): number {
-    if (distanceMeters <= 10) return 50;
-    if (distanceMeters <= 50) return 40;
+    if (distanceMeters <= 5) return 50;
+    if (distanceMeters <= 15) return 45;
+    if (distanceMeters <= 30) return 40;
+    if (distanceMeters <= 60) return 35;
     if (distanceMeters <= 100) return 30;
-    if (distanceMeters <= 500) return 20;
-    if (distanceMeters <= 1000) return 10;
+    if (distanceMeters <= 200) return 25;
+    if (distanceMeters <= 400) return 20;
+    if (distanceMeters <= 800) return 15;
+    if (distanceMeters <= 1200) return 10;
     return 0;
   }
 

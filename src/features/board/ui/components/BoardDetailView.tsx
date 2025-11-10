@@ -4,6 +4,7 @@
  * 掲示板詳細表示コンポーネント
  */
 
+import { buildImagePreviewUrl } from "@/features/board-image/ui/utils/imageUrl";
 import type { GetBoardDetailResponseDTO } from "@/features/board/application/dto/BoardDetailDTO";
 import {
   BOARD_STATUS_LABELS,
@@ -23,6 +24,7 @@ import { useState } from "react";
 import { BoardEditDialog } from "./BoardEditDialog";
 import { BoardHistoryList } from "./BoardHistoryList";
 import { BoardLocationMapEditor } from "./BoardLocationMapEditor";
+import { BoardRelatedImagesSection } from "./BoardRelatedImagesSection";
 
 interface BoardDetailViewProps {
   data: GetBoardDetailResponseDTO;
@@ -38,7 +40,23 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
     setEditDialogOpen(false);
   };
 
-  const { board } = currentData;
+  const { board, images } = currentData;
+
+  const relatedImageMarkers = images
+    .map((image, index) => ({
+      image,
+      order: index + 1,
+    }))
+    .filter(({ image }) => image.latitude !== null && image.longitude !== null)
+    .map(({ image, order }) => ({
+      id: image.id,
+      latitude: image.latitude as number,
+      longitude: image.longitude as number,
+      label: image.originalFilename,
+      previewUrl: buildImagePreviewUrl(image),
+      href: `/board-images/${image.id}`,
+      order,
+    }));
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -75,10 +93,13 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
                   longitude={board.longitude}
                   readonly={true}
                   height={300}
+                  relatedImages={relatedImageMarkers}
                 />
               </CardContent>
             </Card>
           )}
+
+          <BoardRelatedImagesSection images={images} />
 
           <Card>
             <CardContent>
@@ -182,6 +203,7 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
       <BoardEditDialog
         open={editDialogOpen}
         board={board}
+        images={images}
         onClose={() => setEditDialogOpen(false)}
         onSuccess={handleEditSuccess}
       />

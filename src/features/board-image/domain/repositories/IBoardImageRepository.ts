@@ -1,3 +1,4 @@
+import type { BoardImageFilter } from "../../constants/filters";
 import type { BoardImage } from "../entities/BoardImage";
 
 export interface CreateBoardImageInput {
@@ -43,8 +44,7 @@ export interface FindBoardImagesOptions {
   offset?: number;
   verificationStatus?: string;
   hasBoard?: boolean;
-  csvPrefecture?: string;
-  csvCity?: string;
+  filter?: BoardImageFilter;
   sortField?: BoardImageSortField;
   sortOrder?: "asc" | "desc";
 }
@@ -87,4 +87,9 @@ export interface IBoardImageRepository {
    * 更新
    */
   update(id: string, input: UpdateBoardImageInput): Promise<BoardImage>;
+
+  /**
+   * 削除
+   */
+  delete(id: string): Promise<void>;
 }
