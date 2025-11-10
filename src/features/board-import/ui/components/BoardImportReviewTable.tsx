@@ -3,7 +3,6 @@
 import { updateBoardImportRowDecisionAction } from "@/features/board-import/application/actions/updateBoardImportRowDecisionAction";
 import type { BoardImportRowDTO } from "@/features/board-import/application/dto/BoardImportBatchDTO";
 import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
@@ -29,17 +28,10 @@ const DECISION_OPTIONS: Array<{
   { value: "IGNORE", label: "変更なし" },
 ];
 
-const MATCH_CONFIDENCE_LABELS: Record<string, string> = {
-  HIGH: "高",
-  MEDIUM: "中",
-  LOW: "低",
-  NONE: "なし",
-};
-
 const DECISION_NULL_PLACEHOLDER = "__null__" as const;
-const ROW_HEIGHT = 104;
+const ROW_HEIGHT = 150;
 const OVERSCAN_COUNT = 6;
-const COLUMN_COUNT = 12;
+const COLUMN_COUNT = 8;
 
 const decisionToSelectValue = (
   decision: BoardImportRowDTO["finalDecision"]
@@ -268,22 +260,21 @@ export function BoardImportReviewTable({
           size="small"
           sx={{
             minWidth: "100%",
-            tableLayout: "fixed",
+            tableLayout: "auto",
           }}
         >
           <TableHead>
             <TableRow>
-              <TableCell>番号</TableCell>
-              <TableCell>インポート名・住所</TableCell>
-              <TableCell>既存掲示板</TableCell>
-              <TableCell align="right">距離(m)</TableCell>
-              <TableCell>CSV緯度</TableCell>
-              <TableCell>CSV経度</TableCell>
-              <TableCell>既存緯度</TableCell>
-              <TableCell>既存経度</TableCell>
-              <TableCell>信頼度</TableCell>
-              <TableCell>推奨</TableCell>
-              <TableCell>決定</TableCell>
+              <TableCell sx={{ whiteSpace: "nowrap" }}>番号</TableCell>
+              <TableCell sx={{ whiteSpace: "nowrap" }}>区分</TableCell>
+              <TableCell>名称</TableCell>
+              <TableCell>住所</TableCell>
+              <TableCell sx={{ whiteSpace: "nowrap" }}>緯度</TableCell>
+              <TableCell sx={{ whiteSpace: "nowrap" }}>経度</TableCell>
+              <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
+                距離(m)
+              </TableCell>
+              <TableCell sx={{ whiteSpace: "nowrap" }}>決定</TableCell>
               <TableCell>コメント</TableCell>
             </TableRow>
           </TableHead>
@@ -305,114 +296,107 @@ export function BoardImportReviewTable({
               const isSelected = row.id === activeSelectedId;
 
               return (
-                <TableRow
-                  key={row.id}
-                  hover
-                  selected={isSelected}
-                  onClick={() => handleRowSelect(row)}
-                  sx={{
-                    cursor: "pointer",
-                    height: ROW_HEIGHT,
-                  }}
-                >
-                  <TableCell>{row.boardNumber ?? "-"}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {row.name ?? "名称なし"}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {row.address}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {matched ? (
-                      <Box>
-                        <Typography variant="body2">
-                          {matched.name ?? "名称なし"}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {matched.address}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        未マッチ
+                <>
+                  <TableRow
+                    key={`${row.id}-import`}
+                    hover
+                    selected={isSelected}
+                    onClick={() => handleRowSelect(row)}
+                    sx={{ cursor: "pointer" }}
+                  >
+                    <TableCell rowSpan={2}>{row.boardNumber ?? "-"}</TableCell>
+                    <TableCell>CSV</TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {row.name ?? "名称なし"}
                       </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    {row.distanceMeter !== null
-                      ? row.distanceMeter.toFixed(1)
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption" color="text.secondary">
+                        {row.address}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
                       {row.latitude != null ? row.latitude.toFixed(6) : "-"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
+                    </TableCell>
+                    <TableCell>
                       {row.longitude != null ? row.longitude.toFixed(6) : "-"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
+                    </TableCell>
+                    <TableCell rowSpan={2} align="right">
+                      {row.distanceMeter !== null
+                        ? row.distanceMeter.toFixed(1)
+                        : "-"}
+                    </TableCell>
+                    <TableCell rowSpan={2} sx={{ width: 160 }}>
+                      <Select
+                        size="small"
+                        value={decisionToSelectValue(row.finalDecision)}
+                        onChange={(event) =>
+                          handleDecisionChange(
+                            row,
+                            selectValueToDecision(event.target.value as string)
+                          )
+                        }
+                        disabled={isRowPending}
+                        displayEmpty
+                        fullWidth
+                      >
+                        {DECISION_OPTIONS.map((option) => (
+                          <MenuItem
+                            key={option.label}
+                            value={decisionToSelectValue(option.value)}
+                          >
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </TableCell>
+                    <TableCell rowSpan={2} sx={{ minWidth: 200 }}>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        value={row.comment ?? ""}
+                        onChange={(event) =>
+                          handleCommentChange(row, event.target.value)
+                        }
+                        onBlur={() => handleCommentBlur(row)}
+                        disabled={isRowPending}
+                      />
+                      {isRowPending ? (
+                        <CircularProgress size={16} sx={{ mt: 0.5 }} />
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow
+                    key={`${row.id}-existing`}
+                    hover={isSelected}
+                    selected={isSelected}
+                    onClick={() => handleRowSelect(row)}
+                    sx={{ cursor: "pointer" }}
+                  >
+                    <TableCell>既存</TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {matched?.name ?? "名称なし"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption" color="text.secondary">
+                        {matched?.address ?? "-"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
                       {matched?.latitude != null
                         ? matched.latitude.toFixed(6)
                         : "-"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
+                    </TableCell>
+                    <TableCell>
                       {matched?.longitude != null
                         ? matched.longitude.toFixed(6)
                         : "-"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {MATCH_CONFIDENCE_LABELS[row.matchConfidence] ??
-                      row.matchConfidence}
-                  </TableCell>
-                  <TableCell>{row.suggestedAction}</TableCell>
-                  <TableCell>
-                    <Select
-                      size="small"
-                      value={decisionToSelectValue(row.finalDecision)}
-                      onChange={(event) =>
-                        handleDecisionChange(
-                          row,
-                          selectValueToDecision(event.target.value as string)
-                        )
-                      }
-                      disabled={isRowPending}
-                      displayEmpty
-                    >
-                      {DECISION_OPTIONS.map((option) => (
-                        <MenuItem
-                          key={option.label}
-                          value={decisionToSelectValue(option.value)}
-                        >
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </TableCell>
-                  <TableCell sx={{ minWidth: 200 }}>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={row.comment ?? ""}
-                      onChange={(event) =>
-                        handleCommentChange(row, event.target.value)
-                      }
-                      onBlur={() => handleCommentBlur(row)}
-                      disabled={isRowPending}
-                    />
-                    {isRowPending ? (
-                      <CircularProgress size={16} sx={{ mt: 0.5 }} />
-                    ) : null}
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                  </TableRow>
+                </>
               );
             })}
             {bottomPaddingHeight > 0 ? (

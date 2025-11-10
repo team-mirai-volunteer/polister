@@ -351,6 +351,10 @@ export class BoardImportRepository implements IBoardImportRepository {
     }));
   }
 
+  async deleteBatch(batchId: string): Promise<void> {
+    await this.prisma.boardImportBatch.delete({ where: { id: batchId } });
+  }
+
   private mapBatchCreateData(
     input: CreateBoardImportBatchInput
   ): Prisma.BoardImportBatchCreateInput {

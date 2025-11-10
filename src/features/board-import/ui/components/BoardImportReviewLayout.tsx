@@ -5,14 +5,12 @@ import type {
   BoardImportRowDTO,
 } from "@/features/board-import/application/dto/BoardImportBatchDTO";
 import { compareBoardNumbers } from "@/shared/domain/board/BoardNumber";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { BoardImportDeleteButton } from "./BoardImportDeleteButton";
 import { BoardImportReviewMap } from "./BoardImportReviewMap";
 import { BoardImportReviewTable } from "./BoardImportReviewTable";
 
@@ -50,11 +48,11 @@ export function BoardImportReviewLayout({
         display: "grid",
         gridTemplateColumns: {
           xs: "1fr",
-          lg: "360px 1fr",
+          lg: "260px 1fr",
         },
         gridTemplateRows: {
           xs: "auto auto auto",
-          lg: "minmax(0, min-content) 1fr",
+          lg: "auto 1fr",
         },
         gridTemplateAreas: {
           xs: '"info" "map" "content"',
@@ -71,14 +69,16 @@ export function BoardImportReviewLayout({
         variant="outlined"
         sx={{
           gridArea: "info",
-          p: 2.5,
+          p: 2,
           display: "flex",
           flexDirection: "column",
-          gap: 1.5,
+          gap: 1,
           boxSizing: "border-box",
         }}
       >
-        <Typography variant="h6">バッチ情報</Typography>
+        <Typography variant="subtitle2" color="text.secondary">
+          バッチ情報
+        </Typography>
         <InfoRow label="バッチID">{batch.id}</InfoRow>
         <InfoRow label="アップロード日時">
           {new Date(batch.uploadedAt).toLocaleString("ja-JP")}
@@ -93,18 +93,7 @@ export function BoardImportReviewLayout({
           {batch.updatedCount.toLocaleString()} / 欠落:{" "}
           {batch.missingCount.toLocaleString()}
         </InfoRow>
-        {batch.downloadUrl ? (
-          <Button
-            component={Link}
-            href={batch.downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            startIcon={<CloudDownloadIcon />}
-            size="small"
-          >
-            元CSVをダウンロード
-          </Button>
-        ) : null}
+        <BoardImportDeleteButton batchId={batch.id} />
       </Paper>
 
       <Box
@@ -150,13 +139,13 @@ interface InfoRowProps {
 
 function InfoRow({ label, children }: InfoRowProps) {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-      <Typography variant="caption" color="text.secondary">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
         {label}
       </Typography>
       <Typography
         variant="body2"
-        sx={{ wordBreak: "break-all", lineHeight: 1.6 }}
+        sx={{ wordBreak: "break-all", lineHeight: 1.4, fontSize: "0.85rem" }}
       >
         {children}
       </Typography>

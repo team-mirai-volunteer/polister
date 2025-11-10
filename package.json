@@ -59,7 +59,7 @@
     "react-map-gl": "^8.1.0",
     "reflect-metadata": "^0.2.2",
     "shapefile": "^0.6.6",
-    "sharp": "^0.34.5",
+    "sharp": "^0.33.5",
     "tsyringe": "^4.10.0",
     "wellknown": "^0.5.0"
   },

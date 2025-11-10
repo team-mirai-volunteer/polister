@@ -167,4 +167,6 @@ export interface IBoardImportRepository {
   ): Promise<ExistingBoardSnapshot[]>;
 
   findExistingBoardsByIds(boardIds: string[]): Promise<ExistingBoardSnapshot[]>;
+
+  deleteBatch(batchId: string): Promise<void>;
 }
