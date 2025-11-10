@@ -29,7 +29,8 @@ export function BoardImageMap({
 
   const initialViewState = useMemo(
     () => ({
-      longitude: hasLocation && longitude !== null ? longitude : defaultLongitude,
+      longitude:
+        hasLocation && longitude !== null ? longitude : defaultLongitude,
       latitude: hasLocation && latitude !== null ? latitude : defaultLatitude,
       zoom: hasLocation ? 15 : 5,
     }),

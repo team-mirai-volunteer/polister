@@ -151,7 +151,10 @@ export class BoardMatchingService {
   /**
    * 掲示板番号一致スコア（0-20点）
    */
-  private getBoardNumberScore(imageNumber: string, boardNumber: string): number {
+  private getBoardNumberScore(
+    imageNumber: string,
+    boardNumber: string
+  ): number {
     const normalizedImage = this.normalizeBoardNumberOrNull(imageNumber);
     const normalizedBoard = this.normalizeBoardNumberOrNull(boardNumber);
 
