@@ -181,8 +181,16 @@ export function BoardImageDataGrid({
       field: "takenAt",
       headerName: "撮影日時",
       width: 180,
-      valueFormatter: ({ value }) =>
-        value ? new Date(value).toLocaleString("ja-JP") : "-",
+      valueFormatter: (params) => {
+        const value = (params as { value?: Date | string | null })?.value;
+        if (!value) {
+          return "-";
+        }
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+          ? "-"
+          : date.toLocaleString("ja-JP");
+      },
     },
   ];
 
