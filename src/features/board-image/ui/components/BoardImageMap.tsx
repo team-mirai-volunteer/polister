@@ -248,7 +248,6 @@ export function BoardImageMap({
       <MapboxMap
         initialViewState={initialViewState}
         onMapReady={handleMapReady}
-        showStyleToggle={false}
         showGeolocate={false}
         mapContainerSx={{ height: 400 }}
       />
@@ -256,7 +255,7 @@ export function BoardImageMap({
         <Box
           sx={{
             position: "absolute",
-            top: 16,
+            top: 72,
             left: 16,
             right: 16,
             zIndex: 1,
