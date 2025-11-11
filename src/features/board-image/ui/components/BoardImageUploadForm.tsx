@@ -16,7 +16,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
+import Autocomplete, {
+  type AutocompleteChangeReason,
+  type AutocompleteInputChangeReason,
+} from "@mui/material/Autocomplete";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -25,6 +28,12 @@ interface MunicipalityOption {
   name: string;
   prefecture: string;
   code: string;
+}
+
+interface MunicipalitySuggestion {
+  option: MunicipalityOption;
+  distanceMeters: number | null;
+  isInside: boolean;
 }
 
 interface UploadResult {
@@ -56,6 +65,14 @@ export function BoardImageUploadForm() {
     MunicipalityOption[]
   >([]);
   const [municipalityLoading, setMunicipalityLoading] = useState(false);
+  const [autoMunicipalitySuggestion, setAutoMunicipalitySuggestion] =
+    useState<MunicipalitySuggestion | null>(null);
+  const [autoDetectionLoading, setAutoDetectionLoading] = useState(false);
+  const [autoDetectionError, setAutoDetectionError] = useState<string | null>(
+    null
+  );
+  const [hasManualMunicipalitySelection, setHasManualMunicipalitySelection] =
+    useState(false);
   const [selectedMunicipality, setSelectedMunicipality] =
     useState<MunicipalityOption | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -91,6 +108,7 @@ export function BoardImageUploadForm() {
     setSuccessMessage(null);
     setUploadResult(null);
     setError(null);
+    setHasManualMunicipalitySelection(false);
 
     try {
       setExifLoading(true);
@@ -155,6 +173,104 @@ export function BoardImageUploadForm() {
     };
   }, [municipalityInput]);
 
+  useEffect(() => {
+    const latitude = exifLocation?.latitude;
+    const longitude = exifLocation?.longitude;
+
+    if (
+      latitude === null ||
+      latitude === undefined ||
+      longitude === null ||
+      longitude === undefined
+    ) {
+      setAutoMunicipalitySuggestion(null);
+      setAutoDetectionError(null);
+      setAutoDetectionLoading(false);
+      return;
+    }
+
+    let isCancelled = false;
+    const controller = new AbortController();
+
+    const fetchNearestMunicipality = async () => {
+      setAutoDetectionLoading(true);
+      setAutoDetectionError(null);
+
+      try {
+        const response = await fetch(
+          `/api/municipalities/nearest?lat=${latitude}&lng=${longitude}`,
+          { signal: controller.signal }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch nearest municipality");
+        }
+
+        const data = (await response.json()) as {
+          municipality: MunicipalityOption | null;
+          distanceMeters: number | null;
+          isInside: boolean;
+        };
+
+        if (isCancelled) {
+          return;
+        }
+
+        if (!data.municipality) {
+          setAutoMunicipalitySuggestion(null);
+          setAutoDetectionError(
+            "位置情報に基づく自治体候補が見つかりませんでした"
+          );
+          return;
+        }
+
+        setAutoMunicipalitySuggestion({
+          option: data.municipality,
+          distanceMeters:
+            typeof data.distanceMeters === "number"
+              ? data.distanceMeters
+              : null,
+          isInside: Boolean(data.isInside),
+        });
+      } catch (fetchError) {
+        if (
+          fetchError instanceof DOMException &&
+          fetchError.name === "AbortError"
+        ) {
+          return;
+        }
+        if (isCancelled) {
+          return;
+        }
+        console.error(fetchError);
+        setAutoMunicipalitySuggestion(null);
+        setAutoDetectionError("位置情報から自治体候補を取得できませんでした");
+      } finally {
+        if (!isCancelled) {
+          setAutoDetectionLoading(false);
+        }
+      }
+    };
+
+    fetchNearestMunicipality();
+
+    return () => {
+      isCancelled = true;
+      controller.abort();
+    };
+  }, [exifLocation?.latitude, exifLocation?.longitude]);
+
+  useEffect(() => {
+    if (!autoMunicipalitySuggestion || hasManualMunicipalitySelection) {
+      return;
+    }
+
+    setSelectedMunicipality(autoMunicipalitySuggestion.option);
+    setMunicipalityInput(
+      `${autoMunicipalitySuggestion.option.prefecture} ${autoMunicipalitySuggestion.option.name}`
+    );
+  }, [autoMunicipalitySuggestion, hasManualMunicipalitySelection]);
+
   const canUpload = useMemo(() => {
     return Boolean(selectedFile && selectedMunicipality && !uploading);
   }, [selectedFile, selectedMunicipality, uploading]);
@@ -211,55 +327,7 @@ export function BoardImageUploadForm() {
           <Stack spacing={3}>
             <Box>
               <Typography variant="h6" gutterBottom>
-                1. 自治体を選択
-              </Typography>
-              <Autocomplete
-                options={municipalityOptions}
-                loading={municipalityLoading}
-                value={selectedMunicipality}
-                onChange={(_, value) => {
-                  setSelectedMunicipality(value);
-                  setSuccessMessage(null);
-                }}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                inputValue={municipalityInput}
-                onInputChange={(_, value) => setMunicipalityInput(value)}
-                getOptionLabel={(option) =>
-                  `${option.prefecture} ${option.name}`
-                }
-                noOptionsText={
-                  municipalityInput
-                    ? "該当する自治体が見つかりません"
-                    : "自治体名を入力してください"
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="自治体を検索"
-                    placeholder="例: 東京都 渋谷区"
-                    helperText="自治体の選択は必須です"
-                    required
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: (
-                        <>
-                          {municipalityLoading ? (
-                            <CircularProgress color="inherit" size={20} />
-                          ) : null}
-                          {params.InputProps.endAdornment}
-                        </>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Box>
-
-            <Divider />
-
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                2. 写真をアップロード
+                1. 写真を選択
               </Typography>
               <Button
                 variant="outlined"
@@ -318,6 +386,110 @@ export function BoardImageUploadForm() {
                 </Stack>
               </Box>
             )}
+
+            <Divider />
+
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                2. 自治体を選択
+              </Typography>
+              <Autocomplete
+                options={municipalityOptions}
+                loading={municipalityLoading}
+                value={selectedMunicipality}
+                onChange={(
+                  _,
+                  value: MunicipalityOption | null,
+                  reason: AutocompleteChangeReason
+                ) => {
+                  setSelectedMunicipality(value);
+                  setSuccessMessage(null);
+                  if (reason === "clear") {
+                    setHasManualMunicipalitySelection(false);
+                  } else if (reason === "selectOption") {
+                    setHasManualMunicipalitySelection(true);
+                  }
+                }}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                inputValue={municipalityInput}
+                onInputChange={(
+                  _,
+                  value,
+                  reason: AutocompleteInputChangeReason
+                ) => {
+                  setMunicipalityInput(value);
+                  if (reason === "input") {
+                    setHasManualMunicipalitySelection(true);
+                  }
+                }}
+                getOptionLabel={(option) =>
+                  `${option.prefecture} ${option.name}`
+                }
+                noOptionsText={
+                  municipalityInput
+                    ? "該当する自治体が見つかりません"
+                    : "自治体名を入力してください"
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="自治体を検索"
+                    placeholder="例: 東京都 渋谷区"
+                    helperText="自治体の選択は必須です"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {municipalityLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+              {exifLocation &&
+                exifLocation.latitude !== null &&
+                exifLocation.latitude !== undefined &&
+                exifLocation.longitude !== null &&
+                exifLocation.longitude !== undefined && (
+                  <Box mt={2}>
+                    {autoDetectionLoading && (
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <CircularProgress size={16} />
+                        <Typography variant="body2" color="text.secondary">
+                          位置情報から自治体候補を検索中です...
+                        </Typography>
+                      </Stack>
+                    )}
+                    {autoMunicipalitySuggestion && !autoDetectionLoading && (
+                      <Alert severity="info">
+                        {`Exif位置情報から ${
+                          autoMunicipalitySuggestion.option.prefecture
+                        } ${
+                          autoMunicipalitySuggestion.option.name
+                        } を候補として選択しました${
+                          autoMunicipalitySuggestion.distanceMeters !== null
+                            ? `（撮影地点から約${Math.round(
+                                autoMunicipalitySuggestion.distanceMeters
+                              )}m、${
+                                autoMunicipalitySuggestion.isInside
+                                  ? "境界内"
+                                  : "境界付近"
+                              }）`
+                            : ""
+                        }`}
+                      </Alert>
+                    )}
+                    {autoDetectionError && !autoDetectionLoading && (
+                      <Alert severity="warning">{autoDetectionError}</Alert>
+                    )}
+                  </Box>
+                )}
+            </Box>
 
             <Box>
               <Button

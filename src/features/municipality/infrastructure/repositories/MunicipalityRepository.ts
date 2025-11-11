@@ -6,6 +6,7 @@
 
 import { TOKENS } from "@/shared/lib/di/tokens";
 import type {
+  ContactStatus,
   Prisma,
   BoardStatus as PrismaBoardStatus,
   PrismaClient,
@@ -270,6 +271,106 @@ export class MunicipalityRepository implements IMunicipalityRepository {
         };
       })
       .filter((item): item is MunicipalityBoardRecord => item !== null);
+  }
+
+  async findNearestByCoordinates(input: {
+    latitude: number;
+    longitude: number;
+  }): Promise<{
+    municipality: Municipality;
+    distanceMeters: number | null;
+    isInside: boolean;
+  } | null> {
+    const { latitude, longitude } = input;
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        id: string;
+        name: string;
+        code: string;
+        prefecture: string;
+        source: string;
+        url: string | null;
+        boardCount: number | null;
+        dataVersion: string | null;
+        status: PrismaMunicipalityStatus;
+        contactStatus: string | null;
+        notes: string | null;
+        folderId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        distanceMeters: number | null;
+        isInside: boolean;
+      }>
+    >`
+      SELECT
+        m.id,
+        m.name,
+        m.code,
+        m.prefecture,
+        m.source,
+        m.url,
+        m.board_count AS "boardCount",
+        m.data_version AS "dataVersion",
+        m.status,
+        m.contact_status AS "contactStatus",
+        m.notes,
+        m.folder_id AS "folderId",
+        m.created_at AS "createdAt",
+        m.updated_at AS "updatedAt",
+        ST_Distance(
+          m.polygon::geography,
+          ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
+        ) AS "distanceMeters",
+        ST_Contains(
+          m.polygon::geometry,
+          ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geometry
+        ) AS "isInside"
+      FROM municipalities m
+      WHERE m.polygon IS NOT NULL
+      ORDER BY
+        CASE
+          WHEN ST_Contains(
+            m.polygon::geometry,
+            ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geometry
+          )
+          THEN 0
+          ELSE 1
+        END,
+        ST_Distance(
+          m.polygon::geography,
+          ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
+        )
+      LIMIT 1
+    `;
+
+    if (rows.length === 0) {
+      return null;
+    }
+
+    const row = rows[0];
+    const municipality = MunicipalityMapper.toDomain({
+      id: row.id,
+      name: row.name,
+      code: row.code,
+      prefecture: row.prefecture,
+      source: row.source,
+      url: row.url,
+      boardCount: row.boardCount,
+      dataVersion: row.dataVersion,
+      status: row.status,
+      contactStatus: row.contactStatus as ContactStatus | null,
+      notes: row.notes,
+      folderId: row.folderId,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    } as Prisma.Municipality);
+
+    return {
+      municipality,
+      distanceMeters: row.distanceMeters,
+      isInside: row.isInside,
+    };
   }
 
   /**

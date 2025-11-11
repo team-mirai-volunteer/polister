@@ -155,4 +155,51 @@ describe("MunicipalityRepository", () => {
       expect(result).toBeNull();
     });
   });
+
+  describe("findNearestByCoordinates", () => {
+    it("位置情報から最寄りの自治体を取得できる", async () => {
+      const now = new Date();
+      mockPrisma.$queryRaw.mockResolvedValue([
+        {
+          id: "municipality-1",
+          name: "千代田区",
+          code: "13101",
+          prefecture: "東京都",
+          source: "MLIT",
+          url: null,
+          boardCount: 10,
+          dataVersion: null,
+          status: "NOT_STARTED",
+          contactStatus: null,
+          notes: null,
+          folderId: null,
+          createdAt: now,
+          updatedAt: now,
+          distanceMeters: 25,
+          isInside: true,
+        },
+      ]);
+
+      const result = await repository.findNearestByCoordinates({
+        latitude: 35.0,
+        longitude: 139.0,
+      });
+
+      expect(result).not.toBeNull();
+      expect(result?.municipality.id).toBe("municipality-1");
+      expect(result?.distanceMeters).toBe(25);
+      expect(result?.isInside).toBe(true);
+    });
+
+    it("該当がない場合nullを返す", async () => {
+      mockPrisma.$queryRaw.mockResolvedValue([]);
+
+      const result = await repository.findNearestByCoordinates({
+        latitude: 0,
+        longitude: 0,
+      });
+
+      expect(result).toBeNull();
+    });
+  });
 });

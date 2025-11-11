@@ -199,4 +199,16 @@ export interface IMunicipalityRepository {
   findBoardsByMunicipalityId(
     municipalityId: string
   ): Promise<MunicipalityBoardRecord[]>;
+
+  /**
+   * 緯度経度から最も近い、または内包する自治体を検索
+   */
+  findNearestByCoordinates(input: {
+    latitude: number;
+    longitude: number;
+  }): Promise<{
+    municipality: Municipality;
+    distanceMeters: number | null;
+    isInside: boolean;
+  } | null>;
 }
