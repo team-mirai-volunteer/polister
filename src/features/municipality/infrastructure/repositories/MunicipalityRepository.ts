@@ -10,6 +10,7 @@ import type {
   Prisma,
   BoardStatus as PrismaBoardStatus,
   PrismaClient,
+  Municipality as PrismaMunicipality,
   MunicipalityStatus as PrismaMunicipalityStatus,
   TrustLevel as PrismaTrustLevel,
 } from "@prisma/client";
@@ -364,7 +365,7 @@ export class MunicipalityRepository implements IMunicipalityRepository {
       folderId: row.folderId,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
-    } as Prisma.Municipality);
+    } as PrismaMunicipality);
 
     return {
       municipality,
