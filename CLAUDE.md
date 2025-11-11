@@ -337,7 +337,7 @@ polister/
 ├── src/
 │   ├── app/                       # Next.js App Router (Presentation層)
 │   ├── features/                  # 機能別モジュール（バウンデッドコンテキスト）
-│   │   ├── board/                 # 掲示板管理コンテキスト
+│   │   ├── board/                 # 掲示場管理コンテキスト
 │   │   │   ├── domain/            # ドメイン層（DDD Core）
 │   │   │   │   ├── aggregates/   # 集約ルート
 │   │   │   │   ├── entities/     # エンティティ

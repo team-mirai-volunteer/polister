@@ -75,7 +75,7 @@ const toBoardNumberOrNull = (
     const message =
       error instanceof Error ? error.message : "フォーマットが不正です";
     throw new Error(
-      `CSV ${csvRowIndex + 2}行目の掲示板番号が無効です: ${message}`
+      `CSV ${csvRowIndex + 2}行目の掲示場番号が無効です: ${message}`
     );
   }
 };

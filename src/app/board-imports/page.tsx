@@ -133,10 +133,10 @@ export default async function BoardImportsPage({
       <Stack spacing={4}>
         <div>
           <Typography variant="h4" gutterBottom>
-            掲示板CSVインポート
+            掲示場CSVインポート
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            自治体ごとの掲示板CSVを取り込み、既存データとの比較・反映を管理します。
+            自治体ごとの掲示場CSVを取り込み、既存データとの比較・反映を管理します。
           </Typography>
         </div>
 

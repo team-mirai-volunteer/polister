@@ -1,7 +1,7 @@
 /**
  * GetMunicipalityBoardsUseCase
  *
- * 自治体に紐づく掲示板一覧を取得するユースケース
+ * 自治体に紐づく掲示場一覧を取得するユースケース
  */
 
 import { inject, injectable } from "tsyringe";

@@ -15,10 +15,10 @@ export default function BoardNotFound() {
         }}
       >
         <Typography variant="h4" component="h1">
-          掲示板が見つかりません
+          掲示場が見つかりません
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          指定された掲示板は存在しないか、削除された可能性があります。
+          指定された掲示場は存在しないか、削除された可能性があります。
         </Typography>
         <Link href="/" style={{ marginTop: "1rem" }}>
           トップページに戻る

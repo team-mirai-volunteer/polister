@@ -441,7 +441,7 @@ export function BoardImageDataGrid({
     },
     {
       field: "csvBoardNumber",
-      headerName: "掲示板番号",
+      headerName: "掲示場番号",
       width: 120,
       filterOperators: STRING_FILTER_OPERATORS,
     },
@@ -468,7 +468,7 @@ export function BoardImageDataGrid({
     },
     {
       field: "boardId",
-      headerName: "掲示板紐付け",
+      headerName: "掲示場紐付け",
       width: 120,
       filterable: false,
       renderCell: (params) =>

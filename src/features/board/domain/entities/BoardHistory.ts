@@ -1,7 +1,7 @@
 /**
  * BoardHistory エンティティ
  *
- * 掲示板の変更履歴
+ * 掲示場の変更履歴
  */
 
 import type { BoardSnapshot } from "../aggregates/Board";

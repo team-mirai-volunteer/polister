@@ -50,7 +50,7 @@ export interface FindBoardImagesOptions {
 }
 
 /**
- * 掲示板画像リポジトリインターフェース
+ * 掲示場画像リポジトリインターフェース
  */
 export interface IBoardImageRepository {
   /**
@@ -79,7 +79,7 @@ export interface IBoardImageRepository {
   count(options?: FindBoardImagesOptions): Promise<number>;
 
   /**
-   * 掲示板IDで検索
+   * 掲示場IDで検索
    */
   findByBoardId(boardId: string): Promise<BoardImage[]>;
 

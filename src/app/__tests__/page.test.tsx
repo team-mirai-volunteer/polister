@@ -11,7 +11,7 @@ describe("Home Page", () => {
     );
     expect(
       screen.getByRole("heading", {
-        name: "掲示板データ運用を直感的に可視化するトップページ",
+        name: "掲示場データ運用を直感的に可視化するトップページ",
         level: 1,
       })
     ).toBeInTheDocument();

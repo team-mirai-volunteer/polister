@@ -10,7 +10,7 @@
 
 Polisterは以下の二つの主要な機能を提供します：
 
-1. **掲示板位置管理** - 選挙ポスター掲示板の位置情報をデジタル化し、オープンデータとして提供
+1. **掲示場位置管理** - 選挙ポスター掲示場の位置情報をデジタル化し、オープンデータとして提供
 2. **データ正規化作業の効率化** - 自治体から提供される多様な形式のデータを統一フォーマットに変換
 
 ### 過去の実績
@@ -30,11 +30,11 @@ Polisterは以下の主要なバウンデッドコンテキストで構成され
 
 ```mermaid
 graph TB
-    subgraph "掲示板管理コンテキスト"
-        Board[Board<br/>掲示板]
+    subgraph "掲示場管理コンテキスト"
+        Board[Board<br/>掲示場]
         Municipality[Municipality<br/>自治体]
-        BoardImage[BoardImage<br/>掲示板画像]
-        BoardHistory[BoardHistory<br/>掲示板変更履歴]
+        BoardImage[BoardImage<br/>掲示場画像]
+        BoardHistory[BoardHistory<br/>掲示場変更履歴]
     end
 
     subgraph "検証管理コンテキスト"
@@ -89,16 +89,16 @@ graph TB
 
 ## コアドメインモデル
 
-### 1. 掲示板管理コンテキスト
+### 1. 掲示場管理コンテキスト
 
-#### Board（掲示板）
+#### Board（掲示場）
 
-**責務**: 選挙ポスター掲示板の位置情報と基本データを管理
+**責務**: 選挙ポスター掲示場の位置情報と基本データを管理
 
 **属性**:
 
 - `id`: 一意識別子
-- `boardNumber`: 掲示板番号（`01-2`のような文字列）
+- `boardNumber`: 掲示場番号（`01-2`のような文字列）
 - `name`: 掲示場名称（例: "第1投票区第1号"）
 - `address`: 住所
 - `location`: 位置情報（PostGIS POINT型）
@@ -430,7 +430,7 @@ flowchart TD
 
 #### Verification（検証記録）
 
-**責務**: 掲示板の検証履歴を記録
+**責務**: 掲示場の検証履歴を記録
 
 **属性**:
 
@@ -520,11 +520,11 @@ flowchart TD
 
 ### 6. 変更履歴管理コンテキスト
 
-#### BoardHistory（掲示板変更履歴）
+#### BoardHistory（掲示場変更履歴）
 
-**責務**: 掲示板情報の変更履歴を記録し、監査証跡を提供
+**責務**: 掲示場情報の変更履歴を記録し、監査証跡を提供
 
-掲示板の位置、番号、名前、住所などの情報は日々変更される可能性があります。これらの変更を詳細に記録することで、以下を実現します：
+掲示場の位置、番号、名前、住所などの情報は日々変更される可能性があります。これらの変更を詳細に記録することで、以下を実現します：
 
 - **データの信頼性向上**: 変更理由とソースを明確にすることで、データの信頼性を担保
 - **監査証跡の確保**: 誰がいつ何を変更したかを追跡可能
@@ -593,7 +593,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[掲示板情報の変更要求] --> B{変更理由は?}
+    A[掲示場情報の変更要求] --> B{変更理由は?}
 
     B -->|手動入力| C1[MANUAL_INPUT]
     B -->|自治体データ| C2[DATA_SOURCE_IMPORT]
@@ -656,7 +656,7 @@ flowchart TD
 
 **変更履歴の活用**:
 
-- **タイムライン表示**: 掲示板詳細画面で変更履歴をタイムライン形式で表示
+- **タイムライン表示**: 掲示場詳細画面で変更履歴をタイムライン形式で表示
 - **差分表示**: 変更前後の値を並べて比較表示
 - **フィールド別分析**: どのフィールドがよく変更されるかを分析
 - **ユーザー別統計**: ユーザーごとの変更回数や信頼性を評価
@@ -665,7 +665,7 @@ flowchart TD
 
 **リレーション**:
 
-- Board（掲示板） - 変更の対象
+- Board（掲示場） - 変更の対象
 - User（ユーザー） - 変更者
 - DataSource（データソース） - 自治体データの場合の参照元
 - NormalizedCsv（正規化CSV） - インポート元の正規化ファイル
@@ -686,7 +686,7 @@ flowchart TD
 空間検索のパフォーマンス向上のため、GISTインデックスを使用：
 
 ```sql
--- boards.location（掲示板位置）
+-- boards.location（掲示場位置）
 CREATE INDEX idx_boards_location ON boards USING GIST(location);
 
 -- municipalities.polygon（市区町村境界）
@@ -696,7 +696,7 @@ CREATE INDEX idx_municipalities_polygon ON municipalities USING GIST(polygon);
 ### 空間クエリの例
 
 ```typescript
-// 特定地点から半径1km以内の掲示板を検索
+// 特定地点から半径1km以内の掲示場を検索
 const nearbyBoards = await prisma.$queryRaw`
   SELECT *
   FROM boards
@@ -708,7 +708,7 @@ const nearbyBoards = await prisma.$queryRaw`
   AND deleted_at IS NULL
 `;
 
-// 市区町村内の掲示板を検索
+// 市区町村内の掲示場を検索
 const boardsInMunicipality = await prisma.$queryRaw`
   SELECT b.*
   FROM boards b
@@ -724,15 +724,15 @@ const boardsInMunicipality = await prisma.$queryRaw`
 
 | 親テーブル   | 子テーブル   | カスケード動作 | 理由                                 |
 | ------------ | ------------ | -------------- | ------------------------------------ |
-| Board        | BoardImage   | CASCADE        | 掲示板が削除されたら画像も不要       |
-| Board        | Verification | CASCADE        | 掲示板が削除されたら検証記録も不要   |
-| Board        | ErrorReport  | CASCADE        | 掲示板が削除されたらエラー報告も不要 |
+| Board        | BoardImage   | CASCADE        | 掲示場が削除されたら画像も不要       |
+| Board        | Verification | CASCADE        | 掲示場が削除されたら検証記録も不要   |
+| Board        | ErrorReport  | CASCADE        | 掲示場が削除されたらエラー報告も不要 |
 | User         | Account      | CASCADE        | ユーザー削除時に認証情報も削除       |
 | User         | Session      | CASCADE        | ユーザー削除時にセッションも削除     |
 | User         | Verification | **保持**       | 検証履歴は監査証跡として保持         |
 | User         | BoardImage   | **保持**       | 証拠写真は監査証跡として保持         |
 | User         | UserLocation | CASCADE        | ユーザー削除時に居住地情報も削除     |
-| Municipality | Board        | **制約**       | 掲示板が存在する自治体は削除不可     |
+| Municipality | Board        | **制約**       | 掲示場が存在する自治体は削除不可     |
 
 ### 論理削除の適用
 

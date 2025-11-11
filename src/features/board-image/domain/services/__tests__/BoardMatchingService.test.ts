@@ -169,7 +169,7 @@ describe("BoardMatchingService", () => {
           (d) => d.factor === "location"
         );
         expect(locationScore).toBeUndefined();
-        // 市区町村と掲示板番号のみが含まれる
+        // 市区町村と掲示場番号のみが含まれる
         expect(result.details).toHaveLength(2);
       });
     });
@@ -248,7 +248,7 @@ describe("BoardMatchingService", () => {
       });
     });
 
-    describe("掲示板番号スコア（0-20点）", () => {
+    describe("掲示場番号スコア（0-20点）", () => {
       it("完全一致の場合、20点を付与", () => {
         const image = createImageCandidate({ csvBoardNumber: "1-7" });
         const board = createBoardCandidate({ boardNumber: "1-7" });
@@ -301,8 +301,8 @@ describe("BoardMatchingService", () => {
         expect(numberScore?.detail).toBe("不一致");
       });
 
-      it("無効な形式の掲示板番号は0点として扱う", () => {
-        const image = createImageCandidate({ csvBoardNumber: "A-1" });
+      it("無効な形式の掲示場番号は0点として扱う", () => {
+        const image = createImageCandidate({ csvBoardNumber: "1--2" });
         const board = createBoardCandidate({ boardNumber: "1-7" });
 
         const result = service.calculateMatchScore(image, board);
@@ -314,9 +314,9 @@ describe("BoardMatchingService", () => {
         expect(numberScore?.detail).toBe("不一致");
       });
 
-      it("掲示板側の番号が無効な場合も0点で継続する", () => {
+      it("掲示場側の番号が無効な場合も0点で継続する", () => {
         const image = createImageCandidate({ csvBoardNumber: "1-7" });
-        const board = createBoardCandidate({ boardNumber: "invalid-value" });
+        const board = createBoardCandidate({ boardNumber: "A/B" });
 
         const result = service.calculateMatchScore(image, board);
 
@@ -327,7 +327,7 @@ describe("BoardMatchingService", () => {
         expect(numberScore?.detail).toBe("不一致");
       });
 
-      it("掲示板番号がない場合、掲示板番号スコアが含まれない", () => {
+      it("掲示場番号がない場合、掲示場番号スコアが含まれない", () => {
         const image = createImageCandidate({ csvBoardNumber: null });
         const board = createBoardCandidate({ boardNumber: "1-7" });
 
@@ -405,7 +405,7 @@ describe("BoardMatchingService", () => {
         ]);
       });
 
-      it("位置情報がない場合、市区町村と掲示板番号のみ含まれる", () => {
+      it("位置情報がない場合、市区町村と掲示場番号のみ含まれる", () => {
         const image = createImageCandidate({
           latitude: null,
           longitude: null,

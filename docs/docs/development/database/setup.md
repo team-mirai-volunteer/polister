@@ -91,7 +91,7 @@ yarn db:studio
 
 ### 主要テーブル
 
-#### boards（掲示板）
+#### boards（掲示場）
 
 ```sql
 CREATE TABLE boards (
@@ -170,7 +170,7 @@ CREATE INDEX idx_verifications_board ON verifications(board_id);
 CREATE INDEX idx_verifications_user ON verifications(user_id);
 ```
 
-#### board_images（掲示板画像）
+#### board_images（掲示場画像）
 
 ```sql
 CREATE TABLE board_images (
@@ -261,7 +261,7 @@ yarn db:generate
 ### 基本的な空間クエリ
 
 ```sql
--- 特定地点から半径1km以内の掲示板を検索
+-- 特定地点から半径1km以内の掲示場を検索
 SELECT * FROM boards
 WHERE ST_DWithin(
   location::geography,
@@ -269,7 +269,7 @@ WHERE ST_DWithin(
   1000  -- メートル
 );
 
--- バウンディングボックス内の掲示板を検索
+-- バウンディングボックス内の掲示場を検索
 SELECT * FROM boards
 WHERE ST_Within(
   location,
@@ -280,7 +280,7 @@ WHERE ST_Within(
   )
 );
 
--- 市区町村ポリゴン内の掲示板を検索
+-- 市区町村ポリゴン内の掲示場を検索
 SELECT b.* FROM boards b
 JOIN municipalities m ON ST_Within(b.location, m.polygon)
 WHERE m.id = 'municipality-id';

@@ -138,8 +138,8 @@ export function BoardImageMap({
     };
 
     const label = linkedBoard.boardNumber
-      ? `掲示板 ${linkedBoard.boardNumber}`
-      : (linkedBoard.name ?? "掲示板");
+      ? `掲示場 ${linkedBoard.boardNumber}`
+      : (linkedBoard.name ?? "掲示場");
 
     const boardLng = linkedBoard.longitude!;
     const boardLat = linkedBoard.latitude!;
@@ -215,7 +215,7 @@ export function BoardImageMap({
           .setPopup(
             new mapboxgl.Popup().setHTML(
               `<div>
-                <strong>#${index + 1} 掲示板 ${candidate.boardNumber || "番号なし"}</strong><br/>
+                <strong>#${index + 1} 掲示場 ${candidate.boardNumber || "番号なし"}</strong><br/>
                 スコア: ${candidate.matchScore} (${candidate.matchRank})<br/>
                 ${candidate.address}
               </div>`

@@ -16,7 +16,7 @@ export default function Home(): ReactNode {
           <div className={styles.heroContent}>
             <span className={styles.heroBadge}>DOCUMENTATION</span>
             <h1 className={styles.heroTitle}>
-              掲示板管理プラットフォームのナレッジベース
+              掲示場管理プラットフォームのナレッジベース
             </h1>
             <p className={styles.heroSubtitle}>
               Polister
@@ -69,7 +69,7 @@ export default function Home(): ReactNode {
                 </div>
                 <h3>データモデル</h3>
                 <p>
-                  掲示板・自治体・検証履歴など、主要ドメインのスキーマとユースケースを説明します。
+                  掲示場・自治体・検証履歴など、主要ドメインのスキーマとユースケースを説明します。
                 </p>
                 <Link className={styles.cardLink} to="/data-model/overview">
                   データモデルを見る →

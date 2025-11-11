@@ -24,8 +24,8 @@ export interface BoardCandidateDTO {
 }
 
 /**
- * 候補掲示板取得ユースケース
- * 写真の位置情報・市区町村・掲示板番号からマッチング
+ * 候補掲示場取得ユースケース
+ * 写真の位置情報・市区町村・掲示場番号からマッチング
  */
 @injectable()
 export class GetBoardCandidatesUseCase {

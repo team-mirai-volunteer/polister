@@ -194,7 +194,7 @@ export interface IMunicipalityRepository {
   save(municipality: Municipality): Promise<void>;
 
   /**
-   * 市区町村に紐づく掲示板一覧を取得
+   * 市区町村に紐づく掲示場一覧を取得
    */
   findBoardsByMunicipalityId(
     municipalityId: string

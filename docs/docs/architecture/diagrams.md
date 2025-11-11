@@ -57,7 +57,7 @@ sequenceDiagram
     participant DB as Database
     participant Admin as 管理者
 
-    S->>M: 掲示板を発見・撮影
+    S->>M: 掲示場を発見・撮影
     M->>M: GPS位置情報を取得
     M->>API: 位置情報+写真を送信
     API->>DB: データを保存（未検証）

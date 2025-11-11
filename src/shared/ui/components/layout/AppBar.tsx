@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { label: "ホーム", path: "/" },
   { label: "自治体一覧", path: "/municipalities" },
   { label: "都道府県一覧", path: "/prefectures" },
-  { label: "掲示板画像", path: "/board-images" },
+  { label: "掲示場画像", path: "/board-images" },
 ];
 
 export function AppBar() {

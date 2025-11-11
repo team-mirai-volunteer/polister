@@ -1,7 +1,7 @@
 /**
  * Coordinates 値オブジェクト
  *
- * 掲示板の位置情報（緯度経度）を表す
+ * 掲示場の位置情報（緯度経度）を表す
  */
 
 export interface CoordinatesProps {

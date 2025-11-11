@@ -165,7 +165,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    掲示板数
+                    掲示場数
                   </Typography>
                   <Typography variant="body1">
                     {municipality.boardCount !== null
@@ -219,7 +219,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
             }}
           >
             <Typography variant="h6" sx={{ mb: 1 }}>
-              掲示板マップ / 一覧
+              掲示場マップ / 一覧
             </Typography>
 
             <Box sx={{ flex: 1, minHeight: 360 }}>

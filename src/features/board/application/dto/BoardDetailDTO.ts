@@ -1,5 +1,5 @@
 /**
- * 掲示板詳細 DTO
+ * 掲示場詳細 DTO
  */
 
 import type { BoardImage } from "@/features/board-image/domain/entities/BoardImage";

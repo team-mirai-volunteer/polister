@@ -2,19 +2,19 @@
 
 ## Politics + Poster = Polister
 
-選挙ポスター掲示板の位置情報をデジタル化し、オープンデータとして提供するWebサービス
+選挙ポスター掲示場の位置情報をデジタル化し、オープンデータとして提供するWebサービス
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![CI](https://github.com/team-mirai-volunteer/polister/actions/workflows/ci.yml/badge.svg)](https://github.com/team-mirai-volunteer/polister/actions/workflows/ci.yml)
 
 ## 📖 概要
 
-Polisterは、全国の選挙ポスター掲示板の位置情報を管理・公開するプラットフォームです。
+Polisterは、全国の選挙ポスター掲示場の位置情報を管理・公開するプラットフォームです。
 
 ### 主な機能
 
 - 🗺️ **地図表示**: Mapbox GL JSによるインタラクティブな地図
-- 📍 **位置管理**: 掲示板の位置情報の登録・編集・検索
+- 📍 **位置管理**: 掲示場の位置情報の登録・編集・検索
 - ✅ **検証システム**: 地域ベースの検証依頼と自動承認
 - 📊 **データ品質**: 信頼度レベルによるデータ管理
 - 🔄 **データインポート**: CSV、Excel、KML形式の一括登録
@@ -134,7 +134,7 @@ yarn user:create-admin
 src/
 ├── app/              # Next.js App Router (Presentation層)
 ├── features/         # 機能別モジュール（バウンデッドコンテキスト）
-│   ├── board/        # 掲示板管理コンテキスト
+│   ├── board/        # 掲示場管理コンテキスト
 │   │   ├── domain/           # ドメイン層（DDD Core）
 │   │   │   ├── aggregates/   # 集約ルート
 │   │   │   ├── value-objects/# 値オブジェクト

@@ -14,7 +14,7 @@ export interface IBoardHistoryRepository {
   create(command: CreateBoardHistoryCommand): Promise<BoardHistory>;
 
   /**
-   * 掲示板IDで変更履歴を取得（新しい順）
+   * 掲示場IDで変更履歴を取得（新しい順）
    */
   findByBoardId(boardId: string, limit?: number): Promise<BoardHistory[]>;
 }

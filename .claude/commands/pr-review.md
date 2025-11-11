@@ -111,7 +111,7 @@ gh api repos/team-mirai-volunteer/polister/pulls/$1/comments \
   --method POST --input - <<'EOF'
 {
   "in_reply_to": <コメントID>,
-  "body": "ご指摘ありがとうございます。以下の内容で対応しました。\n\n- 掲示板集約の検証ロジックを修正\n- DDD導入ガイドの記述を更新\n\nyarn validate を実行し、lint / typecheck / format:check が通過しています。\n対応コミット: abc1234"
+  "body": "ご指摘ありがとうございます。以下の内容で対応しました。\n\n- 掲示場集約の検証ロジックを修正\n- DDD導入ガイドの記述を更新\n\nyarn validate を実行し、lint / typecheck / format:check が通過しています。\n対応コミット: abc1234"
 }
 EOF
 ```

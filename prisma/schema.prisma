@@ -11,7 +11,7 @@ datasource db {
   extensions = [postgis]
 }
 
-// 掲示板
+// 掲示場
 model Board {
   id             String                                @id @default(uuid())
   boardNumber    String?                               @map("board_number")
@@ -254,7 +254,7 @@ model Verification {
   @@map("verifications")
 }
 
-// 掲示板画像
+// 掲示場画像
 model BoardImage {
   id      String  @id @default(uuid())
   boardId String? @map("board_id") // NULL許可（未マッチング対応）
@@ -318,7 +318,7 @@ model UserLocation {
   @@map("user_locations")
 }
 
-// 掲示板変更履歴
+// 掲示場変更履歴
 model BoardHistory {
   id            String       @id @default(uuid())
   boardId       String       @map("board_id")
@@ -441,7 +441,7 @@ enum ChangeReason {
 // 画像検証ステータス
 enum ImageVerificationStatus {
   PENDING // 未検証
-  VERIFIED // 検証済み（正常な掲示板写真）
+  VERIFIED // 検証済み（正常な掲示場写真）
   REJECTED // 却下（番号読めず、対象外など）
   LOCATION_ISSUE // 緯度経度に問題あり
   DUPLICATE // 重複

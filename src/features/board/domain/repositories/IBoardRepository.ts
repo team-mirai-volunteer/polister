@@ -27,24 +27,24 @@ export interface FindByMunicipalityOptions {
 
 export interface IBoardRepository {
   /**
-   * 地図表示用の掲示板位置情報を全件取得
+   * 地図表示用の掲示場位置情報を全件取得
    */
   findAllWithLocation(
     options?: FindBoardLocationsOptions
   ): Promise<BoardLocation[]>;
 
   /**
-   * IDで掲示板を取得
+   * IDで掲示場を取得
    */
   findById(id: string): Promise<Board | null>;
 
   /**
-   * 掲示板を更新
+   * 掲示場を更新
    */
   update(board: Board): Promise<void>;
 
   /**
-   * 自治体内で掲示板番号の重複をチェック
+   * 自治体内で掲示場番号の重複をチェック
    */
   existsByBoardNumberInMunicipality(
     municipalityId: string,

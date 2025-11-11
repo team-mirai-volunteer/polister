@@ -36,14 +36,14 @@ export const MunicipalityBoardsTable = ({
   if (boards.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
-        掲示板情報は登録されていません。
+        掲示場情報は登録されていません。
       </Typography>
     );
   }
 
   return (
     <Box sx={{ height: "100%", overflowY: "auto" }}>
-      <Table size="small" stickyHeader aria-label="掲示板一覧">
+      <Table size="small" stickyHeader aria-label="掲示場一覧">
         <TableHead>
           <TableRow>
             <TableCell>番号</TableCell>

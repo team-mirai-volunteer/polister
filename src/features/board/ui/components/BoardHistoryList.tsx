@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 掲示板変更履歴一覧コンポーネント
+ * 掲示場変更履歴一覧コンポーネント
  */
 
 import type { BoardHistoryDTO } from "@/features/board/application/dto/BoardDetailDTO";
@@ -32,7 +32,7 @@ const CHANGE_REASON_LABELS: Record<string, string> = {
 };
 
 const FIELD_LABELS: Record<string, string> = {
-  boardNumber: "掲示板番号",
+  boardNumber: "掲示場番号",
   name: "名称",
   address: "住所",
   coordinates: "位置情報",

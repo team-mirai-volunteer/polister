@@ -49,7 +49,7 @@ export function PrefectureMunicipalityTable({
           <TableCell>コード</TableCell>
           <TableCell>市区町村名</TableCell>
           <TableCell>ステータス</TableCell>
-          <TableCell align="right">掲示板数</TableCell>
+          <TableCell align="right">掲示場数</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>

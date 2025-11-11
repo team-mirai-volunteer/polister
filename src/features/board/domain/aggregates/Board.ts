@@ -1,7 +1,7 @@
 /**
  * Board 集約ルート
  *
- * 掲示板のドメインモデル
+ * 掲示場のドメインモデル
  */
 
 import { Address } from "@/shared/domain/board/Address";
@@ -138,11 +138,11 @@ export class Board {
   }
 
   /**
-   * 掲示板情報を更新
+   * 掲示場情報を更新
    * ドメインロジックをカプセル化
    */
   update(command: UpdateBoardCommand): void {
-    // 掲示板番号の更新
+    // 掲示場番号の更新
     if (command.boardNumber !== undefined) {
       this._boardNumber = command.boardNumber;
     }

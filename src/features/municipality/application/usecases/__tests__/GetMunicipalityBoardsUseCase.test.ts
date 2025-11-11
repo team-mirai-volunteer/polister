@@ -25,7 +25,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
     id: overrides.id ?? "board-id",
     boardNumber:
       overrides.boardNumber !== undefined ? overrides.boardNumber : "1",
-    name: overrides.name ?? "掲示板",
+    name: overrides.name ?? "掲示場",
     address: overrides.address ?? "住所",
     longitude: overrides.longitude !== undefined ? overrides.longitude : 139.0,
     latitude: overrides.latitude !== undefined ? overrides.latitude : 35.0,
@@ -33,7 +33,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
     trustLevel: overrides.trustLevel ?? ("LEVEL_3" as TrustLevel),
   });
 
-  it("掲示板一覧を取得できる", async () => {
+  it("掲示場一覧を取得できる", async () => {
     const records = [
       createBoardRecord({ id: "board-1", boardNumber: "10" }),
       createBoardRecord({
@@ -56,7 +56,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
       {
         id: "board-1",
         boardNumber: "10",
-        name: "掲示板",
+        name: "掲示場",
         address: "住所",
         longitude: 139,
         latitude: 35,
@@ -66,7 +66,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
       {
         id: "board-2",
         boardNumber: "20",
-        name: "掲示板",
+        name: "掲示場",
         address: "住所",
         longitude: null,
         latitude: null,
@@ -83,7 +83,7 @@ describe("GetMunicipalityBoardsUseCase", () => {
     expect(repository.findBoardsByMunicipalityId).not.toHaveBeenCalled();
   });
 
-  it("掲示板が存在しない場合は空配列を返す", async () => {
+  it("掲示場が存在しない場合は空配列を返す", async () => {
     repository.findBoardsByMunicipalityId.mockResolvedValue([]);
 
     const municipalityId = "123e4567-e89b-12d3-a456-426614174001";

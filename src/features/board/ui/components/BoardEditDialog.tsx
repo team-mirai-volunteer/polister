@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 掲示板編集ダイアログ
+ * 掲示場編集ダイアログ
  */
 
 import { buildImagePreviewUrl } from "@/features/board-image/ui/utils/imageUrl";
@@ -206,7 +206,7 @@ export function BoardEditDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>掲示板情報を編集</DialogTitle>
+      <DialogTitle>掲示場情報を編集</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -216,7 +216,7 @@ export function BoardEditDialog({
 
         <Box sx={{ display: "grid", gap: 2, pt: 1 }}>
           <TextField
-            label="掲示板番号"
+            label="掲示場番号"
             value={formData.boardNumber}
             onChange={(e) =>
               setFormData({ ...formData, boardNumber: e.target.value })

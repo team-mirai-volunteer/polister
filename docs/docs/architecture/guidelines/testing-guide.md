@@ -261,7 +261,7 @@ describe("BoardManagementUseCase", () => {
   });
 
   describe("createBoard", () => {
-    it("有効なデータで掲示板を作成できる", async () => {
+    it("有効なデータで掲示場を作成できる", async () => {
       const address = "東京都千代田区永田町1-7-1";
       const boardNumber = "1";
       const municipalityId = "municipality-123";
@@ -351,7 +351,7 @@ describe("BoardRepository", () => {
   });
 
   describe("create", () => {
-    it("正常に掲示板を作成できる", async () => {
+    it("正常に掲示場を作成できる", async () => {
       const mockBoard = createMockBoard();
 
       prismaMock.board.create.mockResolvedValue(mockBoard);
@@ -382,7 +382,7 @@ describe("BoardRepository", () => {
   });
 
   describe("findByLocation", () => {
-    it("指定範囲内の掲示板を取得できる", async () => {
+    it("指定範囲内の掲示場を取得できる", async () => {
       const mockBoards = [
         createMockBoard(),
         createMockBoard({ id: "board-2" }),
@@ -425,7 +425,7 @@ describe("/api/boards POST", () => {
     resolve.mockReturnValue(mockUseCase);
   });
 
-  it("有効なデータで掲示板を作成できる", async () => {
+  it("有効なデータで掲示場を作成できる", async () => {
     const requestData = {
       address: "東京都千代田区永田町1-7-1",
       boardNumber: "1",
@@ -594,10 +594,10 @@ export const createMockVerification = (
 ```typescript
 describe("BoardManagementUseCase", () => {
   describe("createBoard", () => {
-    it("有効なデータで掲示板を作成できる", async () => {});
+    it("有効なデータで掲示場を作成できる", async () => {});
     it("住所が3文字未満の場合、エラーを返す", async () => {});
     it("ジオコーディングが失敗した場合、エラーを返す", async () => {});
-    it("重複する掲示板番号の場合、エラーを返す", async () => {});
+    it("重複する掲示場番号の場合、エラーを返す", async () => {});
   });
 
   describe("verifyBoard", () => {
@@ -711,7 +711,7 @@ yarn test BoardRepository
 ### 1. AAA パターン（Arrange-Act-Assert）
 
 ```typescript
-it("掲示板を作成できる", async () => {
+it("掲示場を作成できる", async () => {
   // Arrange: テストデータの準備
   const data = { address: "東京都", boardNumber: "1" };
   mockRepository.create.mockResolvedValue(createMockBoard());
@@ -814,8 +814,8 @@ export default defineConfig({
 // e2e/board-management.spec.ts
 import { expect, test } from "@playwright/test";
 
-test.describe("掲示板管理", () => {
-  test("掲示板を地図上に表示できる", async ({ page }) => {
+test.describe("掲示場管理", () => {
+  test("掲示場を地図上に表示できる", async ({ page }) => {
     await page.goto("/");
 
     // 地図が表示されることを確認
@@ -827,7 +827,7 @@ test.describe("掲示板管理", () => {
     await expect(markers).toHaveCount(await markers.count());
   });
 
-  test("掲示板を新規登録できる", async ({ page }) => {
+  test("掲示場を新規登録できる", async ({ page }) => {
     await page.goto("/dashboard");
 
     // 新規登録ボタンをクリック

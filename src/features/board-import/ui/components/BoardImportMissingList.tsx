@@ -16,7 +16,7 @@ export function BoardImportMissingList({ items }: BoardImportMissingListProps) {
   if (items.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
-        CSVに存在しない既存掲示板はありません。
+        CSVに存在しない既存掲示場はありません。
       </Typography>
     );
   }
@@ -30,7 +30,7 @@ export function BoardImportMissingList({ items }: BoardImportMissingListProps) {
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>欠落掲示板ID</TableCell>
+            <TableCell>欠落掲示場ID</TableCell>
             <TableCell>理由</TableCell>
             <TableCell>決定</TableCell>
             <TableCell>コメント</TableCell>

@@ -187,7 +187,7 @@ export function BoardImageUploadForm() {
       setUploadResult(payload.image as UploadResult);
       setSuccessMessage("アップロードが完了しました");
 
-      // 完了後は掲示板写真詳細へ遷移
+      // 完了後は掲示場写真詳細へ遷移
       router.push(`/board-images/${(payload.image as UploadResult).id}`);
     } catch (uploadError) {
       console.error(uploadError);

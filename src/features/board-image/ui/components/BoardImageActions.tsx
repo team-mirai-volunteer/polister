@@ -23,7 +23,7 @@ export function BoardImageActions({
 
     if (result.success) {
       alert(result.message);
-      router.refresh(); // 候補掲示板を再計算
+      router.refresh(); // 候補掲示場を再計算
     } else {
       alert(`エラー: ${result.message}`);
     }
@@ -51,11 +51,11 @@ export function BoardImageActions({
 
   return (
     <Stack spacing={2}>
-      {/* 掲示板番号入力 */}
+      {/* 掲示場番号入力 */}
       <Box>
         <Stack direction="row" spacing={1} alignItems="flex-start">
           <TextField
-            label="掲示板番号"
+            label="掲示場番号"
             value={boardNumber}
             onChange={(e) => setBoardNumber(e.target.value)}
             size="small"
@@ -77,7 +77,7 @@ export function BoardImageActions({
           display="block"
           sx={{ mt: 0.5 }}
         >
-          画像から読み取った掲示板番号を入力
+          画像から読み取った掲示場番号を入力
         </Typography>
       </Box>
 

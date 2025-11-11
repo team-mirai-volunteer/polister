@@ -1,7 +1,7 @@
 /**
  * UpdateBoardUseCase
  *
- * 掲示板情報を更新し、変更履歴を記録するユースケース
+ * 掲示場情報を更新し、変更履歴を記録するユースケース
  */
 
 import type { UpdateBoardCommand } from "@/features/board/domain/aggregates/Board";
@@ -46,17 +46,17 @@ export class UpdateBoardUseCase {
   ) {}
 
   async execute(input: UpdateBoardInput): Promise<void> {
-    // 掲示板を取得
+    // 掲示場を取得
     const board = await this.boardRepository.findById(input.boardId);
 
     if (!board) {
-      throw new UpdateBoardError("掲示板が見つかりません。", "BOARD_NOT_FOUND");
+      throw new UpdateBoardError("掲示場が見つかりません。", "BOARD_NOT_FOUND");
     }
 
     // 変更前のスナップショットを取得
     const beforeData = board.toSnapshot();
 
-    // 掲示板番号の正規化と重複チェック
+    // 掲示場番号の正規化と重複チェック
     let normalizedBoardNumber: string | null = null;
     if (input.boardNumber !== undefined) {
       normalizedBoardNumber = normalizeBoardNumber(input.boardNumber);
@@ -72,7 +72,7 @@ export class UpdateBoardUseCase {
 
         if (exists) {
           throw new UpdateBoardError(
-            "この掲示板番号は既に同じ自治体内で使用されています。",
+            "この掲示場番号は既に同じ自治体内で使用されています。",
             "BOARD_NUMBER_DUPLICATE"
           );
         }
@@ -110,7 +110,7 @@ export class UpdateBoardUseCase {
       command.note = input.note;
     }
 
-    // 掲示板を更新
+    // 掲示場を更新
     board.update(command);
 
     // 変更後のスナップショットを取得

@@ -1,7 +1,7 @@
 /**
  * GetBoardLocationsUseCase
  *
- * 掲示板位置情報を取得するユースケース
+ * 掲示場位置情報を取得するユースケース
  */
 
 import { TOKENS } from "@/shared/lib/di/tokens";

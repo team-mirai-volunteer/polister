@@ -19,7 +19,7 @@ import {
 import { notFound } from "next/navigation";
 
 export const metadata = {
-  title: "掲示板写真詳細 - Polister",
+  title: "掲示場写真詳細 - Polister",
 };
 
 export const dynamic = "force-dynamic";
@@ -133,7 +133,7 @@ export default async function BoardImageDetailPage({ params }: PageProps) {
                   {image.csvBoardNumber && (
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        掲示板番号
+                        掲示場番号
                       </Typography>
                       <Typography variant="body1">
                         {image.csvBoardNumber}
@@ -218,10 +218,10 @@ export default async function BoardImageDetailPage({ params }: PageProps) {
           </Grid>
         </Paper>
 
-        {/* Card 2: 地図と候補掲示板 or 紐付け情報 */}
+        {/* Card 2: 地図と候補掲示場 or 紐付け情報 */}
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" mb={2}>
-            {image.boardId ? "紐付け済み掲示板" : "候補掲示板マッチング"}
+            {image.boardId ? "紐付け済み掲示場" : "候補掲示場マッチング"}
           </Typography>
 
           <Grid container spacing={3}>
@@ -262,7 +262,7 @@ export default async function BoardImageDetailPage({ params }: PageProps) {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    候補掲示板が見つかりませんでした
+                    候補掲示場が見つかりませんでした
                   </Typography>
                 </Box>
               )}

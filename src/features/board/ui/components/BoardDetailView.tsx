@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 掲示板詳細表示コンポーネント
+ * 掲示場詳細表示コンポーネント
  */
 
 import { buildImagePreviewUrl } from "@/features/board-image/ui/utils/imageUrl";
@@ -69,7 +69,7 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
         }}
       >
         <Typography variant="h4" component="h1">
-          掲示板詳細
+          掲示場詳細
         </Typography>
         <Button
           variant="contained"
@@ -110,7 +110,7 @@ export function BoardDetailView({ data }: BoardDetailViewProps) {
               <Box sx={{ display: "grid", gap: 2 }}>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    掲示板番号
+                    掲示場番号
                   </Typography>
                   <Typography variant="body1">
                     {board.boardNumber || "-"}

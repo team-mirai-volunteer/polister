@@ -1,7 +1,7 @@
 /**
  * GetBoardDetailUseCase
  *
- * 掲示板の詳細情報を取得するユースケース
+ * 掲示場の詳細情報を取得するユースケース
  */
 
 import type { BoardImage } from "@/features/board-image/domain/entities/BoardImage";
@@ -31,7 +31,7 @@ export class GetBoardDetailUseCase {
   ) {}
 
   async execute(boardId: string): Promise<GetBoardDetailResult | null> {
-    // 掲示板を取得
+    // 掲示場を取得
     const board = await this.boardRepository.findById(boardId);
 
     if (!board) {

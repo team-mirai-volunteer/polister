@@ -10,8 +10,8 @@ import { Box, Button, Container, Typography } from "@mui/material";
 import NextLink from "next/link";
 
 export const metadata = {
-  title: "掲示板写真一覧 - Polister",
-  description: "掲示板写真の一覧を表示します",
+  title: "掲示場写真一覧 - Polister",
+  description: "掲示場写真の一覧を表示します",
 };
 
 export const dynamic = "force-dynamic";
@@ -64,7 +64,7 @@ export default async function BoardImagesPage({ searchParams }: PageProps) {
         }}
       >
         <Box>
-          <Typography variant="h4">掲示板写真一覧</Typography>
+          <Typography variant="h4">掲示場写真一覧</Typography>
           <Typography variant="body2" color="text.secondary">
             全 {result.total} 件
           </Typography>

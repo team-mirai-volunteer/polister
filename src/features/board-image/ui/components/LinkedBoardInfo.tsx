@@ -22,7 +22,7 @@ export function LinkedBoardInfo({
 
   const handleUnlink = async () => {
     const confirmed = confirm(
-      "掲示板との紐付けを解除しますか？\n（ステータスは未検証に戻ります）"
+      "掲示場との紐付けを解除しますか？\n（ステータスは未検証に戻ります）"
     );
     if (!confirmed) return;
 
@@ -44,7 +44,7 @@ export function LinkedBoardInfo({
       <Box>
         <Stack direction="row" spacing={1} alignItems="center" mb={1}>
           <Typography variant="h6">
-            掲示板 {boardNumber || "番号なし"}
+            掲示場 {boardNumber || "番号なし"}
           </Typography>
           <Chip
             label={isPublic ? "公開" : "非公開"}
@@ -58,7 +58,7 @@ export function LinkedBoardInfo({
           variant="body1"
           underline="hover"
         >
-          掲示板詳細を見る →
+          掲示場詳細を見る →
         </Link>
       </Box>
 

@@ -16,12 +16,12 @@ export async function updateBoardNumberAction(
       csvBoardNumber: boardNumber.trim() || null,
     } as never);
 
-    // キャッシュ再検証（候補掲示板を再計算）
+    // キャッシュ再検証（候補掲示場を再計算）
     revalidatePath(`/board-images/${imageId}`);
 
     return {
       success: true,
-      message: "掲示板番号を更新しました",
+      message: "掲示場番号を更新しました",
     };
   } catch (error) {
     console.error("updateBoardNumberAction error:", error);

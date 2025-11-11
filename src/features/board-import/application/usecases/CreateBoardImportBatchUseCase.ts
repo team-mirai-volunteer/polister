@@ -1,7 +1,7 @@
 /**
  * CreateBoardImportBatchUseCase
  *
- * 自治体CSVを解析し、掲示板インポートバッチを作成する。
+ * 自治体CSVを解析し、掲示場インポートバッチを作成する。
  */
 
 import type { ParsedBoardImportRow } from "@/features/board-import/application/services/BoardImportCsvParser";
@@ -169,7 +169,7 @@ export class CreateBoardImportBatchUseCase {
     if (conflicts.length > 0) {
       const duplicated = conflicts.map(([number]) => number).join(", ");
       throw new Error(
-        `掲示板番号が重複しています: ${duplicated}。CSVを確認してください。`
+        `掲示場番号が重複しています: ${duplicated}。CSVを確認してください。`
       );
     }
 

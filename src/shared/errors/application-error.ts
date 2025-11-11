@@ -44,7 +44,7 @@ export class ValidationError extends ApplicationError {
 
 export class BoardNotFoundError extends ApplicationError {
   constructor(
-    message = "掲示板が見つかりません",
+    message = "掲示場が見つかりません",
     options?: ApplicationErrorOptions
   ) {
     super(message, {

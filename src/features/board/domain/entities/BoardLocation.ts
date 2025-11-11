@@ -1,7 +1,7 @@
 /**
  * BoardLocation エンティティ
  *
- * Map表示用に簡略化した掲示板位置情報
+ * Map表示用に簡略化した掲示場位置情報
  */
 
 import type {
@@ -75,7 +75,7 @@ export class BoardLocation {
         !BOARD_NUMBER_PATTERN.test(trimmed)
       ) {
         throw new Error(
-          "BoardLocation boardNumber must be a numeric string or `xx-x` format"
+          "BoardLocation boardNumber must consist of letters/numbers (any script) optionally separated by hyphens"
         );
       }
     }

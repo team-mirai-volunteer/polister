@@ -1,20 +1,20 @@
-# Issue #83 掲示板写真アップロード・管理機能の実装 実行計画
+# Issue #83 掲示場写真アップロード・管理機能の実装 実行計画
 
 ## 全体像
 
 ### 目的
 
-2025年参院選時に収集された掲示板写真2,000件超のCSVログから、Google Drive画像をダウンロード・保存し、掲示板レコードと関連付けて管理・閲覧できるシステムを構築する。
+2025年参院選時に収集された掲示場写真2,000件超のCSVログから、Google Drive画像をダウンロード・保存し、掲示場レコードと関連付けて管理・閲覧できるシステムを構築する。
 
 ### 背景
 
-- CSV形式で管理されている掲示板写真のメタデータ（2,083行）
+- CSV形式で管理されている掲示場写真のメタデータ（2,083行）
 - Google Driveに保存された画像ファイル
-- 位置情報（緯度・経度）、掲示板番号、ステータス情報を含む
+- 位置情報（緯度・経度）、掲示場番号、ステータス情報を含む
 
 ### スコープ
 
-- **対象**: CSVインポート、画像ダウンロード・保存、一覧・詳細表示、候補掲示板マッチング
+- **対象**: CSVインポート、画像ダウンロード・保存、一覧・詳細表示、候補掲示場マッチング
 - **除外**: CSVアップロード機能（CLI実行のみ）、本番Cloud Storage実装
 
 ## 進捗状況（チェックリスト）
@@ -29,7 +29,7 @@
 - [x] Cloud Storageスタブ作成
 - [x] DI登録（TOKENS.StorageService）
 
-### Phase 2: 候補掲示板マッチング機能
+### Phase 2: 候補掲示場マッチング機能
 
 - [ ] BoardMatchingService実装（スコアリングアルゴリズム）
 - [ ] GetBoardCandidatesUseCase実装
@@ -76,7 +76,7 @@
   - [x] メタデータ表示
   - [x] Google Drive URLリンク
 - [ ] レビュー画面（`/board-images/review`）
-- [ ] 候補掲示板API（`GET /api/board-images/[id]/candidates`）
+- [ ] 候補掲示場API（`GET /api/board-images/[id]/candidates`）
 - [ ] 紐付けAPI（`PATCH /api/board-images/[id]/link`）
 
 ### Phase 6: テスト・ドキュメント
@@ -192,12 +192,12 @@
 
 ### 短期（優先度: 高）
 
-- [ ] **Phase 2: 候補掲示板マッチング機能の実装**
+- [ ] **Phase 2: 候補掲示場マッチング機能の実装**
   - BoardMatchingService（スコアリングアルゴリズム）
   - GetBoardCandidatesUseCase
   - BoardRepository拡張（PostGIS空間検索）
 - [ ] **レビュー画面の実装**
-  - 候補掲示板リスト表示
+  - 候補掲示場リスト表示
   - ワンクリック紐付け機能
   - 紐付けAPI
 
@@ -205,7 +205,7 @@
 
 - [ ] フィルタ機能の実装（都道府県、市区町村、ステータス）
 - [ ] 一括操作機能（選択した画像の一括ステータス変更）
-- [ ] 掲示板詳細ページへの写真ギャラリー表示
+- [ ] 掲示場詳細ページへの写真ギャラリー表示
 - [ ] ユニットテスト追加
 
 ### 長期（優先度: 低）
@@ -221,7 +221,7 @@
 
 ```bash
 # 全データインポート
-yarn import:board-images "tmp/掲示板写真アップロード（2025参院選） - アップロードログ.csv"
+yarn import:board-images "tmp/掲示場写真アップロード（2025参院選） - アップロードログ.csv"
 
 # テスト（10件）
 yarn import:board-images "tmp/..." --limit 10
@@ -254,7 +254,7 @@ tmp/
 GET /api/images/[...path]                  # 画像配信（実装済み）
 GET /api/board-images                      # 画像一覧（Server Action）
 GET /api/board-images/[id]                 # 画像詳細（Server Action）
-GET /api/board-images/[id]/candidates      # 候補掲示板（未実装）⭐
+GET /api/board-images/[id]/candidates      # 候補掲示場（未実装）⭐
 PATCH /api/board-images/[id]/link          # 紐付け（未実装）⭐
 ```
 
@@ -271,14 +271,14 @@ PATCH /api/board-images/[id]/link          # 紐付け（未実装）⭐
 
 ## 次のマイルストーン
 
-### Milestone 1: 候補掲示板マッチング機能
+### Milestone 1: 候補掲示場マッチング機能
 
 **期限**: 未定
 **内容**:
 
-- スコアリングアルゴリズム実装（位置情報50点 + 市区町村30点 + 掲示板番号20点）
+- スコアリングアルゴリズム実装（位置情報50点 + 市区町村30点 + 掲示場番号20点）
 - PostGIS空間検索（ST_DWithin）
-- 候補掲示板リスト表示（スコア順、上位20件）
+- 候補掲示場リスト表示（スコア順、上位20件）
 
 ### Milestone 2: レビュー画面
 
@@ -286,7 +286,7 @@ PATCH /api/board-images/[id]/link          # 紐付け（未実装）⭐
 **内容**:
 
 - 未検証写真の一覧
-- 候補掲示板との紐付けUI
+- 候補掲示場との紐付けUI
 - 一括自動紐付け（HIGH確度のみ）
 
 ### Milestone 3: ドキュメント整備

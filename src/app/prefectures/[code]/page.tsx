@@ -90,7 +90,7 @@ export default async function PrefectureDetailPage({ params }: PageProps) {
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    掲示板数合計
+                    掲示場数合計
                   </Typography>
                   <Typography variant="body1">
                     {typeof prefecture.totalBoardCount === "number"
@@ -100,7 +100,7 @@ export default async function PrefectureDetailPage({ params }: PageProps) {
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    登録掲示板件数
+                    登録掲示場件数
                   </Typography>
                   <Typography variant="body1">
                     {prefecture.boards.length.toLocaleString()} 件
@@ -154,7 +154,7 @@ export default async function PrefectureDetailPage({ params }: PageProps) {
               }}
             >
               <Typography variant="h6" sx={{ mb: 1 }}>
-                掲示板マップ
+                掲示場マップ
               </Typography>
 
               <Box

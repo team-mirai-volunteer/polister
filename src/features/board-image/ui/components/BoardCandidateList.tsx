@@ -1,6 +1,7 @@
 "use client";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   Accordion,
   AccordionDetails,
@@ -10,10 +11,12 @@ import {
   Card,
   CardContent,
   Chip,
+  IconButton,
   LinearProgress,
   Stack,
   Typography,
 } from "@mui/material";
+import Link from "next/link";
 import type { BoardCandidateDTO } from "../../application/actions/getBoardCandidatesAction";
 
 interface BoardCandidateListProps {
@@ -32,7 +35,7 @@ export function BoardCandidateList({
       <Card>
         <CardContent>
           <Typography variant="body2" color="text.secondary" textAlign="center">
-            候補掲示板が見つかりませんでした
+            候補掲示場が見つかりませんでした
           </Typography>
         </CardContent>
       </Card>
@@ -61,7 +64,7 @@ export function BoardCandidateList({
       case "municipality":
         return "市区町村";
       case "boardNumber":
-        return "掲示板番号";
+        return "掲示場番号";
       default:
         return factor;
     }
@@ -86,6 +89,16 @@ export function BoardCandidateList({
                   <Typography variant="body2">
                     {candidate.boardNumber || "番号なし"}
                   </Typography>
+                  <IconButton
+                    component={Link}
+                    href={`/boards/${candidate.boardId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="small"
+                    aria-label="掲示場詳細を新しいタブで開く"
+                  >
+                    <OpenInNewIcon fontSize="small" />
+                  </IconButton>
                   <Chip
                     label={`${candidate.matchRank} ${candidate.matchScore}点`}
                     color={getRankColor(candidate.matchRank)}

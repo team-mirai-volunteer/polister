@@ -2,7 +2,7 @@
 
 ## 概要
 
-Polisterでは、PostGISを使用して掲示板の位置情報や市区町村の境界データを管理します。
+Polisterでは、PostGISを使用して掲示場の位置情報や市区町村の境界データを管理します。
 
 ## 座標系
 
@@ -38,7 +38,7 @@ ST_Transform(geometry, 4326)
 
 ### POINT（点）
 
-掲示板の位置を表現します。
+掲示場の位置を表現します。
 
 ```sql
 -- POINTの作成
@@ -75,7 +75,7 @@ FROM boards;
 ### 範囲検索
 
 ```sql
--- 特定地点から半径1km以内の掲示板を検索
+-- 特定地点から半径1km以内の掲示場を検索
 SELECT * FROM boards
 WHERE ST_DWithin(
   location::geography,
@@ -87,7 +87,7 @@ WHERE ST_DWithin(
 ### バウンディングボックス検索
 
 ```sql
--- 地図の表示範囲内の掲示板を検索
+-- 地図の表示範囲内の掲示場を検索
 SELECT * FROM boards
 WHERE ST_Within(
   location,
@@ -102,7 +102,7 @@ WHERE ST_Within(
 ### ポリゴン内判定
 
 ```sql
--- 掲示板が市区町村ポリゴン内にあるか判定
+-- 掲示場が市区町村ポリゴン内にあるか判定
 SELECT b.*, m.name as municipality_name
 FROM boards b
 JOIN municipalities m ON ST_Within(b.location, m.polygon)
@@ -159,7 +159,7 @@ export class BoardRepository {
     `;
   }
 
-  // 市区町村内の掲示板を検索
+  // 市区町村内の掲示場を検索
   async findByMunicipality(municipalityId: string): Promise<Board[]> {
     return this.prisma.$queryRaw`
       SELECT b.* FROM boards b

@@ -20,13 +20,13 @@ async function main() {
   console.log("\n=== 紐付けられた画像（最新5件） ===");
   for (const img of linkedImages) {
     console.log(`\n画像ID: ${img.id}`);
-    console.log(`掲示板ID: ${img.boardId}`);
-    console.log(`掲示板番号: ${img.csvBoardNumber}`);
+    console.log(`掲示場ID: ${img.boardId}`);
+    console.log(`掲示場番号: ${img.csvBoardNumber}`);
     const publicStatus = img.isPublic ? "公開" : "非公開";
     console.log(`公開状態: ${publicStatus}`);
     console.log(`ステータス: ${img.verificationStatus}`);
 
-    // 実際の掲示板が存在するか確認
+    // 実際の掲示場が存在するか確認
     if (img.boardId) {
       const board = await prisma.board.findUnique({
         where: { id: img.boardId },
@@ -34,9 +34,9 @@ async function main() {
       });
 
       if (board) {
-        console.log(`✓ 掲示板が存在: ${board.boardNumber}`);
+        console.log(`✓ 掲示場が存在: ${board.boardNumber}`);
       } else {
-        console.log(`✗ 掲示板が存在しません！`);
+        console.log(`✗ 掲示場が存在しません！`);
       }
     }
   }

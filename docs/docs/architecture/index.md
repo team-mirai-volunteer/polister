@@ -82,7 +82,7 @@ Polisterは以下の主要なバウンデッドコンテキストで構成され
 
 | コンテキスト | ディレクトリ            | 主な責務             | 集約ルート   |
 | ------------ | ----------------------- | -------------------- | ------------ |
-| 掲示板管理   | `features/board`        | 掲示板の位置情報管理 | Board        |
+| 掲示場管理   | `features/board`        | 掲示場の位置情報管理 | Board        |
 | 検証管理     | `features/verification` | 検証依頼と承認フロー | Verification |
 | インポート   | `features/import`       | 外部データ取り込み   | ImportJob    |
 | 自治体管理   | `features/municipality` | 市区町村情報管理     | Municipality |
@@ -182,7 +182,7 @@ src/
 │   ├── (public)/                     # 公開ルート
 │   └── api/                          # API Routes (Presentation層)
 ├── features/                         # 機能別モジュール（バウンデッドコンテキスト）
-│   ├── board/                        # 掲示板管理コンテキスト
+│   ├── board/                        # 掲示場管理コンテキスト
 │   │   ├── domain/                   # ドメイン層（DDD Core）
 │   │   │   ├── aggregates/          # 集約ルート
 │   │   │   ├── entities/            # エンティティ

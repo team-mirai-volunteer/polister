@@ -32,12 +32,12 @@ export function HomePageContent({ metrics }: HomePageContentProps) {
     {
       label: "自治体データ",
       value: `${formatNumber(metrics.municipalities)} 件`,
-      description: "掲示板情報を管理する市区町村のマスターデータ",
+      description: "掲示場情報を管理する市区町村のマスターデータ",
     },
     {
-      label: "掲示板候補",
+      label: "掲示場候補",
       value: `${formatNumber(metrics.boards)} 件`,
-      description: "自治体公開資料から収集した掲示板候補レコード",
+      description: "自治体公開資料から収集した掲示場候補レコード",
     },
   ];
 
@@ -45,10 +45,10 @@ export function HomePageContent({ metrics }: HomePageContentProps) {
     <Stack spacing={{ xs: 6, md: 8 }} sx={{ py: { xs: 6, md: 8 } }}>
       <Stack spacing={3.5}>
         <Typography component="h1" variant="h1">
-          掲示板データ運用を直感的に可視化するトップページ
+          掲示場データ運用を直感的に可視化するトップページ
         </Typography>
         <Typography variant="body1">
-          PolisterのUIを掲示板管理チーム向けにリデザインしました。柔らかなトーンと落ち着いたレイアウトで、掲示板ロケーションや自治体情報をスムーズに確認できます。
+          PolisterのUIを掲示場管理チーム向けにリデザインしました。柔らかなトーンと落ち着いたレイアウトで、掲示場ロケーションや自治体情報をスムーズに確認できます。
         </Typography>
         {metrics.isFallback && (
           <Typography variant="body2" color="text.secondary">
@@ -105,11 +105,11 @@ export function HomePageContent({ metrics }: HomePageContentProps) {
 
       <Stack spacing={2}>
         <Typography variant="h4" component="h2">
-          ポスター掲示板向け地図ビュー
+          ポスター掲示場向け地図ビュー
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Mapbox GL JS
-          を利用し、衛星写真と行政境界を重ね合わせたインタラクティブな地図体験を提供します。掲示板ロケーションの確認を落ち着いたトーンで支援します。
+          を利用し、衛星写真と行政境界を重ね合わせたインタラクティブな地図体験を提供します。掲示場ロケーションの確認を落ち着いたトーンで支援します。
         </Typography>
         <Paper variant="outlined">
           <Suspense fallback={<MapFallback />}>

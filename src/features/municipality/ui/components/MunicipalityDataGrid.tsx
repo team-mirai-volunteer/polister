@@ -166,7 +166,7 @@ export function MunicipalityDataGrid({
     },
     {
       field: "boardCount",
-      headerName: "掲示板数",
+      headerName: "掲示場数",
       width: 120,
       align: "right",
       headerAlign: "right",

@@ -11,7 +11,7 @@ const program = new Command();
 program
   .name("import-board-images")
   .description(
-    "掲示板写真CSVファイルをインポート（Google Driveダウンロード + 3種類リサイズ）"
+    "掲示場写真CSVファイルをインポート（Google Driveダウンロード + 3種類リサイズ）"
   )
   .argument("<csv-file>", "CSVファイルパス")
   .option("--limit <number>", "処理件数制限（テスト用）", parseInt)
@@ -28,7 +28,7 @@ program
       options: { limit?: number; skipDownload?: boolean; batchSize?: number }
     ) => {
       console.log("=====================================");
-      console.log("掲示板写真 CSVインポート");
+      console.log("掲示場写真 CSVインポート");
       console.log("=====================================");
       console.log(`CSVファイル: ${csvFile}`);
       if (options.limit) {

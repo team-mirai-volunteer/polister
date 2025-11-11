@@ -1,7 +1,7 @@
 import type { ImageVerificationStatus } from "@prisma/client";
 
 /**
- * 掲示板画像エンティティ
+ * 掲示場画像エンティティ
  */
 export class BoardImage {
   constructor(
@@ -38,7 +38,7 @@ export class BoardImage {
   }
 
   /**
-   * 掲示板に紐付いているか
+   * 掲示場に紐付いているか
    */
   isLinkedToBoard(): boolean {
     return this.boardId !== null;

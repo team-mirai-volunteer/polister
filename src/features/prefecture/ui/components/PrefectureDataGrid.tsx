@@ -151,7 +151,7 @@ export function PrefectureDataGrid({
     },
     {
       field: "totalBoardCount",
-      headerName: "掲示板数合計",
+      headerName: "掲示場数合計",
       width: 140,
       type: "number",
       valueFormatter: (value: number | null | undefined) =>

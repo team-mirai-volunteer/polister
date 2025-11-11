@@ -207,7 +207,7 @@ export interface IPrefectureRepository {
   findByCode(code: string): Promise<PrefectureDetail | null>;
 
   /**
-   * 都道府県配下の掲示板一覧を取得
+   * 都道府県配下の掲示場一覧を取得
    */
   findBoardsByPrefectureCode(code: string): Promise<MunicipalityBoardRecord[]>;
 }

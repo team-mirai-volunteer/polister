@@ -140,7 +140,11 @@ interface InfoRowProps {
 function InfoRow({ label, children }: InfoRowProps) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
-      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ fontSize: "0.7rem" }}
+      >
         {label}
       </Typography>
       <Typography

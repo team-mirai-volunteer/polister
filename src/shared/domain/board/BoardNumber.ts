@@ -1,4 +1,5 @@
-export const BOARD_NUMBER_PATTERN = /^\d+(?:-\d+)?$/;
+export const BOARD_NUMBER_PATTERN =
+  /^[\p{Letter}\p{Number}]+(?:-[\p{Letter}\p{Number}]+)*$/u;
 export const BOARD_NUMBER_MAX_LENGTH = 16;
 
 const FULL_WIDTH_HYPHENS = /[－―ー﹣−]/g;
@@ -17,7 +18,7 @@ export const normalizeBoardNumber = (
 
   if (trimmed.length > BOARD_NUMBER_MAX_LENGTH) {
     throw new Error(
-      `掲示板番号は最大${BOARD_NUMBER_MAX_LENGTH}文字までにしてください。`
+      `掲示場番号は最大${BOARD_NUMBER_MAX_LENGTH}文字までにしてください。`
     );
   }
 
@@ -25,7 +26,7 @@ export const normalizeBoardNumber = (
 
   if (!BOARD_NUMBER_PATTERN.test(normalized)) {
     throw new Error(
-      "掲示板番号は数字、または「数字-数字」の形式で入力してください。"
+      "掲示場番号は英数字や日本語などの文字列（必要に応じてハイフン区切り）で入力してください。"
     );
   }
 

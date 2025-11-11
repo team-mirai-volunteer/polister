@@ -1,5 +1,5 @@
 /**
- * 自治体掲示板一覧取得 Server Action
+ * 自治体掲示場一覧取得 Server Action
  */
 
 "use server";
@@ -27,6 +27,6 @@ export async function getMunicipalityBoardsAction(
       `Error in getMunicipalityBoardsAction(${municipalityId}):`,
       error
     );
-    throw new Error("自治体掲示板一覧の取得に失敗しました");
+    throw new Error("自治体掲示場一覧の取得に失敗しました");
   }
 }

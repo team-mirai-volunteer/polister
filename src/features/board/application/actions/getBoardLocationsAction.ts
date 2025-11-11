@@ -1,5 +1,5 @@
 /**
- * 掲示板位置情報取得 Server Action
+ * 掲示場位置情報取得 Server Action
  */
 
 "use server";
@@ -22,6 +22,6 @@ export async function getBoardLocationsAction(
     return await useCase.execute(input);
   } catch (error) {
     console.error("Error in getBoardLocationsAction:", error);
-    throw new Error("掲示板位置情報の取得に失敗しました", { cause: error });
+    throw new Error("掲示場位置情報の取得に失敗しました", { cause: error });
   }
 }

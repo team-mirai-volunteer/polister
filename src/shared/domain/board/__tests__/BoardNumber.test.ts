@@ -29,17 +29,23 @@ describe("normalizeBoardNumber", () => {
     expect(normalizeBoardNumber("00-00")).toBe("00-00");
   });
 
+  it("allows alphanumeric and Japanese labels with hyphens", () => {
+    expect(normalizeBoardNumber("ABC-123")).toBe("ABC-123");
+    expect(normalizeBoardNumber("寺塚-31-7")).toBe("寺塚-31-7");
+    expect(normalizeBoardNumber("福岡3号")).toBe("福岡3号");
+  });
+
   it("throws for invalid formats", () => {
     const message =
-      "掲示板番号は数字、または「数字-数字」の形式で入力してください。";
-    expect(() => normalizeBoardNumber("abc")).toThrow(message);
-    expect(() => normalizeBoardNumber("1-2-3")).toThrow(message);
+      "掲示場番号は英数字や日本語などの文字列（必要に応じてハイフン区切り）で入力してください。";
+    expect(() => normalizeBoardNumber("1--2")).toThrow(message);
+    expect(() => normalizeBoardNumber("A/B")).toThrow(message);
   });
 
   it("enforces maximum length", () => {
     const tooLong = "1".repeat(BOARD_NUMBER_MAX_LENGTH + 1);
     expect(() => normalizeBoardNumber(tooLong)).toThrow(
-      `掲示板番号は最大${BOARD_NUMBER_MAX_LENGTH}文字までにしてください。`
+      `掲示場番号は最大${BOARD_NUMBER_MAX_LENGTH}文字までにしてください。`
     );
   });
 
@@ -51,7 +57,7 @@ describe("normalizeBoardNumber", () => {
 
   it("rejects negative and fractional numeric inputs", () => {
     const message =
-      "掲示板番号は数字、または「数字-数字」の形式で入力してください。";
+      "掲示場番号は英数字や日本語などの文字列（必要に応じてハイフン区切り）で入力してください。";
     expect(() => normalizeBoardNumber(-1)).toThrow(message);
     expect(() => normalizeBoardNumber(1.5)).toThrow(message);
   });

@@ -92,8 +92,8 @@ export function BoardImportReviewMap({
 
     if (existingCoords) {
       const popupHtml = selectedRow?.matchedBoard
-        ? `<strong>既存掲示板</strong><br/>${selectedRow.matchedBoard.address ?? ""}`
-        : "<strong>既存掲示板</strong>";
+        ? `<strong>既存掲示場</strong><br/>${selectedRow.matchedBoard.address ?? ""}`
+        : "<strong>既存掲示場</strong>";
 
       if (!existingMarkerRef.current) {
         existingMarkerRef.current = new mapboxgl.Marker({ color: "#d32f2f" })
@@ -150,7 +150,7 @@ export function BoardImportReviewMap({
       {!selectedRow ? (
         <Stack sx={{ p: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            行を選択すると、CSVと既存掲示板の位置を地図で表示します。
+            行を選択すると、CSVと既存掲示場の位置を地図で表示します。
           </Typography>
         </Stack>
       ) : null}

@@ -98,8 +98,8 @@ export function BoardImportUploadForm({
         <Typography variant="h6">CSVインポート</Typography>
 
         <Typography variant="body2" color="text.secondary">
-          自治体の全掲示板データを含むCSVを指定し、インポートバッチを作成します。
-          既存掲示板との差分は次の画面で確認・調整できます。
+          自治体の全掲示場データを含むCSVを指定し、インポートバッチを作成します。
+          既存掲示場との差分は次の画面で確認・調整できます。
         </Typography>
 
         {defaultMunicipalityId && defaultMunicipalityName ? (

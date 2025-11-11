@@ -19,10 +19,16 @@ interface BoardImportDeleteButtonProps {
   batchId: string;
 }
 
-export function BoardImportDeleteButton({ batchId }: BoardImportDeleteButtonProps) {
+export function BoardImportDeleteButton({
+  batchId,
+}: BoardImportDeleteButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
     open: false,
     message: "",
     severity: "success",
@@ -33,14 +39,26 @@ export function BoardImportDeleteButton({ batchId }: BoardImportDeleteButtonProp
     startTransition(async () => {
       const result = await deleteBoardImportBatchAction({ batchId });
       if (result.success) {
-        setSnackbar({ open: true, message: "インポートバッチを削除しました", severity: "success" });
+        setSnackbar({
+          open: true,
+          message: "インポートバッチを削除しました",
+          severity: "success",
+        });
         setOpen(false);
         router.push("/board-imports");
         router.refresh();
       } else if (result.error === "not_found") {
-        setSnackbar({ open: true, message: "バッチが見つかりませんでした", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "バッチが見つかりませんでした",
+          severity: "error",
+        });
       } else {
-        setSnackbar({ open: true, message: "削除に失敗しました", severity: "error" });
+        setSnackbar({
+          open: true,
+          message: "削除に失敗しました",
+          severity: "error",
+        });
       }
     });
   };

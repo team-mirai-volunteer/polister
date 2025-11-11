@@ -36,14 +36,14 @@ export interface ImageCandidate {
 }
 
 /**
- * 掲示板マッチングサービス
- * 写真と掲示板の関連付けスコアリング
+ * 掲示場マッチングサービス
+ * 写真と掲示場の関連付けスコアリング
  */
 @injectable()
 export class BoardMatchingService {
   /**
    * マッチスコアを計算
-   * 合計100点満点（位置50点 + 市区町村30点 + 掲示板番号20点）
+   * 合計100点満点（位置50点 + 市区町村30点 + 掲示場番号20点）
    */
   calculateMatchScore(
     image: ImageCandidate,
@@ -84,7 +84,7 @@ export class BoardMatchingService {
             : "不一致",
     });
 
-    // 3. 掲示板番号一致スコア（0-20点）
+    // 3. 掲示場番号一致スコア（0-20点）
     if (image.csvBoardNumber && board.boardNumber) {
       const numberScore = this.getBoardNumberScore(
         image.csvBoardNumber,
@@ -153,7 +153,7 @@ export class BoardMatchingService {
   }
 
   /**
-   * 掲示板番号一致スコア（0-20点）
+   * 掲示場番号一致スコア（0-20点）
    */
   private getBoardNumberScore(
     imageNumber: string,
@@ -213,7 +213,7 @@ export class BoardMatchingService {
   }
 
   /**
-   * 掲示板番号から数値を抽出
+   * 掲示場番号から数値を抽出
    */
   private extractNumber(boardNumber: string): number | null {
     const match = boardNumber.match(/\d+/);

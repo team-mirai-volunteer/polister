@@ -39,7 +39,7 @@ export interface ImportBoardImagesResult {
 }
 
 /**
- * CSVから掲示板画像をインポートするユースケース
+ * CSVから掲示場画像をインポートするユースケース
  * Google Driveから画像をダウンロードし、3種類にリサイズして保存
  */
 @injectable()

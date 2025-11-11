@@ -319,10 +319,10 @@ export function MunicipalityBoardsMap({
     coordinates.forEach((coord) => {
       const label =
         coord.boardNumber !== null
-          ? `掲示板 No.${coord.boardNumber}${
+          ? `掲示場 No.${coord.boardNumber}${
               coord.name ? ` ${coord.name}` : ""
             }`
-          : `掲示板${coord.name ? ` ${coord.name}` : ""}`;
+          : `掲示場${coord.name ? ` ${coord.name}` : ""}`;
 
       const existing = markersRef.current.get(coord.id);
       if (existing) {

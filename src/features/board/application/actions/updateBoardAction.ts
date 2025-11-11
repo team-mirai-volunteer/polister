@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * 掲示板更新 Action
+ * 掲示場更新 Action
  */
 
 import "reflect-metadata";

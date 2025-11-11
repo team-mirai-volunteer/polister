@@ -1,7 +1,7 @@
 /**
  * Address 値オブジェクト
  *
- * 掲示板の住所を表す
+ * 掲示場の住所を表す
  */
 
 const ADDRESS_MAX_LENGTH = 500;
