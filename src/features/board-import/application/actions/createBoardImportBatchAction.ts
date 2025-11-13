@@ -39,10 +39,15 @@ export async function createBoardImportBatchAction(
   const useCase = container.resolve(CreateBoardImportBatchUseCase);
 
   const buffer = Buffer.from(await input.file.arrayBuffer());
+  const trimmedUploaderId = input.uploaderId?.trim() ?? "";
+  const normalizedUploaderId =
+    trimmedUploaderId.length > 0
+      ? trimmedUploaderId
+      : (session?.user?.id ?? null);
 
   const result = await useCase.execute({
     municipalityId: input.municipalityId,
-    uploaderId: input.uploaderId?.trim() || session.user.id,
+    uploaderId: normalizedUploaderId,
     fileName: input.file.name,
     buffer,
     contentType: input.file.type,

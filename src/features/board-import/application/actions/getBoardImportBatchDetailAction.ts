@@ -11,7 +11,6 @@ import {
   BoardImportBatchNotFoundError,
   GetBoardImportBatchDetailUseCase,
 } from "@/features/board-import/application/usecases/GetBoardImportBatchDetailUseCase";
-import { requireAuth } from "@/shared/lib/auth/session";
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 
@@ -28,7 +27,6 @@ export interface GetBoardImportBatchDetailActionOutput {
 export async function getBoardImportBatchDetailAction(
   input: GetBoardImportBatchDetailActionInput
 ): Promise<GetBoardImportBatchDetailActionOutput> {
-  await requireAuth();
   setupDI(container);
 
   try {

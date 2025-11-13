@@ -1,12 +1,13 @@
 import { listBoardImportBatchesAction } from "@/features/board-import/application/actions/listBoardImportBatchesAction";
 import { BoardImportBatchList } from "@/features/board-import/ui/components/BoardImportBatchList";
-import { BoardImportUploadForm } from "@/features/board-import/ui/components/BoardImportUploadForm";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Divider from "@mui/material/Divider";
+import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import Link from "next/link";
+import NextLink from "next/link";
 
 const PAGE_SIZE = 25;
 const ROOT_CURSOR_MARKER = "__root__";
@@ -128,22 +129,54 @@ export default async function BoardImportsPage({
       })
     : null;
 
+  const uploadHref = (() => {
+    const params = new URLSearchParams();
+    if (normalizedMunicipalityId) {
+      params.set("municipalityId", normalizedMunicipalityId);
+    }
+    if (municipalityName) {
+      params.set("municipalityName", municipalityName);
+    }
+    const search = params.toString();
+    return search ? `/board-imports/upload?${search}` : "/board-imports/upload";
+  })();
+
   return (
     <Container maxWidth={false} sx={{ py: 4 }}>
       <Stack spacing={4}>
-        <div>
-          <Typography variant="h4" gutterBottom>
-            掲示場CSVインポート
+        <Stack spacing={1.5}>
+          <Breadcrumbs aria-label="breadcrumb" separator="›">
+            <Link
+              component={NextLink}
+              href="/"
+              underline="hover"
+              color="inherit"
+            >
+              ホーム
+            </Link>
+            <Typography color="text.primary">インポート一覧</Typography>
+          </Breadcrumbs>
+          <div>
+            <Typography variant="h4" gutterBottom>
+              掲示場CSVインポート
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              自治体ごとの掲示場CSVを取り込み、既存データとの比較・反映を管理します。
+            </Typography>
+          </div>
+        </Stack>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems="flex-start"
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+            新しいCSVを取り込む場合は「CSVインポート」ページに移動してください。各バッチの比較・反映状況は下記の履歴から確認できます。
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            自治体ごとの掲示場CSVを取り込み、既存データとの比較・反映を管理します。
-          </Typography>
-        </div>
-
-        <BoardImportUploadForm
-          defaultMunicipalityId={normalizedMunicipalityId}
-          defaultMunicipalityName={municipalityName}
-        />
+          <Button component={NextLink} href={uploadHref} variant="contained">
+            CSVインポートを行う
+          </Button>
+        </Stack>
 
         <Divider />
 
@@ -155,7 +188,7 @@ export default async function BoardImportsPage({
           <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
             {previousHref ? (
               <Button
-                component={Link}
+                component={NextLink}
                 href={previousHref}
                 variant="outlined"
                 color="primary"
@@ -165,7 +198,7 @@ export default async function BoardImportsPage({
             ) : null}
             {nextHref ? (
               <Button
-                component={Link}
+                component={NextLink}
                 href={nextHref}
                 variant="outlined"
                 color="primary"

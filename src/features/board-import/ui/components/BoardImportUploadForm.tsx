@@ -2,6 +2,10 @@
 
 import { createBoardImportBatchAction } from "@/features/board-import/application/actions/createBoardImportBatchAction";
 import Alert from "@mui/material/Alert";
+import Autocomplete, {
+  type AutocompleteChangeReason,
+  type AutocompleteInputChangeReason,
+} from "@mui/material/Autocomplete";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -11,35 +15,216 @@ import Typography from "@mui/material/Typography";
 import { useRouter } from "next/navigation";
 import {
   useCallback,
+  useEffect,
+  useRef,
   useState,
   useTransition,
   type ChangeEvent,
   type FormEvent,
 } from "react";
 
+interface MunicipalityOption {
+  id: string;
+  name: string;
+  prefecture: string;
+  code: string;
+}
+
+const formatMunicipalityLabel = (option: MunicipalityOption | null) => {
+  if (!option) {
+    return "";
+  }
+
+  const combined = `${option.prefecture ?? ""} ${option.name ?? ""}`.trim();
+  return combined || option.name || "";
+};
+
+const mapDefaultMunicipalityToOption = (
+  municipality:
+    | {
+        id: string;
+        name: string;
+        prefecture: string;
+        code: string;
+        fullName?: string;
+      }
+    | null
+    | undefined
+): MunicipalityOption | null => {
+  if (!municipality) {
+    return null;
+  }
+
+  return {
+    id: municipality.id,
+    name: municipality.name,
+    prefecture: municipality.prefecture,
+    code: municipality.code,
+  };
+};
+
 export interface BoardImportUploadFormProps {
-  defaultMunicipalityId?: string;
-  defaultMunicipalityName?: string;
+  defaultMunicipality?: {
+    id: string;
+    name: string;
+    prefecture: string;
+    code: string;
+    fullName?: string;
+  } | null;
 }
 
 export function BoardImportUploadForm({
-  defaultMunicipalityId,
-  defaultMunicipalityName,
+  defaultMunicipality,
 }: BoardImportUploadFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [municipalityId, setMunicipalityId] = useState(
-    () => defaultMunicipalityId ?? ""
-  );
   const [uploaderId, setUploaderId] = useState("");
   const [notes, setNotes] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const initialMunicipality =
+    mapDefaultMunicipalityToOption(defaultMunicipality);
+  const [selectedMunicipality, setSelectedMunicipality] =
+    useState<MunicipalityOption | null>(initialMunicipality);
+  const [municipalityInput, setMunicipalityInput] = useState(
+    defaultMunicipality?.fullName ??
+      (initialMunicipality ? formatMunicipalityLabel(initialMunicipality) : "")
+  );
+  const [municipalityOptions, setMunicipalityOptions] = useState<
+    MunicipalityOption[]
+  >(initialMunicipality ? [initialMunicipality] : []);
+  const [municipalityLoading, setMunicipalityLoading] = useState(false);
+  const municipalitySearchAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const nextDefault = mapDefaultMunicipalityToOption(defaultMunicipality);
+    if (!nextDefault) {
+      return;
+    }
+
+    setSelectedMunicipality(nextDefault);
+    setMunicipalityInput(
+      defaultMunicipality?.fullName ?? formatMunicipalityLabel(nextDefault)
+    );
+    setMunicipalityOptions((previous) => {
+      if (previous.some((option) => option.id === nextDefault.id)) {
+        return previous;
+      }
+      return [nextDefault, ...previous].slice(0, 10);
+    });
+  }, [defaultMunicipality]);
+
+  useEffect(() => {
+    const trimmed = municipalityInput.trim();
+    if (!trimmed) {
+      setMunicipalityOptions((previous) => {
+        if (selectedMunicipality) {
+          const exists = previous.some(
+            (option) => option.id === selectedMunicipality.id
+          );
+          if (exists) {
+            return previous;
+          }
+          return [selectedMunicipality, ...previous];
+        }
+        return [];
+      });
+      return;
+    }
+
+    municipalitySearchAbortRef.current?.abort();
+    const controller = new AbortController();
+    municipalitySearchAbortRef.current = controller;
+
+    const handler = setTimeout(async () => {
+      try {
+        setMunicipalityLoading(true);
+        const response = await fetch(
+          `/api/municipalities/search?q=${encodeURIComponent(trimmed)}&take=10`,
+          { signal: controller.signal }
+        );
+        if (!response.ok) {
+          throw new Error("自治体検索に失敗しました。");
+        }
+        const data = (await response.json()) as {
+          municipalities: MunicipalityOption[];
+        };
+
+        setMunicipalityOptions(() => {
+          if (
+            selectedMunicipality &&
+            !data.municipalities.some(
+              (option) => option.id === selectedMunicipality.id
+            )
+          ) {
+            return [selectedMunicipality, ...data.municipalities];
+          }
+          return data.municipalities;
+        });
+      } catch (fetchError) {
+        if (
+          !(fetchError instanceof DOMException) ||
+          fetchError.name !== "AbortError"
+        ) {
+          console.error(fetchError);
+        }
+      } finally {
+        setMunicipalityLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+      controller.abort();
+    };
+  }, [municipalityInput, selectedMunicipality]);
+
+  useEffect(() => {
+    return () => {
+      municipalitySearchAbortRef.current?.abort();
+    };
+  }, []);
+
+  const handleMunicipalityChange = useCallback(
+    (
+      _: unknown,
+      value: MunicipalityOption | null,
+      reason: AutocompleteChangeReason
+    ) => {
+      if (reason === "clear") {
+        setSelectedMunicipality(null);
+        return;
+      }
+
+      setSelectedMunicipality(value);
+      if (value) {
+        setMunicipalityInput(formatMunicipalityLabel(value));
+        setError(null);
+      }
+    },
+    []
+  );
+
+  const handleMunicipalityInputChange = useCallback(
+    (_: unknown, value: string, reason: AutocompleteInputChangeReason) => {
+      if (reason === "input") {
+        setMunicipalityInput(value);
+      } else if (reason === "clear") {
+        setMunicipalityInput("");
+      } else if (reason === "reset") {
+        setMunicipalityInput(value);
+      }
+    },
+    []
+  );
 
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const selected = event.target.files?.[0] ?? null;
       setFile(selected);
+      if (selected) {
+        setError(null);
+      }
     },
     []
   );
@@ -48,8 +233,8 @@ export function BoardImportUploadForm({
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
-      if (!municipalityId) {
-        setError("自治体IDを入力してください。");
+      if (!selectedMunicipality) {
+        setError("自治体を選択してください。");
         return;
       }
 
@@ -65,7 +250,7 @@ export function BoardImportUploadForm({
           const trimmedUploaderId = uploaderId.trim();
           const trimmedNotes = notes.trim();
           const result = await createBoardImportBatchAction({
-            municipalityId: municipalityId.trim(),
+            municipalityId: selectedMunicipality.id,
             uploaderId: trimmedUploaderId || undefined,
             file,
             notes: trimmedNotes || null,
@@ -81,7 +266,7 @@ export function BoardImportUploadForm({
         }
       });
     },
-    [file, municipalityId, notes, router, uploaderId]
+    [file, notes, router, selectedMunicipality, uploaderId]
   );
 
   return (
@@ -102,21 +287,64 @@ export function BoardImportUploadForm({
           既存掲示場との差分は次の画面で確認・調整できます。
         </Typography>
 
-        {defaultMunicipalityId && defaultMunicipalityName ? (
+        {defaultMunicipality ? (
           <Alert severity="info">
-            対象自治体: {defaultMunicipalityName}（ID: {defaultMunicipalityId}）
+            対象自治体:{" "}
+            {defaultMunicipality.fullName ??
+              `${defaultMunicipality.prefecture} ${defaultMunicipality.name}`}
+            （ID: {defaultMunicipality.id}）
           </Alert>
         ) : null}
 
         {error ? <Alert severity="error">{error}</Alert> : null}
 
-        <TextField
-          label="自治体ID"
-          placeholder="例: 8a1b2c3d-..."
-          value={municipalityId}
-          onChange={(event) => setMunicipalityId(event.target.value)}
-          required
-          helperText="対象自治体のID。planドキュメント等で確認できます"
+        <Autocomplete
+          options={municipalityOptions}
+          value={selectedMunicipality}
+          inputValue={municipalityInput}
+          onChange={handleMunicipalityChange}
+          onInputChange={handleMunicipalityInputChange}
+          loading={municipalityLoading}
+          filterOptions={(options) => options}
+          getOptionLabel={(option) => formatMunicipalityLabel(option)}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          noOptionsText={
+            municipalityInput.trim()
+              ? "候補が見つかりません"
+              : "自治体名を入力してください"
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="対象自治体"
+              placeholder="自治体名や都道府県名で検索"
+              helperText="検索結果から対象自治体を選択してください"
+              required
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {municipalityLoading ? (
+                      <CircularProgress color="inherit" size={16} />
+                    ) : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          renderOption={(props, option) => (
+            <li {...props} key={option.id}>
+              <Stack spacing={0.25}>
+                <Typography variant="body2">
+                  {formatMunicipalityLabel(option)}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  行政コード: {option.code}
+                </Typography>
+              </Stack>
+            </li>
+          )}
         />
 
         <TextField

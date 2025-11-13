@@ -8,7 +8,6 @@ import {
   BOARD_IMPORT_ROW_DECISION_VALUES,
   type BoardImportRowDecision,
 } from "@/features/board-import/domain/types/BoardImportTypes";
-import { requireAuth } from "@/shared/lib/auth/session";
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 
@@ -22,7 +21,6 @@ export interface UpdateBoardImportRowDecisionActionInput {
 export async function updateBoardImportRowDecisionAction(
   input: UpdateBoardImportRowDecisionActionInput
 ): Promise<BoardImportRowDTO> {
-  await requireAuth();
   setupDI(container);
 
   const useCase = container.resolve(UpdateBoardImportRowDecisionUseCase);

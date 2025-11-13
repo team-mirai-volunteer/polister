@@ -6,7 +6,8 @@ import {
   LIST_PAGE_HEADER_SX,
 } from "@/shared/constants/layout";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Box, Button, Container, Link, Typography } from "@mui/material";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
 import NextLink from "next/link";
 
 export const metadata = {
@@ -55,28 +56,36 @@ export default async function BoardImagesPage({ searchParams }: PageProps) {
 
   return (
     <Container maxWidth="xl" sx={LIST_PAGE_CONTAINER_SX}>
-      <Box
-        sx={{
-          ...LIST_PAGE_HEADER_SX,
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "flex-start", sm: "center" },
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h4">掲示場写真一覧</Typography>
-          <Typography variant="body2" color="text.secondary">
-            全 {result.total} 件
-          </Typography>
-        </Box>
-        <Button
-          component={NextLink}
-          href="/board-images/upload"
-          variant="contained"
-          startIcon={<AddPhotoAlternateIcon />}
+      <Box sx={{ ...LIST_PAGE_HEADER_SX, gap: 1.5 }}>
+        <Breadcrumbs aria-label="breadcrumb" separator="›">
+          <Link component={NextLink} href="/" underline="hover" color="inherit">
+            ホーム
+          </Link>
+          <Typography color="text.primary">掲示場写真一覧</Typography>
+        </Breadcrumbs>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
+            gap: 2,
+          }}
         >
-          写真をアップロード
-        </Button>
+          <Box>
+            <Typography variant="h4">掲示場写真一覧</Typography>
+            <Typography variant="body2" color="text.secondary">
+              全 {result.total} 件
+            </Typography>
+          </Box>
+          <Button
+            component={NextLink}
+            href="/board-images/upload"
+            variant="contained"
+            startIcon={<AddPhotoAlternateIcon />}
+          >
+            写真をアップロード
+          </Button>
+        </Box>
       </Box>
       <Box sx={LIST_PAGE_BODY_SX}>
         <BoardImageDataGrid

@@ -15,6 +15,7 @@ import { MunicipalityBoardsSection } from "@/features/municipality/ui/components
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import {
   Box,
+  Breadcrumbs,
   Button,
   Chip,
   Container,
@@ -53,7 +54,7 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   }
 
   const prefectureCode = municipality.code.slice(0, 2);
-  const importUrl = `/board-imports?municipalityId=${encodeURIComponent(
+  const importUrl = `/board-imports/upload?municipalityId=${encodeURIComponent(
     municipality.id
   )}&municipalityName=${encodeURIComponent(municipality.fullName)}`;
 
@@ -74,6 +75,15 @@ export default async function MunicipalityDetailPage({ params }: PageProps) {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Stack spacing={3}>
+        <Breadcrumbs aria-label="breadcrumb" separator="›">
+          <Link component={NextLink} href="/" underline="hover">
+            ホーム
+          </Link>
+          <Link component={NextLink} href="/municipalities" underline="hover">
+            自治体一覧
+          </Link>
+          <Typography color="text.primary">{municipality.fullName}</Typography>
+        </Breadcrumbs>
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}

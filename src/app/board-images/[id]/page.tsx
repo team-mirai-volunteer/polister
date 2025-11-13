@@ -9,6 +9,7 @@ import { LinkedBoardInfo } from "@/features/board-image/ui/components/LinkedBoar
 import { buildImagePreviewUrl } from "@/features/board-image/ui/utils/imageUrl";
 import {
   Box,
+  Breadcrumbs,
   Chip,
   Container,
   Grid,
@@ -16,6 +17,8 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import Link from "@mui/material/Link";
+import NextLink from "next/link";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -85,6 +88,15 @@ export default async function BoardImageDetailPage({ params }: PageProps) {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Stack spacing={3}>
+        <Breadcrumbs aria-label="breadcrumb" separator="›">
+          <Link component={NextLink} href="/" underline="hover">
+            ホーム
+          </Link>
+          <Link component={NextLink} href="/board-images" underline="hover">
+            掲示場写真一覧
+          </Link>
+          <Typography color="text.primary">写真詳細</Typography>
+        </Breadcrumbs>
         {/* Card 1: 写真と詳細情報 */}
         <Paper sx={{ p: 3 }}>
           <Grid container spacing={3}>
