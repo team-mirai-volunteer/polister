@@ -13,7 +13,7 @@ import {
   toBoardImportRowDTO,
 } from "@/features/board-import/application/dto/BoardImportDTOMapper";
 import { CreateBoardImportBatchUseCase } from "@/features/board-import/application/usecases/CreateBoardImportBatchUseCase";
-import { requireAuth } from "@/shared/lib/auth/session";
+import { auth } from "@/shared/lib/auth";
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 
@@ -33,7 +33,7 @@ export interface CreateBoardImportBatchActionOutput {
 export async function createBoardImportBatchAction(
   input: CreateBoardImportBatchActionInput
 ): Promise<CreateBoardImportBatchActionOutput> {
-  const session = await requireAuth();
+  const session = await auth();
   setupDI(container);
 
   const useCase = container.resolve(CreateBoardImportBatchUseCase);
