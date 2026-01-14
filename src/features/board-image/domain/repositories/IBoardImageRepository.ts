@@ -1,3 +1,5 @@
+import type { ImageVerificationStatus } from "@prisma/client";
+
 import type { BoardImageFilter } from "../../constants/filters";
 import type { BoardImage } from "../entities/BoardImage";
 
@@ -17,7 +19,7 @@ export interface CreateBoardImageInput {
   longitude?: number;
   takenAt?: Date;
   uploadedAt?: Date;
-  verificationStatus?: string;
+  verificationStatus?: ImageVerificationStatus;
   statusNote?: string;
   reviewNote?: string;
   reviewComment?: string;
@@ -25,7 +27,7 @@ export interface CreateBoardImageInput {
 
 export interface UpdateBoardImageInput {
   boardId?: string | null;
-  verificationStatus?: string;
+  verificationStatus?: ImageVerificationStatus;
   isPublic?: boolean;
   csvBoardNumber?: string | null;
 }
@@ -42,7 +44,7 @@ export type BoardImageSortField =
 export interface FindBoardImagesOptions {
   limit?: number;
   offset?: number;
-  verificationStatus?: string;
+  verificationStatus?: ImageVerificationStatus;
   hasBoard?: boolean;
   filter?: BoardImageFilter;
   sortField?: BoardImageSortField;

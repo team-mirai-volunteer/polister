@@ -1,5 +1,5 @@
 import { TOKENS } from "@/shared/lib/di/tokens";
-import type { PrismaClient } from "@prisma/client";
+import type { ImageVerificationStatus, PrismaClient } from "@prisma/client";
 import { inject, injectable } from "tsyringe";
 import type { BoardImageFilter } from "../../constants/filters";
 import { BoardImage } from "../../domain/entities/BoardImage";
@@ -34,7 +34,7 @@ export class BoardImageRepository implements IBoardImageRepository {
         longitude: input.longitude ?? null,
         takenAt: input.takenAt ?? null,
         uploadedAt: input.uploadedAt ?? null,
-        verificationStatus: (input.verificationStatus ?? "PENDING") as never,
+        verificationStatus: input.verificationStatus ?? "PENDING",
         statusNote: input.statusNote ?? null,
         reviewNote: input.reviewNote ?? null,
         reviewComment: input.reviewComment ?? null,
@@ -62,7 +62,7 @@ export class BoardImageRepository implements IBoardImageRepository {
         longitude: input.longitude ?? null,
         takenAt: input.takenAt ?? null,
         uploadedAt: input.uploadedAt ?? null,
-        verificationStatus: (input.verificationStatus ?? "PENDING") as never,
+        verificationStatus: input.verificationStatus ?? "PENDING",
         statusNote: input.statusNote ?? null,
         reviewNote: input.reviewNote ?? null,
         reviewComment: input.reviewComment ?? null,
@@ -129,7 +129,7 @@ export class BoardImageRepository implements IBoardImageRepository {
     longitude: unknown;
     takenAt: Date | null;
     uploadedAt: Date | null;
-    verificationStatus: string;
+    verificationStatus: ImageVerificationStatus;
     statusNote: string | null;
     reviewNote: string | null;
     reviewComment: string | null;
@@ -154,7 +154,7 @@ export class BoardImageRepository implements IBoardImageRepository {
       data.longitude ? Number(data.longitude) : null,
       data.takenAt,
       data.uploadedAt,
-      data.verificationStatus as never,
+      data.verificationStatus,
       data.statusNote,
       data.reviewNote,
       data.reviewComment,
@@ -166,7 +166,7 @@ export class BoardImageRepository implements IBoardImageRepository {
 
   async update(id: string, input: UpdateBoardImageInput): Promise<BoardImage> {
     const updateData: {
-      verificationStatus?: never;
+      verificationStatus?: ImageVerificationStatus;
       isPublic?: boolean;
       csvBoardNumber?: string | null;
       board?: { connect: { id: string } } | { disconnect: true };
@@ -174,7 +174,7 @@ export class BoardImageRepository implements IBoardImageRepository {
 
     // Only set verificationStatus if provided
     if (input.verificationStatus !== undefined) {
-      updateData.verificationStatus = input.verificationStatus as never;
+      updateData.verificationStatus = input.verificationStatus;
     }
 
     if (input.isPublic !== undefined) {
@@ -209,7 +209,7 @@ export class BoardImageRepository implements IBoardImageRepository {
 
   private buildWhereClause(options?: FindBoardImagesOptions) {
     const where: Record<string, unknown> = {
-      verificationStatus: options?.verificationStatus as never,
+      verificationStatus: options?.verificationStatus,
       boardId:
         options?.hasBoard !== undefined
           ? options.hasBoard

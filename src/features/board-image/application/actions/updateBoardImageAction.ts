@@ -2,6 +2,7 @@
 
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import type { ImageVerificationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export type ImageAction =
@@ -30,7 +31,7 @@ export async function updateBoardImageAction(
     // アクションに応じた更新内容を決定
     let updateData: {
       boardId?: string | null;
-      verificationStatus: string;
+      verificationStatus: ImageVerificationStatus;
       isPublic: boolean;
     };
 

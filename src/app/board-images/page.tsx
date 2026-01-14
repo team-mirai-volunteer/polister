@@ -93,7 +93,7 @@ export default async function BoardImagesPage({ searchParams }: PageProps) {
           total={result.total}
           page={page}
           pageSize={limit}
-          sortField={sortField as never}
+          sortField={sortField}
           sortOrder={sortOrder}
           filterField={filterField}
           filterOperator={filterOperator}

@@ -294,6 +294,9 @@ export class BoardRepository implements IBoardRepository {
 
     return rows
       .map((row) => {
+        if (!isBoardStatus(row.status)) return null;
+        if (!isTrustLevel(row.trust_level)) return null;
+
         try {
           return new BoardLocation({
             id: row.id,
@@ -305,8 +308,8 @@ export class BoardRepository implements IBoardRepository {
             municipalityPrefecture: row.municipality_prefecture,
             longitude: row.longitude,
             latitude: row.latitude,
-            status: row.status as never,
-            trustLevel: row.trust_level as never,
+            status: row.status,
+            trustLevel: row.trust_level,
           });
         } catch (error) {
           this.logger.warn("[BoardRepository] Skip board: invalid data", {

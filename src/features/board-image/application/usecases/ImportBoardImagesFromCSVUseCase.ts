@@ -4,6 +4,7 @@ import type { ImageResizeService } from "@/infrastructure/storage/ImageResizeSer
 import type { IStorageService } from "@/infrastructure/storage/IStorageService";
 import type { AppLogger } from "@/shared/lib/di/tokens";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import type { ImageVerificationStatus } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 import { promises as fs } from "fs";
 import * as path from "path";
@@ -299,7 +300,7 @@ export class ImportBoardImagesFromCSVUseCase {
   /**
    * Status文字列から検証ステータスを判定
    */
-  private determineVerificationStatus(status: string): string {
+  private determineVerificationStatus(status: string): ImageVerificationStatus {
     if (!status) return "PENDING";
 
     const lowerStatus = status.toLowerCase();

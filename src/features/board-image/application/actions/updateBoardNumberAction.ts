@@ -14,7 +14,7 @@ export async function updateBoardNumberAction(
     // csvBoardNumber を更新
     await repository.update(imageId, {
       csvBoardNumber: boardNumber.trim() || null,
-    } as never);
+    });
 
     // キャッシュ再検証（候補掲示場を再計算）
     revalidatePath(`/board-images/${imageId}`);

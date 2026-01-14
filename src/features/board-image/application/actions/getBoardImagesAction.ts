@@ -6,8 +6,30 @@ import {
   type BoardImageFilterField,
   type BoardImageFilterOperator,
 } from "@/features/board-image/constants/filters";
+import type { BoardImageSortField } from "@/features/board-image/domain/repositories/IBoardImageRepository";
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import type { ImageVerificationStatus } from "@prisma/client";
+
+const BOARD_IMAGE_SORT_FIELDS: BoardImageSortField[] = [
+  "originalFilename",
+  "csvPrefecture",
+  "csvCity",
+  "csvBoardNumber",
+  "verificationStatus",
+  "takenAt",
+  "createdAt",
+];
+
+const IMAGE_VERIFICATION_STATUSES: ImageVerificationStatus[] = [
+  "PENDING",
+  "VERIFIED",
+  "REJECTED",
+  "LOCATION_ISSUE",
+  "DUPLICATE",
+  "NO_NUMBER",
+  "DOWNLOAD_FAILED",
+];
 
 export interface BoardImageDTO {
   id: string;
@@ -82,18 +104,23 @@ export async function getBoardImagesAction(
         }
       : undefined;
 
+  const normalizedVerificationStatus = normalizeVerificationStatus(
+    input.verificationStatus
+  );
+  const normalizedSortField = normalizeSortField(input.sortField);
+
   const [images, total] = await Promise.all([
     repository.findMany({
       limit: input.limit ?? 50,
       offset: input.offset ?? 0,
-      verificationStatus: input.verificationStatus,
+      verificationStatus: normalizedVerificationStatus,
       hasBoard: input.hasBoard,
       filter,
-      sortField: input.sortField as never,
+      sortField: normalizedSortField,
       sortOrder: input.sortOrder,
     }),
     repository.count({
-      verificationStatus: input.verificationStatus,
+      verificationStatus: normalizedVerificationStatus,
       hasBoard: input.hasBoard,
       filter,
     }),
@@ -156,4 +183,28 @@ function normalizeFilterOperator(
     : field === "verificationStatus"
       ? "equals"
       : "contains";
+}
+
+function normalizeVerificationStatus(
+  value: string | undefined
+): ImageVerificationStatus | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return IMAGE_VERIFICATION_STATUSES.includes(value as ImageVerificationStatus)
+    ? (value as ImageVerificationStatus)
+    : undefined;
+}
+
+function normalizeSortField(
+  value: string | undefined
+): BoardImageSortField | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return BOARD_IMAGE_SORT_FIELDS.includes(value as BoardImageSortField)
+    ? (value as BoardImageSortField)
+    : undefined;
 }
