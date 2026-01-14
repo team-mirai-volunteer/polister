@@ -87,3 +87,14 @@ export const authConfig: NextAuthConfig = {
 };
 
 export const { auth, handlers, signIn, signOut } = NextAuth(authConfig);
+
+// 認証・認可ユーティリティの再エクスポート
+export { requireAuth } from "./session";
+export {
+  hasRole,
+  requireRole,
+  requireExactRole,
+  requireAdmin,
+  requireCoordinator,
+  requireEditor,
+} from "./authorization";

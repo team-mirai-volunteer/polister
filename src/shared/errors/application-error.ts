@@ -83,3 +83,18 @@ export class UnauthorizedError extends ApplicationError {
     });
   }
 }
+
+export class ForbiddenError extends ApplicationError {
+  constructor(
+    message = "この操作を実行する権限がありません",
+    options?: ApplicationErrorOptions
+  ) {
+    super(message, {
+      statusCode: 403,
+      code: options?.code ?? "FORBIDDEN",
+      metadata: options?.metadata,
+      cause: options?.cause,
+      logLevel: options?.logLevel ?? "warn",
+    });
+  }
+}
