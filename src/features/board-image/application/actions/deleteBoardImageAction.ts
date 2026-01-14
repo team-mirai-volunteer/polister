@@ -4,6 +4,7 @@ import "reflect-metadata";
 
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import { logger } from "@/shared/logging/logger";
 
 interface DeleteBoardImageResult {
   success: boolean;
@@ -32,7 +33,7 @@ export async function deleteBoardImageAction(
       try {
         await storageService.delete(filePath);
       } catch (error) {
-        console.warn("画像ファイル削除失敗", filePath, error);
+        logger.warn("画像ファイル削除失敗", filePath, error);
       }
     })
   );

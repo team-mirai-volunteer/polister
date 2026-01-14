@@ -5,6 +5,7 @@ import "reflect-metadata";
 import { DeleteBoardImportBatchUseCase } from "@/features/board-import/application/usecases/DeleteBoardImportBatchUseCase";
 import { BoardImportBatchNotFoundError } from "@/features/board-import/application/usecases/GetBoardImportBatchDetailUseCase";
 import { setupDI } from "@/shared/lib/di/container";
+import { logger } from "@/shared/logging/logger";
 import { container } from "tsyringe";
 
 interface DeleteBoardImportBatchInput {
@@ -26,7 +27,7 @@ export async function deleteBoardImportBatchAction(
     await useCase.execute({ batchId: input.batchId });
     return { success: true };
   } catch (error) {
-    console.error("[deleteBoardImportBatchAction] Failed", error);
+    logger.error("[deleteBoardImportBatchAction] Failed", error);
 
     if (error instanceof BoardImportBatchNotFoundError) {
       return { success: false, error: "not_found" };

@@ -5,6 +5,7 @@
 "use server";
 
 import { setupDI } from "@/shared/lib/di/container";
+import { logger } from "@/shared/logging/logger";
 import { container } from "tsyringe";
 import {
   MUNICIPALITY_FIELD_OPERATORS,
@@ -114,7 +115,7 @@ export async function getMunicipalitiesAction(
       limit: result.limit,
     };
   } catch (error) {
-    console.error("Error in getMunicipalitiesAction:", error);
+    logger.error("Error in getMunicipalitiesAction:", error);
     throw new Error("自治体一覧の取得に失敗しました");
   }
 }

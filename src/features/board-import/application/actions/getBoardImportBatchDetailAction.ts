@@ -12,6 +12,7 @@ import {
   GetBoardImportBatchDetailUseCase,
 } from "@/features/board-import/application/usecases/GetBoardImportBatchDetailUseCase";
 import { setupDI } from "@/shared/lib/di/container";
+import { logger } from "@/shared/logging/logger";
 import { container } from "tsyringe";
 
 export interface GetBoardImportBatchDetailActionInput {
@@ -34,7 +35,7 @@ export async function getBoardImportBatchDetailAction(
 
     return await useCase.execute({ batchId: input.batchId });
   } catch (error) {
-    console.error(
+    logger.error(
       "[getBoardImportBatchDetailAction] Failed to load batch detail",
       error
     );

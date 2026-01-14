@@ -5,6 +5,7 @@
 "use server";
 
 import { setupDI } from "@/shared/lib/di/container";
+import { logger } from "@/shared/logging/logger";
 import { container } from "tsyringe";
 
 import { GetSystemMetricsUseCase } from "../usecases/GetSystemMetricsUseCase";
@@ -29,12 +30,12 @@ export async function getSystemMetricsAction(): Promise<SystemMetricsResult> {
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error("Error in getSystemMetricsAction:", {
+      logger.error("Error in getSystemMetricsAction:", {
         message: error.message,
         stack: error.stack,
       });
     } else {
-      console.error("Error in getSystemMetricsAction:", error);
+      logger.error("Error in getSystemMetricsAction:", error);
     }
     return {
       municipalities: 0,

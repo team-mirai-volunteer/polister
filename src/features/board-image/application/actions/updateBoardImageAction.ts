@@ -2,6 +2,7 @@
 
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import { logger } from "@/shared/logging/logger";
 import { revalidatePath } from "next/cache";
 
 export type ImageAction =
@@ -113,7 +114,7 @@ export async function updateBoardImageAction(
       message: "更新しました",
     };
   } catch (error) {
-    console.error("updateBoardImageAction error:", error);
+    logger.error("updateBoardImageAction error:", error);
     return {
       success: false,
       message: error instanceof Error ? error.message : "更新に失敗しました",

@@ -5,6 +5,7 @@
 "use server";
 
 import { setupDI } from "@/shared/lib/di/container";
+import { logger } from "@/shared/logging/logger";
 import { container } from "tsyringe";
 
 import { PrefectureMapper } from "../../infrastructure/mappers/PrefectureMapper";
@@ -27,7 +28,7 @@ export async function getPrefectureByCodeAction(code: string) {
 
     return PrefectureMapper.toDetailDTO(prefecture);
   } catch (error) {
-    console.error("Error in getPrefectureByCodeAction:", error);
+    logger.error("Error in getPrefectureByCodeAction:", error);
     throw new Error("都道府県詳細の取得に失敗しました", { cause: error });
   }
 }

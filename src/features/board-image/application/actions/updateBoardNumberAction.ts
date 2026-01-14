@@ -2,6 +2,7 @@
 
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import { logger } from "@/shared/logging/logger";
 import { revalidatePath } from "next/cache";
 
 export async function updateBoardNumberAction(
@@ -24,7 +25,7 @@ export async function updateBoardNumberAction(
       message: "掲示場番号を更新しました",
     };
   } catch (error) {
-    console.error("updateBoardNumberAction error:", error);
+    logger.error("updateBoardNumberAction error:", error);
     return {
       success: false,
       message: error instanceof Error ? error.message : "更新に失敗しました",

@@ -5,6 +5,7 @@
 "use server";
 
 import { setupDI } from "@/shared/lib/di/container";
+import { logger } from "@/shared/logging/logger";
 import { container } from "tsyringe";
 import { MunicipalityMapper } from "../../infrastructure/mappers/MunicipalityMapper";
 import { GetMunicipalityByIdUseCase } from "../usecases/GetMunicipalityByIdUseCase";
@@ -24,7 +25,7 @@ export async function getMunicipalityByIdAction(id: string) {
     // DTOに変換して返す
     return MunicipalityMapper.toDTO(municipality);
   } catch (error) {
-    console.error(`Error in getMunicipalityByIdAction(${id}):`, error);
+    logger.error(`Error in getMunicipalityByIdAction(${id}):`, error);
     throw new Error("自治体詳細の取得に失敗しました");
   }
 }

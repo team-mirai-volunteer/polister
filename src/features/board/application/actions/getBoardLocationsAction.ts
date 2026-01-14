@@ -5,6 +5,7 @@
 "use server";
 
 import { setupDI } from "@/shared/lib/di/container";
+import { logger } from "@/shared/logging/logger";
 import { container } from "tsyringe";
 
 import {
@@ -21,7 +22,7 @@ export async function getBoardLocationsAction(
     const useCase = container.resolve(GetBoardLocationsUseCase);
     return await useCase.execute(input);
   } catch (error) {
-    console.error("Error in getBoardLocationsAction:", error);
+    logger.error("Error in getBoardLocationsAction:", error);
     throw new Error("掲示場位置情報の取得に失敗しました", { cause: error });
   }
 }
