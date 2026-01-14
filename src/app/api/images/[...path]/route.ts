@@ -1,5 +1,7 @@
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
+import { requireAuth } from "@/shared/lib/auth/session";
+import { logger } from "@/shared/logging/logger";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
@@ -43,11 +45,12 @@ export async function GET(
       return NextResponse.json({ error: "Invalid path" }, { status: 400 });
     }
 
-    // TODO: 認証チェック（将来実装）
-    // const session = await getServerSession();
-    // if (!session) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    // 認証チェック
+    try {
+      await requireAuth();
+    } catch {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const storageService = resolve(TOKENS.StorageService);
 
@@ -71,7 +74,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error("画像配信エラー:", error);
+    logger.error("画像配信エラー:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
