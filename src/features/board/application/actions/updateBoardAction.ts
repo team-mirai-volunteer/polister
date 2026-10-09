@@ -11,6 +11,7 @@ import {
   UpdateBoardUseCase,
   type UpdateBoardInput,
 } from "@/features/board/application/usecases/UpdateBoardUseCase";
+import { getAuthenticatedUserId } from "@/shared/lib/auth/session";
 import { setupDI } from "@/shared/lib/di/container";
 
 export interface UpdateBoardActionInput {
@@ -23,7 +24,6 @@ export interface UpdateBoardActionInput {
   trustLevel?: "LEVEL_1" | "LEVEL_2" | "LEVEL_3" | "LEVEL_4";
   note?: string | null;
   changeReason: "MANUAL_INPUT" | "ERROR_CORRECTION" | "FIELD_VERIFICATION";
-  userId?: string | null;
   comment?: string | null;
 }
 
@@ -38,6 +38,18 @@ export interface UpdateBoardActionResult {
 export async function updateBoardAction(
   input: UpdateBoardActionInput
 ): Promise<UpdateBoardActionResult> {
+  // 変更者はクライアント入力ではなくセッションから取得する
+  const userId = await getAuthenticatedUserId();
+  if (!userId) {
+    return {
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "ログインが必要です。",
+      },
+    };
+  }
+
   const container = setupDI();
   const useCase = container.resolve(UpdateBoardUseCase);
 
@@ -52,7 +64,7 @@ export async function updateBoardAction(
       trustLevel: input.trustLevel,
       note: input.note,
       changeReason: input.changeReason,
-      userId: input.userId,
+      userId,
       comment: input.comment,
     };
 

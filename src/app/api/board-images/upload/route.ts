@@ -1,3 +1,4 @@
+import { getAuthenticatedUserId } from "@/shared/lib/auth/session";
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { NextRequest, NextResponse } from "next/server";
@@ -104,6 +105,13 @@ async function extractGPSFromBuffer(buffer: Buffer): Promise<ExtractedGPS> {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!(await getAuthenticatedUserId())) {
+      return NextResponse.json(
+        { error: "ログインが必要です" },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const municipalityId = formData.get("municipalityId");
     const file = formData.get("file");
