@@ -2,6 +2,7 @@
 
 import MapboxMap from "@/components/map/MapboxMap";
 import type { BoardImportRowDTO } from "@/features/board-import/application/dto/BoardImportBatchDTO";
+import { escapeHtml } from "@/shared/lib/html/escapeHtml";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
@@ -238,7 +239,7 @@ export function BoardImportReviewMap({
           row.latitude,
           "#66bb6a",
           "#2e7d32",
-          `<strong>${row.boardNumber ?? "取込"}</strong><br/>${row.address ?? ""}`
+          `<strong>${escapeHtml(row.boardNumber ?? "取込")}</strong><br/>${escapeHtml(row.address)}`
         );
       }
 
@@ -255,7 +256,7 @@ export function BoardImportReviewMap({
           row.matchedBoard.latitude,
           "#ffcc80",
           "#ef6c00",
-          `<strong>既存</strong><br/>${row.matchedBoard.address ?? ""}`
+          `<strong>既存</strong><br/>${escapeHtml(row.matchedBoard.address)}`
         );
       }
     });
@@ -298,7 +299,7 @@ export function BoardImportReviewMap({
           .setLngLat(importCoords)
           .setPopup(
             new mapboxgl.Popup({ offset: 12 }).setHTML(
-              `<strong>取込</strong><br/>${selectedRow?.address ?? ""}`
+              `<strong>取込</strong><br/>${escapeHtml(selectedRow?.address)}`
             )
           )
           .addTo(map);
@@ -307,7 +308,7 @@ export function BoardImportReviewMap({
           .setLngLat(importCoords)
           .setPopup(
             new mapboxgl.Popup({ offset: 12 }).setHTML(
-              `<strong>取込</strong><br/>${selectedRow?.address ?? ""}`
+              `<strong>取込</strong><br/>${escapeHtml(selectedRow?.address)}`
             )
           );
       }
@@ -320,7 +321,7 @@ export function BoardImportReviewMap({
 
     if (existingCoords) {
       const popupHtml = selectedRow?.matchedBoard
-        ? `<strong>既存掲示場</strong><br/>${selectedRow.matchedBoard.address ?? ""}`
+        ? `<strong>既存掲示場</strong><br/>${escapeHtml(selectedRow.matchedBoard.address)}`
         : "<strong>既存掲示場</strong>";
 
       if (!existingMarkerRef.current) {

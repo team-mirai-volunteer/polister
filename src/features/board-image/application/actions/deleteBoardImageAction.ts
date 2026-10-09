@@ -2,6 +2,7 @@
 
 import "reflect-metadata";
 
+import { getAuthenticatedUserId } from "@/shared/lib/auth/session";
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
 
@@ -13,6 +14,10 @@ interface DeleteBoardImageResult {
 export async function deleteBoardImageAction(
   id: string
 ): Promise<DeleteBoardImageResult> {
+  if (!(await getAuthenticatedUserId())) {
+    return { success: false, error: "unauthorized" };
+  }
+
   const repository = resolve(TOKENS.BoardImageRepository);
   const storageService = resolve(TOKENS.StorageService);
 

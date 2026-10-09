@@ -1,5 +1,6 @@
 "use server";
 
+import { getAuthenticatedUserId } from "@/shared/lib/auth/session";
 import { resolve } from "@/shared/lib/di";
 import { TOKENS } from "@/shared/lib/di/tokens";
 import { revalidatePath } from "next/cache";
@@ -22,6 +23,10 @@ export interface UpdateBoardImageInput {
 export async function updateBoardImageAction(
   input: UpdateBoardImageInput
 ): Promise<{ success: boolean; message: string }> {
+  if (!(await getAuthenticatedUserId())) {
+    return { success: false, message: "ログインが必要です" };
+  }
+
   const repository = resolve(TOKENS.BoardImageRepository);
 
   try {
