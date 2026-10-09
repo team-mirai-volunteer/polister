@@ -50,7 +50,7 @@ export const authConfigBase: NextAuthConfig = {
   callbacks: {
     // middleware の matcher 対象パスでは未ログインをサインイン画面へリダイレクトする
     authorized({ auth }) {
-      return Boolean(auth?.user);
+      return Boolean(auth?.user?.id);
     },
     jwt({ token, user }) {
       if (user) {

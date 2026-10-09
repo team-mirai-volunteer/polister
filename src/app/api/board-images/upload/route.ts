@@ -104,11 +104,14 @@ async function extractGPSFromBuffer(buffer: Buffer): Promise<ExtractedGPS> {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await getAuthenticatedUserId())) {
-    return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
-  }
-
   try {
+    if (!(await getAuthenticatedUserId())) {
+      return NextResponse.json(
+        { error: "ログインが必要です" },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const municipalityId = formData.get("municipalityId");
     const file = formData.get("file");
