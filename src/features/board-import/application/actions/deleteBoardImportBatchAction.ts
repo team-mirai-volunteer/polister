@@ -4,6 +4,7 @@ import "reflect-metadata";
 
 import { DeleteBoardImportBatchUseCase } from "@/features/board-import/application/usecases/DeleteBoardImportBatchUseCase";
 import { BoardImportBatchNotFoundError } from "@/features/board-import/application/usecases/GetBoardImportBatchDetailUseCase";
+import { getAuthenticatedUserId } from "@/shared/lib/auth/session";
 import { setupDI } from "@/shared/lib/di/container";
 import { container } from "tsyringe";
 
@@ -19,6 +20,10 @@ interface DeleteBoardImportBatchResult {
 export async function deleteBoardImportBatchAction(
   input: DeleteBoardImportBatchInput
 ): Promise<DeleteBoardImportBatchResult> {
+  if (!(await getAuthenticatedUserId())) {
+    return { success: false, error: "unauthorized" };
+  }
+
   setupDI(container);
 
   try {

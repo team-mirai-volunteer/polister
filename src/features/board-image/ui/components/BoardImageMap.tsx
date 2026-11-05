@@ -3,6 +3,7 @@
 import MapboxMap from "@/components/map/MapboxMap";
 import { createPhotoMarkerElement } from "@/features/board-image/ui/utils/createPhotoMarkerElement";
 import { createBoardMarkerElement } from "@/features/board/ui/utils/boardMarkerStyle";
+import { escapeHtml } from "@/shared/lib/html/escapeHtml";
 import { Alert, Box, Card, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import mapboxgl from "mapbox-gl";
@@ -154,7 +155,7 @@ export function BoardImageMap({
     markerElement.style.zIndex = "45";
 
     const popup = new mapboxgl.Popup({ offset: 12 }).setHTML(
-      `<strong>${label}</strong><br/>${linkedBoard.address ?? ""}`
+      `<strong>${escapeHtml(label)}</strong><br/>${escapeHtml(linkedBoard.address)}`
     );
 
     boardMarkerRef.current = new mapboxgl.Marker({ element: markerElement })
@@ -215,9 +216,9 @@ export function BoardImageMap({
           .setPopup(
             new mapboxgl.Popup().setHTML(
               `<div>
-                <strong>#${index + 1} 掲示場 ${candidate.boardNumber || "番号なし"}</strong><br/>
-                スコア: ${candidate.matchScore} (${candidate.matchRank})<br/>
-                ${candidate.address}
+                <strong>#${index + 1} 掲示場 ${escapeHtml(candidate.boardNumber || "番号なし")}</strong><br/>
+                スコア: ${escapeHtml(candidate.matchScore)} (${escapeHtml(candidate.matchRank)})<br/>
+                ${escapeHtml(candidate.address)}
               </div>`
             )
           )

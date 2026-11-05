@@ -48,6 +48,10 @@ export const authConfigBase: NextAuthConfig = {
     signIn: "/auth/signin",
   },
   callbacks: {
+    // middleware の matcher 対象パスでは未ログインをサインイン画面へリダイレクトする
+    authorized({ auth }) {
+      return Boolean(auth?.user?.id);
+    },
     jwt({ token, user }) {
       if (user) {
         token.role = (user.role ?? defaultUserRole) as UserRole;
